@@ -15,10 +15,10 @@ CURRENT_PHASE=PRODUCTION_READY (Governance bootstrap + test stabilization comple
 ## GIT STATE
 
 ```
-CURRENT_BRANCH=main (local only, no remote yet)
-CURRENT_HEAD=N/A (not a git repo)
-CURRENT_WORKTREE=C:\Users\Paulinho\AppData\Local\hermes\cache\scratch\investidor10-dashboard
-ORIGIN_MAIN=N/A (no remote)
+CURRENT_BRANCH=main (local, baseline 7f68870)
+CURRENT_HEAD=7f68870 (feat: governance bootstrap + test stabilization)
+CURRENT_WORKTREE=G:\Meu Drive\Codex\investidor10-dashboard (canonical)
+ORIGIN_MAIN=N/A (push adiado — decisao do usuario: subir no final)
 ```
 
 ---
@@ -26,13 +26,13 @@ ORIGIN_MAIN=N/A (no remote)
 ## BUILD & TEST STATUS
 
 ```
-LAST_VALIDATED_BUILD=2026-09-28 (vanilla, no build step)
+LAST_VALIDATED_BUILD=2026-10-05 (vanilla, no build step)
 LAST_TEST_RESULT=
-  Desktop:  47/47 passing (serial --workers=1)
-  Mobile:   47/47 passing (serial --workers=1)
-  Tablet:   Not configured (only desktop/mobile projects)
-  A11y:     14/14 passing (critical=0)
-CURRENT_ACTIVE_FEATURE=None (production ready)
+  Desktop:  57/57 passing (2.0m, serial)
+  Mobile:   56/56 passing (2.0m, serial)
+  Tablet:   57/57 passing (2.1m, serial — projeto tablet ADICIONADO)
+  A11y:     incluido na suite (14 testes dentro do total acima)
+CURRENT_ACTIVE_FEATURE=Fase 15-20 (estabilidade, notas de corretagem, extratos, durabilidade)
 CURRENT_BLOCKERS=
   - No remote Git (disaster recovery gap)
   - No active CI/CD (workflow ready, not activated)
