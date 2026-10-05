@@ -453,9 +453,30 @@
     const btnExportJSON = document.getElementById('btnExportJSON');
     const btnExportCSV = document.getElementById('btnExportCSV');
     const btnExportExcel = document.getElementById('btnExportExcel');
+    const btnDurabilityBackupNow = document.getElementById('btnDurabilityBackupNow');
+    const durabilityStatus = document.getElementById('durabilityStatus');
     const backupImportForm = document.getElementById('backupImportForm');
     const backupFile = document.getElementById('backupFile');
     const backupImportResult = document.getElementById('backupImportResult');
+
+    // Fase 17 — status de durabilidade + botão Backup Agora
+    if (btnDurabilityBackupNow) {
+      btnDurabilityBackupNow.addEventListener('click', () => {
+        const r = window.Durability?.downloadBackup('manual');
+        if (r?.success) toast('Backup completo exportado (dados + snapshots)', 'success');
+        else toast('Falha no backup: ' + (r?.error || 'desconhecido'), 'error');
+      });
+    }
+    if (durabilityStatus) {
+      try {
+        const h = window.Durability?.healthCheck();
+        const last = localStorage.getItem('investidor10-last-backup');
+        const days = last ? Math.floor((Date.now() - +last) / 86400000) : null;
+        durabilityStatus.innerHTML = h?.healthy
+          ? `🛡️ Storage íntegro${days !== null ? ` · último backup há ${days}d` : ' · nenhum backup ainda'}`
+          : '⚠️ Storage com problemas — veja o console';
+      } catch {}
+    }
     
     if (btnExportJSON) {
       btnExportJSON.addEventListener('click', () => {

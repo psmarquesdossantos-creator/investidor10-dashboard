@@ -1383,6 +1383,13 @@
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
+
+  // Fase 17 — Durabilidade: health check + migração + lembrete de backup
+  try {
+    if (window.Durability) window.Durability.init();
+  } catch (e) {
+    console.warn('[Durability] init falhou (não crítico):', e);
+  }
 })();
 
 // ========================================
