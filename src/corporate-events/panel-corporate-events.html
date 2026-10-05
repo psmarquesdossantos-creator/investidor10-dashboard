@@ -1,0 +1,82 @@
+<!-- CORPORATE EVENTS TAB -->
+  <section role="tabpanel" aria-labelledby="tab-corporate-events" class="tab-panel" id="panel-corporate-events" hidden>
+    <div class="panel-header" style="margin-bottom: var(--space-4)">
+      <h2 style="font-size: var(--font-size-xl);margin:0 0 var(--space-1)">Eventos Corporativos</h2>
+      <p class="text-muted" style="margin:0">Detecção automática via B3, aplicação de split/merge/bonificação/subscrição/amortização</p>
+    </div>
+
+    <!-- Upload CSV B3 Events -->
+    <div class="card dropzone" id="corpEventsDropzone" style="border:2px dashed var(--color-border);padding:var(--space-8);text-align:center;margin-bottom:var(--space-6);position:relative;">
+      <input type="file" id="corpEventsFile" accept=".csv" hidden>
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--color-muted);margin-bottom:var(--space-3)">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      <p style="margin:0 0 var(--space-2);color:var(--color-muted)">Arraste CSV de <strong>Eventos B3</strong> aqui</p>
+      <p style="margin:0;color:var(--color-muted);font-size:var(--font-size-sm)">Colunas: Tipo;Data;Ativo;Quantidade;Preço;Fator</p>
+      <div id="corpEventsDetected" style="margin-top:var(--space-3);font-size:var(--font-size-sm);color:var(--color-primary);display:none;"></div>
+    </div>
+
+    <!-- Events Log Table -->
+    <div id="corpEventsLogSection" style="display:none;">
+      <h3 style="margin:0 0 var(--space-3)">Eventos Processados</h3>
+      <div class="table-wrapper">
+        <table class="data-table" id="corpEventsLogTable">
+          <thead>
+            <tr>
+              <th scope="col">Data</th>
+              <th scope="col">Tipo</th>
+              <th scope="col">Ativo</th>
+              <th scope="col">Detalhes</th>
+              <th scope="col">Qtd Antiga</th>
+              <th scope="col">Qtd Nova</th>
+              <th scope="col">PM Antigo</th>
+              <th scope="col">PM Novo</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody id="corpEventsLogBody"></tbody>
+        </table>
+      </div>
+      <div style="display:flex;gap:var(--space-3);justify-content:flex-end;margin-top:var(--space-4);">
+        <button class="btn btn-secondary" id="btnClearCorpEvents">Limpar Log</button>
+        <button class="btn btn-primary" id="btnApplyCorpEvents">Aplicar à Carteira</button>
+      </div>
+    </div>
+
+    <!-- Manual Event Entry -->
+    <div class="card" style="margin-top:var(--space-6);">
+      <h3 style="margin:0 0 var(--space-3)">Adicionar Evento Manual</h3>
+      <form id="manualEventForm" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--space-3);">
+        <div class="form-group">
+          <label for="manualEventType">Tipo *</label>
+          <select id="manualEventType" required>
+            <option value="">Selecione</option>
+            <option value="split">Split (Desdobramento)</option>
+            <option value="merge">Merge (Grupamento)</option>
+            <option value="bonus">Bonificação</option>
+            <option value="subscription">Subscrição</option>
+            <option value="amortization">Amortização</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="manualEventTicker">Ticker *</label>
+          <input type="text" id="manualEventTicker" placeholder="PETR4" required style="text-transform:uppercase">
+        </div>
+        <div class="form-group">
+          <label for="manualEventDate">Data *</label>
+          <input type="date" id="manualEventDate" required>
+        </div>
+        <div class="form-group">
+          <label for="manualEventQty">Quantidade/Fator *</label>
+          <input type="number" id="manualEventQty" step="0.01" required>
+        </div>
+        <div class="form-group">
+          <label for="manualEventPrice">Preço (subscrição/amortização)</label>
+          <input type="number" id="manualEventPrice" step="0.01">
+        </div>
+        <div class="form-group" style="display:flex;align-items:end;">
+          <button type="submit" class="btn btn-primary" style="width:100%">Adicionar Evento</button>
+        </div>
+      </form>
+    </div>
+  </section>

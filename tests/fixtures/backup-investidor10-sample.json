@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "payload": {
+    "state": {
+      "assets": [
+        {
+          "ticker": "PETR4",
+          "name": "Petrobras PN",
+          "type": "Ação",
+          "sector": "Petróleo e Gás",
+          "qty": 1200,
+          "avg_price": 38.45,
+          "current_price": 42.12,
+          "dy": 5.2
+        },
+        {
+          "ticker": "HGLG11",
+          "name": "CSHG Logística",
+          "type": "FII",
+          "sector": "Logística",
+          "qty": 450,
+          "avg_price": 142.50,
+          "current_price": 131.20,
+          "dy": 8.7
+        },
+        {
+          "ticker": "IVVB11",
+          "name": "iShares S&P 500",
+          "type": "ETF",
+          "sector": "Internacional",
+          "qty": 180,
+          "avg_price": 245.00,
+          "current_price": 271.50,
+          "dy": 1.2
+        },
+        {
+          "ticker": "FIXA11",
+          "name": "Tesouro IPCA+ 2035",
+          "type": "Renda Fixa",
+          "sector": "Títulos Públicos",
+          "qty": 85,
+          "avg_price": 980.00,
+          "current_price": 1007.00,
+          "dy": 5.8,
+          "rf_applied_value": 980.00,
+          "fixed_current_value": 1007.00
+        }
+      ],
+      "proventos": [],
+      "aportes": []
+    }
+  }
+}

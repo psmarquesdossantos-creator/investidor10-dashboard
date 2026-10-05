@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Investidor10 - Gerenciador de Carteira de Investimentos">
+  <title>Carteira de Investimentos - Investidor10</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+    <script src="vendor/chart.umd.min.js"></script>
+    <script src="vendor/chartjs-adapter-date-fns.bundle.min.js"></script>
+  </head>
+<body>
+  <a href="#main" class="skip-link">Pular para conteúdo principal</a>
+
+  <header class="header" role="banner">
+    <div class="header-top">
+      <div class="container header-inner">
+        <a href="#" class="logo" aria-label="Investidor10 Home">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <rect width="32" height="32" rx="8" fill="#1A73E8"/>
+            <path d="M8 16L14 22L24 10" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Investidor10</span>
+        </a>
+        <nav class="header-nav" aria-label="Navegação principal">
+          <a href="#" class="nav-item">Carteira</a>
+          <a href="#" class="nav-item">Mercados</a>
+          <a href="#" class="nav-item">Recomendações</a>
+          <a href="#" class="nav-item">Cursos</a>
+          <a href="#" class="nav-item">IR</a>
+        </nav>
+        <div class="header-actions">
+            <button class="btn btn-ghost" aria-label="Notificações">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </button>
+            <button class="btn btn-ghost" aria-label="Configurações">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 1 4.6 9a1.65 1.65 0 0 1 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 1-.33 1.82V9a1.65 1.65 0 0 1 1.51-1H9a1.65 1.65 0 0 1 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 1 1 1.51 1.65 1.65 0 0 1 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 1-.33-1.82V3a1.65 1.65 0 0 1 1.51-1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 1-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 1 .33-1.82 1.65 1.65 0 0 1 1.51-1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </button>
+            <button class="btn btn-ghost theme-toggle" id="themeToggle" aria-label="Alternar tema">
+              <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+              <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </button>
+            <button class="btn btn-ghost" id="livePricesToggle" aria-label="Ativar preços em tempo real">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  <span class="live-indicator" aria-hidden="true"></span>
+                </button>
+                <button class="btn btn-ghost" id="commandPaletteToggle" aria-label="Abrir paleta de comandos (Cmd+K)">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <kbd style="font-size:10px;padding:1px 4px;border-radius:3px;background:var(--color-bg);border:1px solid var(--color-border);margin-left:4px">⌘K</kbd>
+                </button>
+                <div class="user-menu">
+              <button class="user-avatar" id="userAvatar" aria-expanded="false" aria-haspopup="true" aria-label="Menu do usuário">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </button>
+              <div class="user-dropdown" id="userDropdown" hidden role="menu">
+                <button class="dropdown-item" role="menuitem">Meu perfil</button>
+                <button class="dropdown-item" role="menuitem">Configurações</button>
+                <button class="dropdown-item" role="menuitem">Ajuda</button>
+                <hr style="margin: var(--space-2) 0; border-color: var(--color-border);">
+                <button class="dropdown-item" role="menuitem" style="color: var(--color-error);">Sair</button>
+              </div>
+            </div>
+          </div>
+      </div>
+    </div>
+    <div class="header-tabs" role="tablist" aria-label="Abas da carteira" tabindex="0">
+                  <div class="container">
+                    <span class="tabs-group-label" aria-hidden="true">Visão Geral</span>
+                    <button role="tab" id="tab-summary" aria-controls="panel-summary" aria-selected="true" class="tab-btn active" data-tab="summary" tabindex="0">Resumo</button>
+                    <button role="tab" id="tab-patrimony" aria-controls="panel-patrimony" aria-selected="false" class="tab-btn" data-tab="patrimony" tabindex="-1">Patrimônio</button>
+                    <button role="tab" id="tab-returns" aria-controls="panel-returns" aria-selected="false" class="tab-btn" data-tab="returns" tabindex="-1">Rentabilidade</button>
+                    <span class="tabs-group-label" aria-hidden="true">Ativos</span>
+                    <button role="tab" id="tab-positions" aria-controls="panel-positions" aria-selected="false" class="tab-btn" data-tab="positions" tabindex="-1">Posições</button>
+                    <button role="tab" id="tab-earnings" aria-controls="panel-earnings" aria-selected="false" class="tab-btn" data-tab="earnings" tabindex="-1">Proventos</button>
+                    <button role="tab" id="tab-entries" aria-controls="panel-entries" aria-selected="false" class="tab-btn" data-tab="entries" tabindex="-1">Lançamentos</button>
+                    <button role="tab" id="tab-fixed" aria-controls="panel-fixed" aria-selected="false" class="tab-btn" data-tab="fixed" tabindex="-1">Renda Fixa</button>
+                    <span class="tabs-group-label" aria-hidden="true">Análise</span>
+                    <button role="tab" id="tab-rebalance" aria-controls="panel-rebalance" aria-selected="false" class="tab-btn" data-tab="rebalance" tabindex="-1">Rebalancear</button>
+                    <button role="tab" id="tab-risk" aria-controls="panel-risk" aria-selected="false" class="tab-btn" data-tab="risk" tabindex="-1">Risco</button>
+                    <button role="tab" id="tab-montecarlo" aria-controls="panel-montecarlo" aria-selected="false" class="tab-btn" data-tab="montecarlo" tabindex="-1">Monte Carlo</button>
+                    <span class="tabs-group-label" aria-hidden="true">Mercado</span>
+                    <button role="tab" id="tab-benchmarks" aria-controls="panel-benchmarks" aria-selected="false" class="tab-btn" data-tab="benchmarks" tabindex="-1">Benchmarks</button>
+                    <button role="tab" id="tab-tax" aria-controls="panel-tax" aria-selected="false" class="tab-btn" data-tab="tax" tabindex="-1">Impostos</button>
+                    <span class="tabs-group-label" aria-hidden="true">Configurações</span>
+                    <button role="tab" id="tab-import" aria-controls="panel-import" aria-selected="false" class="tab-btn" data-tab="import" tabindex="-1">Importar</button>
+                    <button role="tab" id="tab-backup" aria-controls="panel-backup" aria-selected="false" class="tab-btn" data-tab="backup" tabindex="-1">Backup</button>
+                    <span class="tabs-group-label" aria-hidden="true">Eventos</span>
+                    <button role="tab" id="tab-corporate-events" aria-controls="panel-corporate-events" aria-selected="false" class="tab-btn" data-tab="corporate-events" tabindex="-1">Eventos Corp.</button>
+                    <span class="tabs-group-label" aria-hidden="true">Confiança</span>
+                    <button role="tab" id="tab-data-trust" aria-controls="panel-data-trust" aria-selected="false" class="tab-btn" data-tab="data-trust" tabindex="-1">Data Trust</button>
+                    <span class="tabs-group-label" aria-hidden="true">Backup</span>
+                    <button role="tab" id="tab-backup-portability" aria-controls="panel-backup-portability" aria-selected="false" class="tab-btn" data-tab="backup-portability" tabindex="-1">Backup Port.</button>
+                    <div class="tab-indicator"></div>
+                  </div>
+                </div>
+          </header>
+
+      <main id="main" class="main" role="main">
+              <div class="container">
+                <!-- Page Title - h1 semântico visível -->
+                <header class="page-header">
+                  <h1 class="page-title">Carteira de Investimentos</h1>
+                  <p class="page-subtitle" id="dataFreshnessLabel">Carteira consolidada • dados de 26/09/2026</p>
+                </header>
+
+      <!-- SUMMARY TAB -->
+      <section role="tabpanel" aria-labelledby="tab-summary" class="tab-panel active" id="panel-summary">
+        <!-- KPI Cards -->
+        <div class="kpi-grid" role="region" aria-label="Indicadores principais">
+          <article class="kpi-card kpi-card--primary">
+            <div class="kpi-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            </div>
+            <div class="kpi-content">
+              <p class="kpi-label">Patrimônio total</p>
+              <p class="kpi-value" id="kpiTotal">R$ 686.972,13</p>
+              <p class="kpi-change positive" id="kpiTotalChange">+1,77% <span class="kpi-period">(12M)</span></p>
+            </div>
+          </article>
+          <article class="kpi-card kpi-card--secondary">
+            <div class="kpi-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            </div>
+            <div class="kpi-content">
+              <p class="kpi-label">Valor investido</p>
+              <p class="kpi-value" id="kpiInvested">R$ 675.043,28</p>
+              <p class="kpi-change neutral">Capital aportado</p>
+            </div>
+          </article>
+          <article class="kpi-card kpi-card--secondary">
+            <div class="kpi-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+            </div>
+            <div class="kpi-content">
+              <p class="kpi-label">Lucro total</p>
+              <p class="kpi-value positive" id="kpiProfit">R$ 131.023,55</p>
+              <p class="kpi-change positive">+32,41% <span class="kpi-period">(Total)</span></p>
+            </div>
+          </article>
+          <article class="kpi-card kpi-card--secondary">
+            <div class="kpi-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/><circle cx="12" cy="12" r="3" fill="#34A853"/></svg>
+            </div>
+            <div class="kpi-content">
+              <p class="kpi-label">Ganho de Capital</p>
+              <p class="kpi-value" id="kpiCapitalGain">R$ 11.928,84</p>
+              <p class="kpi-change neutral">Realizado no período</p>
+            </div>
+          </article>
+          <article class="kpi-card kpi-card--secondary">
+            <div class="kpi-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/><path d="M12 8v4M10 12h4" stroke="#F9AB00" stroke-width="2"/></svg>
+            </div>
+            <div class="kpi-content">
+              <p class="kpi-label">Dividendos Recebidos</p>
+              <p class="kpi-value" id="kpiDividends">R$ 119.094,71</p>
+              <p class="kpi-change neutral">Acumulado histórico</p>
+            </div>
+          </article>
+          <article class="kpi-card kpi-card--secondary">
+            <div class="kpi-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <div class="kpi-content">
+              <p class="kpi-label">Proventos (12M)</p>
+              <p class="kpi-value" id="kpiEarnings12m">R$ 32.323,72</p>
+              <p class="kpi-change positive">Renda passiva anual</p>
+            </div>
+          </article>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="charts-grid">
+          <article class="chart-card" aria-labelledby="patrimonyTitle">
+            <header class="chart-header">
+              <h2 id="patrimonyTitle" class="chart-title">Evolução do Patrimônio</h2>
+              <div class="chart-actions">
+                <select class="chart-period" id="patrimonyPeriod" aria-label="Período">
+                  <option value="1m">1 Mês</option>
+                  <option value="3m">3 Meses</option>
+                  <option value="6m">6 Meses</option>
+                  <option value="12m" selected>12 Meses</option>
+                  <option value="all">Todo período</option>
+                </select>
+                <button class="btn btn-ghost btn-sm" aria-label="Expandir gráfico">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+                </button>
+              </div>
+            </header>
+            <div class="chart-container" role="img" aria-label="Gráfico de linha mostrando evolução do patrimônio total ao longo do tempo">
+              <canvas id="patrimonyChart" width="800" height="300"></canvas>
+              <div class="chart-legend" id="patrimonyLegend"></div>
+            </div>
+          </article>
+
+          <article class="chart-card" aria-labelledby="allocationTitle">
+            <header class="chart-header">
+              <h2 id="allocationTitle" class="chart-title">Alocação da Carteira</h2>
+              <div class="chart-actions">
+                <select class="chart-period" id="allocationView" aria-label="Visualização">
+                  <option value="asset" selected>Por Ativo</option>
+                  <option value="sector">Por Setor</option>
+                  <option value="class">Por Classe</option>
+                </select>
+              </div>
+            </header>
+            <div class="chart-container" role="img" aria-label="Gráfico de rosca mostrando alocação: Ações 45%, FIIs 25%, Renda Fixa 20%, ETFs 10%"><canvas id="allocationChart" width="400" height="300"></canvas></div>
+            <div class="chart-legend" id="allocationLegend"></div>
+            <button class="btn btn-ghost btn-sm" id="exportAllocationBtn" aria-label="Exportar alocação CSV" style="margin-top: var(--space-2);">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Exportar CSV
+            </button>
+          </article>
+        </div>
+
+        <!-- Returns Summary -->
+        <div class="returns-grid">
+          <article class="return-card" aria-labelledby="return12mTitle">
+            <header>
+              <h3 id="return12mTitle" class="return-title">Rentabilidade (12M)</h3>
+              <p class="return-subtitle">vs CDI: +2,3pp</p>
+            </header>
+            <div class="return-value positive" id="return12m">11,09%</div>
+            <div class="return-benchmarks">
+              <span class="benchmark"><span class="benchmark-dot" style="background:#1A73E8"></span> CDI: 8,79%</span>
+              <span class="benchmark"><span class="benchmark-dot" style="background:#EA4335"></span> IBOV: 14,22%</span>
+            </div>
+          </article>
+          <article class="return-card" aria-labelledby="returnTotalTitle">
+            <header>
+              <h3 id="returnTotalTitle" class="return-title">Rentabilidade Total</h3>
+              <p class="return-subtitle">Desde o primeiro aporte</p>
+            </header>
+            <div class="return-value positive" id="returnTotal">32,41%</div>
+            <div class="return-benchmarks">
+              <span class="benchmark"><span class="benchmark-dot" style="background:#1A73E8"></span> CDI: 18,45%</span>
+              <span class="benchmark"><span class="benchmark-dot" style="background:#EA4335"></span> IBOV: 28,10%</span>
+            </div>
+          </article>
+          <article class="return-card" aria-labelledby="yieldTitle">
+            <header>
+              <h3 id="yieldTitle" class="return-title">Dividend Yield (12M)</h3>
+              <p class="return-subtitle">Proventos / Patrimônio</p>
+            </header>
+            <div class="return-value" id="yield12m">4,71%</div>
+            <div class="return-benchmarks">
+              <span class="benchmark"><span class="benchmark-dot" style="background:#34A853"></span> IFIX: 6,82%</span>
+            </div>
+          </article>
+        </div>
+
+        <!-- Monthly Performance Table -->
+        <article class="table-card" aria-labelledby="monthlyTitle">
+          <header class="table-header">
+            <h2 id="monthlyTitle" class="table-title">Performance Mensal</h2>
+            <p class="table-subtitle">Valor aplicado vs Ganho de capital por mês</p>
+          </header>
+          <div class="table-wrapper">
+            <table class="data-table" id="monthlyTable">
+              <thead>
+                <tr>
+                  <th scope="col">Período</th>
+                  <th scope="col">Valor aplicado</th>
+                  <th scope="col">Ganho de Capital</th>
+                  <th scope="col">Rentabilidade</th>
+                </tr>
+              </thead>
+              <tbody id="monthlyBody"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <!-- POSITIONS TAB -->
+      <section role="tabpanel" aria-labelledby="tab-positions" class="tab-panel" id="panel-positions" hidden>
+        <div class="table-toolbar">
+          <div class="toolbar-search">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="search" id="positionsSearch" placeholder="Buscar ativo..." aria-label="Buscar ativos">
+          </div>
+          <div class="toolbar-filters">
+            <select class="filter-select" id="filterClass" aria-label="Filtrar por classe">
+              <option value="">Todas as classes</option>
+              <option value="stocks">Ações</option>
+              <option value="fiis">FIIs</option>
+              <option value="etfs">ETFs</option>
+              <option value="bdr">BDRs</option>
+              <option value="fixed">Renda Fixa</option>
+              <option value="crypto">Criptomoedas</option>
+            </select>
+            <select class="filter-select" id="filterSort" aria-label="Ordenar por">
+              <option value="value-desc">Maior valor</option>
+              <option value="value-asc">Menor valor</option>
+              <option value="return-desc">Maior rentabilidade</option>
+              <option value="return-asc">Menor rentabilidade</option>
+              <option value="name-asc">Nome (A-Z)</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table" id="positionsTable">
+            <thead>
+              <tr>
+                <th scope="col">Ativo</th>
+                <th scope="col">Classe</th>
+                <th scope="col">Qtd.</th>
+                <th scope="col">Preço médio</th>
+                <th scope="col">Preço atual</th>
+                <th scope="col">Valor total</th>
+                <th scope="col">P&L</th>
+                <th scope="col">Rentab.</th>
+                <th scope="col">% Carteira</th>
+                <th scope="col"><span class="visually-hidden">Ações</span></th>
+              </tr>
+            </thead>
+            <tbody id="positionsBody"></tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <div class="table-actions">
+            <button class="btn btn-ghost btn-sm" id="exportPositionsBtn" aria-label="Exportar posições CSV">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Exportar CSV
+            </button>
+          </div>
+          <p class="table-summary" id="positionsSummary">Mostrando 42 ativos • Valor total: R$ 675.043,28</p>
+          <nav class="pagination" aria-label="Paginação">
+            <button class="btn btn-ghost btn-sm" disabled aria-label="Página anterior"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+            <span class="page-info">Página 1 de 3</span>
+            <button class="btn btn-ghost btn-sm" aria-label="Próxima página"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
+          </nav>
+        </div>
+      </section>
+
+      <!-- EARNINGS TAB -->
+      <section role="tabpanel" aria-labelledby="tab-earnings" class="tab-panel" id="panel-earnings" hidden>
+        <div class="earnings-header">
+          <div class="earnings-summary">
+            <div class="earnings-kpi">
+              <p class="kpi-label">Total recebido</p>
+              <p class="kpi-value">R$ 119.094,71</p>
+            </div>
+            <div class="earnings-kpi">
+              <p class="kpi-label">Últimos 12 meses</p>
+              <p class="kpi-value">R$ 32.323,72</p>
+            </div>
+            <div class="earnings-kpi">
+              <p class="kpi-label">Próximos 30 dias</p>
+              <p class="kpi-value">R$ 4.210,50</p>
+            </div>
+            <div class="earnings-kpi">
+              <p class="kpi-label">Yield projetado</p>
+              <p class="kpi-value">4,71% a.a.</p>
+            </div>
+          </div>
+        </div>
+        <div class="table-toolbar">
+          <div class="toolbar-filters">
+            <select class="filter-select" id="earningsType" aria-label="Tipo de provento">
+              <option value="">Todos os tipos</option>
+              <option value="dividend">Dividendos</option>
+              <option value="jcp">JCP</option>
+              <option value="amortization">Amortização</option>
+              <option value="interest">Juros</option>
+            </select>
+            <select class="filter-select" id="earningsPeriod" aria-label="Período">
+              <option value="12m" selected>Últimos 12 meses</option>
+              <option value="2024">2024</option>
+              <option value="2023">2023</option>
+              <option value="all">Todo histórico</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table" id="earningsTable">
+            <thead>
+              <tr>
+                <th scope="col">Data</th>
+                <th scope="col">Ativo</th>
+                <th scope="col">Tipo</th>
+                <th scope="col">Valor/ação</th>
+                <th scope="col">Qtd.</th>
+                <th scope="col">Valor bruto</th>
+                <th scope="col">IR</th>
+                <th scope="col">Valor líquido</th>
+              </tr>
+            </thead>
+            <tbody id="earningsBody"></tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <div class="table-actions">
+            <button class="btn btn-ghost btn-sm" id="exportEarningsBtn" aria-label="Exportar proventos CSV">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Exportar CSV
+            </button>
+          </div>
+          <p class="table-summary" id="earningsSummary">Mostrando 156 proventos • Total líquido: R$ 119.094,71</p>
+          <nav class="pagination" aria-label="Paginação">
+            <button class="btn btn-ghost btn-sm" disabled aria-label="Página anterior"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+            <span class="page-info">Página 1 de 8</span>
+            <button class="btn btn-ghost btn-sm" aria-label="Próxima página"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
+          </nav>
+        </div>
+      </section>
+
+      <!-- PATRIMONY TAB -->
+      <section role="tabpanel" aria-labelledby="tab-patrimony" class="tab-panel" id="panel-patrimony" hidden>
+        <article class="chart-card full-width" aria-labelledby="patrimonyDetailTitle">
+          <header class="chart-header">
+            <h2 id="patrimonyDetailTitle" class="chart-title">Evolução Detalhada do Patrimônio</h2>
+            <div class="chart-actions">
+              <div class="benchmark-toggles" role="group" aria-label="Benchmarks">
+                <label class="toggle"><input type="checkbox" checked id="showCDI"><span>CDI</span></label>
+                <label class="toggle"><input type="checkbox" checked id="showIBOV"><span>IBOV</span></label>
+                <label class="toggle"><input type="checkbox" id="showIFIX"><span>IFIX</span></label>
+                <label class="toggle"><input type="checkbox" id="showSMLL"><span>SMLL</span></label>
+              </div>
+              <select class="chart-period" id="patrimonyDetailPeriod" aria-label="Período">
+                <option value="1m">1 Mês</option>
+                <option value="3m">3 Meses</option>
+                <option value="6m">6 Meses</option>
+                <option value="12m" selected>12 Meses</option>
+                <option value="all">Todo período</option>
+              </select>
+            </div>
+          </header>
+          <div class="chart-container large" role="img" aria-label="Gráfico de área comparando patrimônio com benchmarks"><canvas id="patrimonyDetailChart" width="1200" height="450"></canvas></div>
+          <div class="chart-legend" id="patrimonyDetailLegend"></div>
+        </article>
+      </section>
+
+      <!-- RETURNS TAB -->
+      <section role="tabpanel" aria-labelledby="tab-returns" class="tab-panel" id="panel-returns" hidden>
+        <div class="returns-layout">
+          <aside class="returns-sidebar" aria-labelledby="returnsFiltersTitle">
+            <h3 id="returnsFiltersTitle" class="sidebar-title">Filtros</h3>
+            <div class="filter-group">
+              <label for="returnPeriod">Período</label>
+              <select id="returnPeriod" class="filter-select">
+                <option value="1m">1 Mês</option>
+                <option value="3m">3 Meses</option>
+                <option value="6m">6 Meses</option>
+                <option value="12m" selected>12 Meses</option>
+                <option value="ytd">Ano atual</option>
+                <option value="all">Todo período</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="returnMethod">Metodologia</label>
+              <select id="returnMethod" class="filter-select">
+                <option value="twrr" selected>TWRR (Tempo ponderado)</option>
+                <option value="mwrr">MWRR (Dinheiro ponderado)</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="returnBenchmark">Benchmark</label>
+              <select id="returnBenchmark" class="filter-select">
+                <option value="cdi" selected>CDI</option>
+                <option value="ibov">IBOVESPA</option>
+                <option value="ifix">IFIX</option>
+                <option value="smll">SMLL</option>
+              </select>
+            </div>
+          </aside>
+          <div class="returns-content">
+            <article class="chart-card" aria-labelledby="returnChartTitle">
+              <header class="chart-header">
+                <h2 id="returnChartTitle" class="chart-title">Rentabilidade Acumulada</h2>
+              </header>
+              <div class="chart-container" role="img" aria-label="Gráfico de rentabilidade acumulada da carteira vs CDI"><canvas id="returnChart" width="800" height="350"></canvas></div>
+              <div class="chart-legend" id="returnLegend"></div>
+            </article>
+            <div class="returns-metrics">
+              <article class="metric-card" aria-labelledby="twrrTitle">
+                <h3 id="twrrTitle">TWRR</h3>
+                <p class="metric-value positive" id="twrrValue">11,09%</p>
+                <p class="metric-label">Rentabilidade ponderada pelo tempo</p>
+              </article>
+              <article class="metric-card" aria-labelledby="mwrrTitle">
+                <h3 id="mwrrTitle">MWRR</h3>
+                <p class="metric-value positive" id="mwrrValue">10,42%</p>
+                <p class="metric-label">Rentabilidade ponderada pelo dinheiro</p>
+              </article>
+              <article class="metric-card" aria-labelledby="alphaTitle">
+                <h3 id="alphaTitle">Alpha</h3>
+                <p class="metric-value positive" id="alphaValue">+2,30pp</p>
+                <p class="metric-label">Excesso vs CDI</p>
+              </article>
+              <article class="metric-card" aria-labelledby="sharpeTitle">
+                <h3 id="sharpeTitle">Sharpe</h3>
+                <p class="metric-value" id="sharpeValue">1,24</p>
+                <p class="metric-label">Retorno ajustado ao risco</p>
+              </article>
+            </div>
+            <article class="table-card" aria-labelledby="assetReturnTitle">
+              <header class="table-header">
+                <h2 id="assetReturnTitle" class="table-title">Rentabilidade por Ativo</h2>
+              </header>
+              <div class="table-wrapper">
+                <table class="data-table" id="assetReturnTable">
+                  <thead>
+                    <tr>
+                      <th scope="col">Ativo</th>
+                      <th scope="col">Classe</th>
+                      <th scope="col">Peso</th>
+                      <th scope="col">Rentab. (12M)</th>
+                      <th scope="col">Contribuição</th>
+                      <th scope="col">Benchmark</th>
+                      <th scope="col">Alpha</th>
+                    </tr>
+                  </thead>
+                  <tbody id="assetReturnBody"></tbody>
+                </table>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ENTRIES TAB -->
+      <section role="tabpanel" aria-labelledby="tab-entries" class="tab-panel" id="panel-entries" hidden>
+        <div class="table-toolbar">
+          <div class="toolbar-filters">
+            <select class="filter-select" id="entriesType" aria-label="Tipo de lançamento">
+              <option value="">Todos os tipos</option>
+              <option value="buy">Compra</option>
+              <option value="sell">Venda</option>
+              <option value="subscription">Subscrição</option>
+              <option value="bonus">Bonificação</option>
+              <option value="amortization">Amortização</option>
+              <option value="split">Desdobramento</option>
+              <option value="merge">Grupamento</option>
+            </select>
+            <select class="filter-select" id="entriesPeriod" aria-label="Período">
+              <option value="30d" selected>Últimos 30 dias</option>
+              <option value="90d">Últimos 90 dias</option>
+              <option value="12m">Últimos 12 meses</option>
+              <option value="all">Todo histórico</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" id="addEntryBtn2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Novo lançamento
+          </button>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table" id="entriesTable">
+            <thead>
+              <tr>
+                <th scope="col">Data</th>
+                <th scope="col">Ativo</th>
+                <th scope="col">Tipo</th>
+                <th scope="col">Qtd.</th>
+                <th scope="col">Preço</th>
+                <th scope="col">Valor</th>
+                <th scope="col">Taxas</th>
+                <th scope="col">Origem</th>
+                <th scope="col"><span class="visually-hidden">Ações</span></th>
+              </tr>
+            </thead>
+            <tbody id="entriesBody"></tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <div class="table-actions">
+            <button class="btn btn-ghost btn-sm" id="exportEntriesBtn" aria-label="Exportar lançamentos CSV">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Exportar CSV
+            </button>
+          </div>
+          <p class="table-summary" id="entriesSummary">Mostrando 245 lançamentos</p>
+          <nav class="pagination" aria-label="Paginação">
+            <button class="btn btn-ghost btn-sm" disabled aria-label="Página anterior"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+            <span class="page-info">Página 1 de 13</span>
+            <button class="btn btn-ghost btn-sm" aria-label="Próxima página"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
+          </nav>
+        </div>
+      </section>
+
+      <section role="tabpanel" aria-labelledby="tab-rebalance" class="tab-panel" id="panel-rebalance" hidden>
+        <div class="panel-header" style="margin-bottom: var(--space-4)">
+          <h2 style="font-size: var(--font-size-xl);margin:0 0 var(--space-1)">Rebalanceamento vs Meta</h2>
+          <p class="text-muted" id="rebalanceSummary" style="margin:0">Distribuição alvo definida nas metas da carteira.</p>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table" id="rebalanceTable">
+            <thead>
+              <tr>
+                <th scope="col">Classe</th>
+                <th scope="col">Atual %</th>
+                <th scope="col">Meta %</th>
+                <th scope="col">Diferença</th>
+                <th scope="col">Valor atual</th>
+                <th scope="col">Para meta</th>
+                <th scope="col">Ação</th>
+              </tr>
+            </thead>
+            <tbody id="rebalanceBody"></tbody>
+          </table>
+        </div>
+        <div class="card" style="margin-top: var(--space-6);padding: var(--space-6)">
+          <h3 style="margin:0 0 var(--space-3)">Aporte sugerido</h3>
+          <label for="rebalanceAporte">Quanto quer aportar? <input type="number" id="rebalanceAporte" value="1000" min="0" step="100" style="width:140px;margin-left:8px"></label>
+          <div id="rebalanceAllocation" style="margin-top: var(--space-4)"></div>
+        </div>
+      </section>
+
+      <section role="tabpanel" aria-labelledby="tab-fixed" class="tab-panel" id="panel-fixed" hidden>
+        <div class="panel-header" style="margin-bottom: var(--space-4)">
+          <h2 style="font-size: var(--font-size-xl);margin:0 0 var(--space-1)">Renda Fixa</h2>
+          <p class="text-muted" style="margin:0">Posições por indexador e vencimento.</p>
+        </div>
+        <div class="kpi-grid" id="fixedKpis" style="margin-bottom: var(--space-4)"></div>
+        <div class="card" style="padding: var(--space-6);margin-bottom: var(--space-4)">
+          <h3 style="margin:0 0 var(--space-3)">Por Indexador</h3>
+          <div id="fixedByIndexer"></div>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table" id="fixedTable">
+            <thead>
+              <tr>
+                <th scope="col">Título</th>
+                <th scope="col">Emissor</th>
+                <th scope="col">Taxa</th>
+                <th scope="col">Aplicação</th>
+                <th scope="col">Vencimento</th>
+                <th scope="col">Aplicado</th>
+                <th scope="col">Atual</th>
+                <th scope="col">Rentab.</th>
+              </tr>
+            </thead>
+            <tbody id="fixedBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- NOVOS PAINÉIS: Risco, Monte Carlo, Benchmarks, Impostos -->
+    <section role="tabpanel" aria-labelledby="tab-risk" class="tab-panel" id="panel-risk" hidden>
+    <div class="panel-header" style="margin-bottom: var(--space-4)">
+      <h2 style="font-size: var(--font-size-xl);margin:0 0 var(--space-1)">Análise de Risco</h2>
+      <p class="text-muted" style="margin:0">VaR, Sharpe, Sortino, Max Drawdown, Beta vs Benchmarks</p>
+    </div>
+    <div class="kpi-grid" id="riskKpis" style="margin-bottom: var(--space-4)"></div>
+    <div class="card" style="padding: var(--space-6);margin-bottom: var(--space-4)">
+      <h3 style="margin:0 0 var(--space-3)">Correlation Matrix</h3>
+      <div id="correlationMatrix" style="overflow-x:auto"></div>
+    </div>
+    <div class="card" style="padding: var(--space-6)">
+      <h3 style="margin:0 0 var(--space-3)">Rolling Metrics (63 dias)</h3>
+      <canvas id="rollingChart" height="300"></canvas>
+    </div>
+  </section>
+
+  <section role="tabpanel" aria-labelledby="tab-montecarlo" class="tab-panel" id="panel-montecarlo" hidden>
+    <div class="panel-header" style="margin-bottom: var(--space-4)">
+      <h2 style="font-size: var(--font-size-xl);margin:0 0 var(--space-1)">Projeção Monte Carlo</h2>
+      <p class="text-muted" style="margin:0">Simulação estocástica 10.000+ cenários - Cone de confiança 10-30 anos</p>
+    </div>
+    <div class="card" style="padding: var(--space-4);margin-bottom: var(--space-4)">
+      <div class="form-row" style="gap: var(--space-4); flex-wrap: wrap; align-items: end">
+        <div class="form-group" style="flex:1;min-width:150px">
+          <label>Horizonte (anos)</label>
+          <input type="number" id="mcHorizon" value="30" min="1" max="50" style="width:100px">
+        </div>
+        <div class="form-group" style="flex:1;min-width:150px">
+          <label>Valor Inicial (R$)</label>
+          <input type="number" id="mcInitial" value="500000" min="0" step="1000" style="width:140px">
+        </div>
+        <div class="form-group" style="flex:1;min-width:150px">
+          <label>Aporte Mensal (R$)</label>
+          <input type="number" id="mcMonthly" value="5000" min="0" step="100" style="width:140px">
+        </div>
+        <div class="form-group" style="flex:1;min-width:150px">
+          <label>Retorno Esperado (% a.a.)</label>
+          <input type="number" id="mcReturn" value="12" min="0" max="50" step="0.5" style="width:100px">
+        </div>
+        <div class="form-group" style="flex:1;min-width:150px">
+          <label>Volatilidade (% a.a.)</label>
+          <input type="number" id="mcVol" value="18" min="0" max="100" step="0.5" style="width:100px">
+        </div>
+        <button class="btn btn-primary" id="btnRunMC" style="height:38px">Executar Simulação</button>
+      </div>
+    </div>
+    <div class="kpi-grid" id="mcKpis" style="margin-bottom: var(--space-4)"></div>
+    <div class="card" style="padding: var(--space-6)">
+      <canvas id="mcChart" height="400"></canvas>
+    </div>
+  </section>
+
+  <section role="tabpanel" aria-labelledby="tab-benchmarks" class="tab-panel" id="panel-benchmarks" hidden>
+    <div class="panel-header" style="margin-bottom: var(--space-4)">
+      <h2 style="font-size: var(--font-size-xl);margin:0 0 var(--space-1)">Benchmarks</h2>
+      <p class="text-muted" style="margin:0">CDI, IBOV, IFIX, SMLL, IDIV, IMAB, BTC, DOL, USD/BRL</p>
+    </div>
+    <div class="card" style="padding: var(--space-4);margin-bottom: var(--space-4)">
+      <button class="btn btn-primary btn-sm" id="btnFetchBenchmarks">Atualizar Benchmarks</button>
+      <span class="text-muted" style="margin-left:var(--space-3)" id="benchStatus"></span>
+    </div>
+    <div class="kpi-grid" id="benchKpis" style="margin-bottom: var(--space-4)"></div>
+    <div class="card" style="padding: var(--space-6);margin-bottom: var(--space-4)">
+      <h3 style="margin:0 0 var(--space-3)">Comparação vs Carteira</h3>
+      <div id="benchComparison"></div>
+    </div>
+    <div class="table-wrapper">
+      <table class="data-table" id="benchTable">
+        <thead>
+          <tr>
+            <th>Benchmark</th>
+            <th>Preço Atual</th>
+            <th>1D %</th>
+            <th>YTD %</th>
+            <th>Vol %</th>
+            <th>Sharpe</th>
+            <th>Max DD %</th>
+            <th>Fonte</th>
+          </tr>
+        </thead>
+        <tbody id="benchBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section role="tabpanel" aria-labelledby="tab-tax" class="tab-panel" id="panel-tax" hidden>
+    <div class="panel-header" style="margin-bottom: var(--space-4)">
+      <h2 style="font-size: var(--font-size-xl);margin:0 0 var(--space-1)">Central de Impostos (IRPF)</h2>
+      <p class="text-muted" style="margin:0">DARF mensal, GCAP, Carnê-Leão, Declaração pré-preenchida</p>
+    </div>
+    <div class="card" style="padding: var(--space-4);margin-bottom: var(--space-4)">
+      <div class="form-row" style="gap: var(--space-4); flex-wrap: wrap; align-items: end">
+        <div class="form-group" style="flex:1;min-width:200px">
+          <label>Ano-Calendário</label>
+          <input type="number" id="taxYear" value="2024" min="2020" max="2030" step="1" style="width:100px">
+        </div>
+        <button class="btn btn-primary" id="btnProcessTax">Processar Ano</button>
+        <button class="btn btn-secondary" id="btnExportIRPF">Exportar XML IRPF</button>
+        <button class="btn btn-secondary" id="btnExportDARF">Gerar DARFs</button>
+      </div>
+    </div>
+    <div class="kpi-grid" id="taxKpis" style="margin-bottom: var(--space-4)"></div>
+    <div class="card" style="padding: var(--space-6);margin-bottom: var(--space-4)">
+      <h3 style="margin:0 0 var(--space-3)">DARFs do Ano</h3>
+      <div class="table-wrapper">
+        <table class="data-table" id="darfTable">
+          <thead>
+            <tr>
+              <th>Mês</th>
+              <th>Valor (R$)</th>
+              <th>Código</th>
+              <th>Vencimento</th>
+              <th>Detalhamento</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+          <tbody id="darfBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card" style="padding: var(--space-6);margin-bottom: var(--space-4)">
+      <h3 style="margin:0 0 var(--space-3)">GCAP (Ganho de Capital)</h3>
+      <div class="table-wrapper">
+        <table class="data-table" id="gcapTable">
+          <thead>
+            <tr>
+              <th>Mês</th>
+              <th>Tipo</th>
+              <th>Ganho (R$)</th>
+              <th>Imposto (R$)</th>
+              <th>Código</th>
+              <th>Vencimento</th>
+            </tr>
+          </thead>
+          <tbody id="gcapBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card" style="padding: var(--space-6)">
+      <h3 style="margin:0 0 var(--space-3)">Resumo Anual IRPF</h3>
+      <div id="taxSummary"></div>
+    </div>
+  </section>
+    </div>
+  
+  <!-- IMPORT TAB -->
+  <section role="tabpanel" aria-labelledby="tab-import" class="tab-panel" id="panel-import" hidden>
+    <div class="panel-header" style="margin-bottom: var(--space-4)">
+      <h2 style="font-size: var(--font-size-xl);margin:0 0 var(--space-1)">Centro de Importação</h2>
+      <p class="text-muted" style="margin:0">Importação multi-fonte: B3 (JSON/CSV), XP/Inter/Rico/Clear (CSV), brapi.dev (preços)</p>
+    </div>
+
+    <!-- Upload Area -->
+    <div class="card dropzone" id="importDropzone" style="border:2px dashed var(--color-border);padding:var(--space-8);text-align:center;margin-bottom:var(--space-6);position:relative;">
+      <input type="file" id="importFile" accept=".json,.csv,.xlsx,.xls" hidden>
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--color-muted);margin-bottom:var(--space-3)">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      <p style="margin:0 0 var(--space-2);color:var(--color-muted)">Arraste arquivo aqui ou <strong>clique para selecionar</strong></p>
+      <p style="margin:0;color:var(--color-muted);font-size:var(--font-size-sm)">Formatos: JSON (backup Investidor10), CSV (B3, corretoras), Excel</p>
+      <div id="importDetectedFormat" style="margin-top:var(--space-3);font-size:var(--font-size-sm);color:var(--color-primary);display:none;"></div>
+    </div>
+
+    <!-- Preview Section -->
+    <div id="importPreviewSection" style="display:none;">
+      <h3 style="margin:0 0 var(--space-3)">Prévia dos Dados</h3>
+      <div class="table-wrapper" style="max-height:300px;overflow:auto;">
+        <table class="data-table" id="importPreviewTable">
+                  <thead>
+                    <tr>
+                      <th scope="col">Ticker</th>
+                      <th scope="col">Nome</th>
+                      <th scope="col">Classe</th>
+                      <th scope="col">Atual (Qtd / PM / Valor)</th>
+                      <th scope="col">Novo (Qtd / PM / Valor)</th>
+                      <th scope="col">Var. %</th>
+                      <th scope="col">Origem</th>
+                      <th scope="col">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="importPreviewBody"></tbody>
+                </table>
+      </div>
+      <div style="display:flex;gap:var(--space-3);justify-content:flex-end;margin-top:var(--space-4);">
+        <button class="btn btn-secondary" id="btnCancelImport">Cancelar</button>
+        <button class="btn btn-primary" id="btnConfirmImport">Confirmar Importação</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- BACKUP TAB -->
+  <section role="tabpanel" aria-labelledby="tab-backup" class="tab-panel" id="panel-backup" hidden>
+    <div class="panel-header" style="margin-bottom: var(--space-4)">
+      <h2 style="font-size: var(--font-size-xl);margin:0 0 var(--space-1)">Backup & Portabilidade</h2>
+      <p class="text-muted" style="margin:0">Exportar/Importar carteira completa com validação de schema</p>
+    </div>
+
+    <!-- Export Section -->
+    <div class="card" style="margin-bottom:var(--space-6);">
+      <h3 style="margin:0 0 var(--space-3)">Exportar Backup</h3>
+      <div style="display:flex;gap:var(--space-3);flex-wrap:wrap;margin-bottom:var(--space-4);">
+        <button class="btn btn-primary" id="btnExportJSON">JSON Completo</button>
+        <button class="btn btn-secondary" id="btnExportCSV">CSV (por tabela)</button>
+        <button class="btn btn-secondary" id="btnExportExcel">Excel (multi-aba)</button>
+      </div>
+      <p class="text-muted" style="font-size:var(--font-size-sm);margin:0">JSON: carteira + configurações + histórico | CSV: posições, proventos, lançamentos separados | Excel: todas as abas em um arquivo</p>
+    </div>
+
+    <!-- Import Backup Section -->
+    <div class="card">
+      <h3 style="margin:0 0 var(--space-3)">Importar Backup</h3>
+      <form id="backupImportForm" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:var(--space-3);">
+        <div class="form-group">
+          <label for="backupFile">Arquivo de Backup *</label>
+          <input type="file" id="backupFile" accept=".json" required>
+        </div>
+        <div class="form-group" style="display:flex;align-items:end;">
+          <button type="submit" class="btn btn-primary" style="width:100%">Importar Backup</button>
+        </div>
+      </form>
+      <div id="backupImportResult" style="margin-top:var(--space-3);display:none;"></div>
+    </div>
+  </section>
+
+  <!-- CORPORATE EVENTS TAB -->
+  <section role="tabpanel" aria-labelledby="tab-corporate-events" class="tab-panel" id="panel-corporate-events" hidden>
+    <div class="panel-header" style="margin-bottom: var(--space-4)">
+      <h2 style="font-size: var(--font-size-xl);margin:0 0 var(--space-1)">Eventos Corporativos</h2>
+      <p class="text-muted" style="margin:0">Detecção automática via B3, aplicação de split/merge/bonificação/subscrição/amortização</p>
+    </div>
+
+    <!-- Upload CSV B3 Events -->
+    <div class="card dropzone" id="corpEventsDropzone" style="border:2px dashed var(--color-border);padding:var(--space-8);text-align:center;margin-bottom:var(--space-6);position:relative;">
+      <input type="file" id="corpEventsFile" accept=".csv" hidden>
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--color-muted);margin-bottom:var(--space-3)">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      <p style="margin:0 0 var(--space-2);color:var(--color-muted)">Arraste CSV de <strong>Eventos B3</strong> aqui</p>
+      <p style="margin:0;color:var(--color-muted);font-size:var(--font-size-sm)">Colunas: Tipo;Data;Ativo;Quantidade;Preço;Fator</p>
+      <div id="corpEventsDetected" style="margin-top:var(--space-3);font-size:var(--font-size-sm);color:var(--color-primary);display:none;"></div>
+    </div>
+
+    <!-- Events Log Table -->
+    <div id="corpEventsLogSection" style="display:none;">
+      <h3 style="margin:0 0 var(--space-3)">Eventos Processados</h3>
+      <div class="table-wrapper">
+        <table class="data-table" id="corpEventsLogTable">
+          <thead>
+            <tr>
+              <th scope="col">Data</th>
+              <th scope="col">Tipo</th>
+              <th scope="col">Ativo</th>
+              <th scope="col">Detalhes</th>
+              <th scope="col">Qtd Antiga</th>
+              <th scope="col">Qtd Nova</th>
+              <th scope="col">PM Antigo</th>
+              <th scope="col">PM Novo</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody id="corpEventsLogBody"></tbody>
+        </table>
+      </div>
+      <div style="display:flex;gap:var(--space-3);justify-content:flex-end;margin-top:var(--space-4);">
+        <button class="btn btn-secondary" id="btnClearCorpEvents">Limpar Log</button>
+        <button class="btn btn-primary" id="btnApplyCorpEvents">Aplicar à Carteira</button>
+      </div>
+    </div>
+
+    <!-- Manual Event Entry -->
+    <div class="card" style="margin-top:var(--space-6);">
+      <h3 style="margin:0 0 var(--space-3)">Adicionar Evento Manual</h3>
+      <form id="manualEventForm" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--space-3);">
+        <div class="form-group">
+          <label for="manualEventType">Tipo *</label>
+          <select id="manualEventType" required>
+            <option value="">Selecione</option>
+            <option value="split">Split (Desdobramento)</option>
+            <option value="merge">Merge (Grupamento)</option>
+            <option value="bonus">Bonificação</option>
+            <option value="subscription">Subscrição</option>
+            <option value="amortization">Amortização</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="manualEventTicker">Ticker *</label>
+          <input type="text" id="manualEventTicker" placeholder="PETR4" required style="text-transform:uppercase">
+        </div>
+        <div class="form-group">
+          <label for="manualEventDate">Data *</label>
+          <input type="date" id="manualEventDate" required>
+        </div>
+        <div class="form-group">
+          <label for="manualEventQty">Quantidade/Fator *</label>
+          <input type="number" id="manualEventQty" step="0.01" required>
+        </div>
+        <div class="form-group">
+          <label for="manualEventPrice">Preço (subscrição/amortização)</label>
+          <input type="number" id="manualEventPrice" step="0.01">
+        </div>
+        <div class="form-group" style="display:flex;align-items:end;">
+          <button type="submit" class="btn btn-primary" style="width:100%">Adicionar Evento</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+
+  <!-- DATA TRUST TAB -->
+  <section role="tabpanel" aria-labelledby="tab-data-trust" class="tab-panel" id="panel-data-trust" hidden>
+    <div class="panel-header" style="margin-bottom: var(--space-4)">
+      <h2 style="font-size: var(--font-size-xl);margin:0 0 var(--space-1)">Data Trust Center</h2>
+      <p class="text-muted" style="margin:0">Scoring de confiança por ativo+fonte, auditoria de snapshots, alertas STALE/PARTIAL</p>
+    </div>
+
+    <!-- Portfolio Confidence Overview -->
+    <div class="card" style="margin-bottom:var(--space-6);">
+      <h3 style="margin:0 0 var(--space-3)">Confiança da Carteira</h3>
+      <div id="portfolioConfidenceSummary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--space-4);">
+        <!-- Filled by JS -->
+      </div>
+    </div>
+
+    <!-- NOVO — FASE 15: Alertas de Auditoria (DataTrustEngine) -->
+    <div class="card" style="margin-top:var(--space-6);">
+      <h3 style="margin:0 0 var(--space-3)">Alertas de Qualidade de Dados</h3>
+      <div id="dataTrustAlertsSummary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--space-3);margin-bottom:var(--space-4);">
+        <!-- Contadores por severidade -->
+      </div>
+      <div id="dataTrustAlertsList" style="max-height:420px;overflow-y:auto;">
+        <!-- Lista de alertas -->
+      </div>
+    </div>
+
+    <!-- Assets Confidence Table -->
+    <div class="card" style="margin-top:var(--space-6);">
+      <h3 style="margin:0 0 var(--space-3)">Confiança por Ativo</h3>
+      <div class="table-wrapper">
+        <table class="data-table" id="dataTrustTable">
+          <thead>
+            <tr>
+              <th scope="col">Ticker</th>
+              <th scope="col">Nome</th>
+              <th scope="col">Fonte</th>
+              <th scope="col">Score</th>
+              <th scope="col">Nível</th>
+              <th scope="col">Fatores</th>
+              <th scope="col">Última Atualização</th>
+            </tr>
+          </thead>
+          <tbody id="dataTrustBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Audit Snapshots -->
+    <div class="card" style="margin-top:var(--space-6);">
+      <h3 style="margin:0 0 var(--space-3)">Auditoria de Snapshots</h3>
+      <div style="display:flex;gap:var(--space-3);margin-bottom:var(--space-3);">
+        <button class="btn btn-secondary" id="btnRefreshAudit">Atualizar</button>
+        <button class="btn btn-secondary" id="btnVerifyIntegrity">Verificar Integridade</button>
+        <button class="btn btn-primary" id="btnCreateSnapshot">Criar Snapshot Manual</button>
+      </div>
+      <div class="table-wrapper">
+        <table class="data-table" id="auditSnapshotsTable">
+          <thead>
+            <tr>
+              <th scope="col">Timestamp</th>
+              <th scope="col">Tipo</th>
+              <th scope="col">Ativos</th>
+              <th scope="col">Valor Total</th>
+              <th scope="col">Hash</th>
+              <th scope="col">Metadados</th>
+            </tr>
+          </thead>
+          <tbody id="auditSnapshotsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Data Freshness -->
+    <div class="card" style="margin-top:var(--space-6);">
+      <h3 style="margin:0 0 var(--space-3)">Freshness dos Dados</h3>
+      <div id="dataFreshnessSummary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--space-3);margin-bottom:var(--space-4);">
+        <!-- Filled by JS -->
+      </div>
+      <div class="table-wrapper" style="max-height:200px;overflow:auto;">
+        <table class="data-table" id="dataFreshnessTable">
+          <thead>
+            <tr>
+              <th scope="col">Ticker</th>
+              <th scope="col">Status</th>
+              <th scope="col">Dias</th>
+            </tr>
+          </thead>
+          <tbody id="dataFreshnessBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- BACKUP PORTABILITY TAB -->
+  <section role="tabpanel" aria-labelledby="tab-backup-portability" class="tab-panel" id="panel-backup-portability" hidden>
+    <div class="panel-header" style="margin-bottom: var(--space-4)">
+      <h2 style="font-size: var(--font-size-xl);margin:0 0 var(--space-1)">Backup & Portabilidade Avançada</h2>
+      <p class="text-muted" style="margin:0">Exportar/Importar JSON, CSV por tabela, Excel multi-aba com validação de schema e migração de versão</p>
+    </div>
+
+    <!-- Export Section -->
+    <div class="card" style="margin-bottom:var(--space-6);">
+      <h3 style="margin:0 0 var(--space-3)">Exportar Backup</h3>
+      <div style="display:flex;gap:var(--space-3);flex-wrap:wrap;margin-bottom:var(--space-4);">
+        <button class="btn btn-primary" id="btnExportJSONPort">JSON Completo (v2)</button>
+        <button class="btn btn-secondary" id="btnExportCSVPort">CSV (por tabela)</button>
+        <button class="btn btn-secondary" id="btnExportExcelPort">Excel (multi-aba)</button>
+      </div>
+      <p class="text-muted" style="font-size:var(--font-size-sm);margin:0">JSON v2: schema validado, versão migrada | CSV: posições, proventos, lançamentos, mensal, patrimônio, alocação | Excel: todas as abas + KPIs + configurações</p>
+    </div>
+
+    <!-- Import Section -->
+    <div class="card" style="margin-bottom:var(--space-6);">
+      <h3 style="margin:0 0 var(--space-3)">Importar Backup</h3>
+      <form id="backupPortabilityImportForm" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:var(--space-3);">
+        <div class="form-group">
+          <label for="backupPortabilityFile">Arquivo JSON *</label>
+          <input type="file" id="backupPortabilityFile" accept=".json" required>
+          <p class="form-hint">Apenas JSON v1/v2 com schema válido</p>
+        </div>
+        <div class="form-group" style="display:flex;align-items:end;">
+          <button type="submit" class="btn btn-primary" style="width:100%">Importar & Validar</button>
+        </div>
+      </form>
+      <div id="backupPortabilityResult" style="margin-top:var(--space-3);display:none;"></div>
+    </div>
+
+    <!-- Schema Validation Section -->
+    <div class="card" style="margin-bottom:var(--space-6);">
+      <h3 style="margin:0 0 var(--space-3)">Validação de Schema</h3>
+      <div style="display:flex;gap:var(--space-3);margin-bottom:var(--space-3);">
+        <button class="btn btn-secondary" id="btnValidateCurrent">Validar Dados Atuais</button>
+        <button class="btn btn-secondary" id="btnCheckVersion">Verificar Versão</button>
+      </div>
+      <div id="schemaValidationResult" style="display:none;"></div>
+    </div>
+
+    <!-- Migration Log -->
+    <div class="card">
+      <h3 style="margin:0 0 var(--space-3)">Histórico de Migrações</h3>
+      <div class="table-wrapper">
+        <table class="data-table" id="migrationLogTable">
+          <thead>
+            <tr>
+              <th scope="col">Timestamp</th>
+              <th scope="col">De Versão</th>
+              <th scope="col">Para Versão</th>
+              <th scope="col">Status</th>
+              <th scope="col">Detalhes</th>
+            </tr>
+          </thead>
+          <tbody id="migrationLogBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+  <!-- MODAL: NEW ENTRY -->
+  <dialog id="entryModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-backdrop" tabindex="-1"></div>
+    <div class="modal-content">
+      <header class="modal-header">
+        <h2 id="modalTitle">Novo lançamento</h2>
+        <button class="modal-close" aria-label="Fechar modal">&times;</button>
+      </header>
+      <form class="modal-form" id="entryForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="entryType">Tipo *</label>
+            <select id="entryType" name="type" required>
+              <option value="">Selecione</option>
+              <option value="buy">Compra</option>
+              <option value="sell">Venda</option>
+              <option value="subscription">Subscrição</option>
+              <option value="bonus">Bonificação</option>
+              <option value="amortization">Amortização</option>
+              <option value="split">Desdobramento</option>
+              <option value="merge">Grupamento</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="entryDate">Data *</label>
+            <input type="date" id="entryDate" name="date" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="entryAsset">Ativo *</label>
+            <input type="text" id="entryAsset" name="asset" placeholder="Ex: PETR4, HGLG11, IVVB11" required autocomplete="off">
+            <datalist id="assetList"></datalist>
+          </div>
+          <div class="form-group">
+            <label for="entryClass">Classe</label>
+            <select id="entryClass" name="class">
+              <option value="">Auto</option>
+              <option value="stocks">Ações</option>
+              <option value="fiis">FIIs</option>
+              <option value="etfs">ETFs</option>
+              <option value="bdr">BDRs</option>
+              <option value="fixed">Renda Fixa</option>
+              <option value="crypto">Criptomoedas</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="entryQty">Quantidade *</label>
+            <input type="number" id="entryQty" name="qty" min="0.0001" step="0.0001" required>
+          </div>
+          <div class="form-group">
+            <label for="entryPrice">Preço unitário *</label>
+            <input type="number" id="entryPrice" name="price" min="0.01" step="0.01" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="entryFees">Taxas/Corretagem</label>
+            <input type="number" id="entryFees" name="fees" min="0" step="0.01" value="0">
+          </div>
+          <div class="form-group">
+            <label for="entrySource">Origem</label>
+            <select id="entrySource" name="source">
+              <option value="manual">Manual</option>
+              <option value="b3">Importado B3</option>
+              <option value="cei">Importado CEI</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary modal-close">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar lançamento</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- MODAL: EDIT POSITION -->
+  <dialog id="positionModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="positionModalTitle">
+    <div class="modal-backdrop" tabindex="-1"></div>
+    <div class="modal-content">
+      <header class="modal-header">
+        <h2 id="positionModalTitle">Editar posição</h2>
+        <button class="modal-close" aria-label="Fechar modal">&times;</button>
+      </header>
+      <form class="modal-form" id="positionForm">
+        <input type="hidden" id="positionIndex" name="index">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="positionAsset">Ativo *</label>
+            <input type="text" id="positionAsset" name="asset" required readonly>
+          </div>
+          <div class="form-group">
+            <label for="positionClass">Classe</label>
+            <select id="positionClass" name="class" disabled>
+              <option value="stocks">Ações</option>
+              <option value="fiis">FIIs</option>
+              <option value="etfs">ETFs</option>
+              <option value="fixed">Renda Fixa</option>
+              <option value="crypto">Criptomoedas</option>
+              <option value="bdr">BDRs</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="positionQty">Quantidade *</label>
+            <input type="number" id="positionQty" name="qty" min="0.0001" step="0.0001" required>
+          </div>
+          <div class="form-group">
+            <label for="positionAvgPrice">Preço médio *</label>
+            <input type="number" id="positionAvgPrice" name="avgPrice" min="0.01" step="0.01" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="positionCurrentPrice">Preço atual</label>
+            <input type="number" id="positionCurrentPrice" name="currentPrice" min="0.01" step="0.01">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary modal-close">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar posição</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- MODAL: IMPORT CSV -->
+  <dialog id="importModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="importModalTitle">
+    <div class="modal-backdrop" tabindex="-1"></div>
+    <div class="modal-content" style="max-width: 560px;">
+      <header class="modal-header">
+        <h2 id="importModalTitle">Importar CSV</h2>
+        <button class="modal-close" aria-label="Fechar modal">&times;</button>
+      </header>
+      <form class="modal-form" id="importForm">
+        <div class="form-group">
+          <label for="importType">Tipo de dados *</label>
+          <select id="importType" name="type" required>
+            <option value="">Selecione</option>
+            <option value="positions">Posições (ativos)</option>
+            <option value="earnings">Proventos</option>
+            <option value="entries">Lançamentos</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="importFileModal">Arquivo CSV *</label>
+          <input type="file" id="importFileModal" name="file" accept=".csv,text/csv" required>
+          <p class="form-hint">Colunas esperadas variam por tipo. Baixe o template abaixo.</p>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="importDelimiter">Delimitador</label>
+            <select id="importDelimiter" name="delimiter">
+              <option value=",">Vírgula (,)</option>
+              <option value=";">Ponto e vírgula (;)</option>
+              <option value="\t">Tab</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="importEncoding">Encoding</label>
+            <select id="importEncoding" name="encoding">
+              <option value="utf-8">UTF-8</option>
+              <option value="iso-8859-1">ISO-8859-1 (Legado)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary modal-close">Cancelar</button>
+          <button type="button" class="btn btn-outline" id="downloadTemplateBtn">Baixar template</button>
+          <button type="submit" class="btn btn-primary">Importar</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- MODAL: COMMAND PALETTE -->
+  <dialog id="commandPaletteModal" class="modal modal-palette" role="dialog" aria-modal="true" aria-labelledby="paletteTitle">
+    <div class="modal-backdrop" tabindex="-1"></div>
+    <div class="modal-content palette-content">
+      <header class="palette-header">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="search" id="paletteSearch" placeholder="Digite um comando ou busque..." aria-label="Buscar comandos" autocomplete="off">
+        <kbd style="font-size:10px;padding:1px 6px;border-radius:3px;background:var(--color-bg);border:1px solid var(--color-border)">⌘K</kbd>
+      </header>
+      <div class="palette-results" id="paletteResults" role="listbox"></div>
+      <footer class="palette-footer">
+        <span>Navegue com <kbd>↑</kbd><kbd>↓</kbd>, execute com <kbd>Enter</kbd>, feche com <kbd>Esc</kbd></span>
+      </footer>
+    </div>
+  </dialog>
+
+  <!-- MODAL: PRICE ALERTS -->
+  <dialog id="alertsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="alertsModalTitle">
+    <div class="modal-backdrop" tabindex="-1"></div>
+    <div class="modal-content" style="max-width: 560px;">
+      <header class="modal-header">
+        <h2 id="alertsModalTitle">Alertas de Preço</h2>
+        <button class="modal-close" aria-label="Fechar modal">&times;</button>
+      </header>
+      <div class="alerts-list" id="alertsList"></div>
+      <div class="form-actions" style="border-top:1px solid var(--color-border);padding-top:var(--space-4);margin-top:var(--space-4)">
+        <button class="btn btn-primary" id="addAlertBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Novo alerta
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <script type="module" src="script.js"></script>
+  <script src="carteira-data.js"></script>
+  <!-- Import Center -->
+  <script src="src/import-center/detectors.js"></script>
+  <script src="src/import-center/parsers/b3-position.js"></script>
+  <script src="src/import-center/parsers/b3-events.js"></script>
+  <script src="src/import-center/parsers/broker-csv.js"></script>
+  <script src="src/import-center/parsers/brapi-enricher.js"></script>
+  <script src="src/import-center/parsers/generic-csv.js"></script>
+  <script src="src/import-center/normalizer.js"></script>
+  <script src="src/import-center/validator.js"></script>
+  <script src="src/import-center/deduper.js"></script>
+  <script src="src/import-center/writer.js"></script>
+  <!-- Corporate Events -->
+    <script src="src/corporate-events/corporate-events.js"></script>
+    <script src="src/data-trust/data-trust.js"></script>
+    <script src="src/backup-portability/backup-portability.js"></script>
+    <script src="real-mode.js"></script>
+    <script src="advanced-engine.js"></script>
+    <script src="rebalance-engine.js"></script>
+    <script src="risk-engine.js"></script>
+    <script src="benchmark-engine.js"></script>
+    <script src="monte-carlo-engine.js"></script>
+    <script src="tax-engine.js"></script>
+    <script src="init-carteira.js"></script>
+        <script src="panels.js"></script>
+            <script src="router.js"></script>
+            <script src="data-trust-engine.js"></script>
+  </body>
+  </html>

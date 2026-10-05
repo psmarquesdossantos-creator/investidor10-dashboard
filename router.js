@@ -1,0 +1,119 @@
+// router.js — Hash-only SPA routing (simples, robusto, sem pushState)
+// Suporta: #/tab, #/tab?param=value, browser back/forward, document.title sync
+
+(function () {
+  'use strict';
+
+  const ROUTE_MAP = {
+    summary:      { panel: 'summary',      title: 'Resumo' },
+    patrimony:    { panel: 'patrimony',    title: 'Patrimônio' },
+    returns:      { panel: 'returns',      title: 'Rentabilidade' },
+    positions:    { panel: 'positions',    title: 'Posições' },
+    earnings:     { panel: 'earnings',     title: 'Proventos' },
+    entries:      { panel: 'entries',      title: 'Lançamentos' },
+    fixed:        { panel: 'fixed',        title: 'Renda Fixa' },
+    rebalance:    { panel: 'rebalance',    title: 'Rebalancear' },
+    risk:         { panel: 'risk',         title: 'Risco' },
+    montecarlo:   { panel: 'montecarlo',   title: 'Monte Carlo' },
+    benchmarks:   { panel: 'benchmarks',   title: 'Benchmarks' },
+    tax:          { panel: 'tax',          title: 'Impostos' },
+    import:       { panel: 'import',       title: 'Importar' },
+    backup:       { panel: 'backup',       title: 'Backup' },
+    'corporate-events': { panel: 'corporate-events', title: 'Eventos Corp.' },
+    'data-trust': { panel: 'data-trust',   title: 'Data Trust' },
+    'backup-portability': { panel: 'backup-portability', title: 'Backup Port.' },
+  };
+
+  const DEFAULT_TAB = 'summary';
+  let isNavigating = false;
+
+  function parseHash() {
+    const hash = location.hash.slice(1) || DEFAULT_TAB;
+    const [path, search] = hash.split('?');
+    const params = new URLSearchParams(search || '');
+    return { tab: path, params };
+  }
+
+  function applyRoute(tab, params, { triggerSwitch = true } = {}) {
+    const route = ROUTE_MAP[tab];
+    if (!route) {
+      console.warn(`Router: rota desconhecida "${tab}", caindo para ${DEFAULT_TAB}`);
+      return applyRoute(DEFAULT_TAB, new URLSearchParams());
+    }
+
+    // Atualiza document.title
+    document.title = `Carteira — ${route.title}`;
+
+    // Atualiza hash diretamente (sem pushState — mais simples e confiável)
+    const newHash = tab + (params && params.toString() ? '?' + params.toString() : '');
+    if (location.hash.slice(1) !== newHash) {
+      isNavigating = true;
+      location.hash = newHash;
+      // isNavigating será resetado pelo hashchange listener
+    }
+
+    // Dispara switchTab original
+    if (triggerSwitch && window.switchTab) {
+      window.switchTab(route.panel);
+    }
+
+    // Scroll to top ao navegar
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Atualiza indicador ativo nas tabs
+    updateActiveTab(tab);
+
+    return true;
+  }
+
+  function updateActiveTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      const isActive = btn.dataset.tab === tab;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-selected', isActive);
+    });
+  }
+
+  function initRouter() {
+    // 1. Hashchange listener (única fonte de verdade)
+    window.addEventListener('hashchange', () => {
+      if (isNavigating) {
+        isNavigating = false;
+        return; // navegação programática já fez o switchTab
+      }
+      // Navegação via botão voltar/avançar do browser ou link direto
+      const { tab, params } = parseHash();
+      applyRoute(tab, params, { triggerSwitch: true });
+    });
+
+    // 2. Navegação inicial
+    const { tab, params } = parseHash();
+    applyRoute(tab, params, { triggerSwitch: true });
+
+    // 3. Interceptar cliques nos tabs para usar router
+    document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
+      btn.addEventListener('click', (ev) => {
+        const tab = btn.dataset.tab;
+        if (ROUTE_MAP[tab]) {
+          ev.preventDefault();
+          applyRoute(tab, new URLSearchParams());
+        }
+      });
+    });
+
+    // 4. Expor API pública
+    window.router = {
+      navigate: (tab, params) => applyRoute(tab, params instanceof URLSearchParams ? params : new URLSearchParams(params)),
+      replace:  (tab, params) => applyRoute(tab, params instanceof URLSearchParams ? params : new URLSearchParams(params)),
+      getCurrent: () => parseHash(),
+      parseHash,
+    };
+  }
+
+  // Auto-init
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initRouter);
+  } else {
+    initRouter();
+  }
+})();

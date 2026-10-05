@@ -1,0 +1,30 @@
+# ---- Real financial data (NEVER COMMIT - rule 7 AGENTS.md) ----
+carteira-data.js
+data.js
+
+# ---- Logs & runtime artifacts ----
+*.log
+serve.log
+server.log
+overnight-*.log
+test-results/
+playwright-report/
+.planning/
+.qa-state/
+
+# ---- Uploads (user files, may contain real data) ----
+uploads/
+
+# ---- OS / temp / corrupted ----
+Thumbs.db
+.DS_Store
+xcopy-exclude.tmp
+index.html.corrupted
+
+# ---- Node ----
+node_modules/
+dist/
+*.zip
+
+# ---- Installed agent skills (reinstallable tooling, not product code) ----
+skills/

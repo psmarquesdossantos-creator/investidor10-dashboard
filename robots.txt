@@ -1,0 +1,8 @@
+# robots.txt for Investidor10 Dashboard
+# Local development / private dashboard - disallow all crawlers
+
+User-agent: *
+Disallow: /
+
+# Sitemap (if public)
+# Sitemap: https://your-domain.com/sitemap.xml
