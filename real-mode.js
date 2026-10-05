@@ -985,7 +985,49 @@
 
       // Step 2: Parse based on format
       let rawData;
-      if (detectResult.parser === 'b3-position') {
+      if (detectResult.parser === 'b3-movimentacao-xlsx') {
+        // XLSX de Movimentação (B3/Inter) — proventos e operações históricas
+        const sheets = window._xlsxSheets;
+        if (!sheets) throw new Error('XLSX não foi lido (detectFormat não rodou?)');
+        const movResult = window.ImportCenter.parseB3Movimentacao(sheets);
+        if (movResult.skipped.length > 0) {
+          detectedFormat.innerHTML += `<br>⚠️ ${movResult.skipped.length} linhas ignoradas (tipo desconhecido/data inválida)`;
+        }
+        // Prévia resumida: guarda o resultado para o confirm e mostra agregados
+        window._pendingMovResult = movResult;
+        const provCount = movResult.events.filter(e => ['rendimento','jcp','dividendo','amortizacao','restituicao','reembolso','resgate'].includes(e.type)).length;
+        const opCount = movResult.events.filter(e => ['transferencia_liquidacao','aplicacao'].includes(e.type)).length;
+        detectedFormat.innerHTML += `<br>📊 ${provCount} proventos + ${opCount} operações (${movResult.events.length} eventos totais, ${movResult.sheetName})`;
+
+        // Prévia de tabela (amostra de proventos)
+        previewSection.style.display = 'block';
+        const sample = movResult.events.filter(e => e.ticker).slice(0, 50);
+        tbody.innerHTML = sample.map(e => `<tr>
+          <td>${e.ticker}</td><td>${e.productName || ''}</td><td>${e.rawMov}</td>
+          <td>${e.date}</td><td>${e.qty}</td><td>${e.unitPrice}</td>
+          <td><strong>R$ ${(e.valor ?? 0).toFixed(2)}</strong></td><td>${e.entradaSaida}</td>
+        </tr>`).join('');
+        // Ajusta headers da tabela de prévia para movimentação
+        const thead = document.querySelector('#importPreviewTable thead');
+        if (thead) thead.innerHTML = '<tr><th scope="col">Ticker</th><th scope="col">Produto</th><th scope="col">Movimentação</th><th scope="col">Data</th><th scope="col">Qtd</th><th scope="col">Preço unit.</th><th scope="col">Valor</th><th scope="col">Entrada/Saída</th></tr>';
+
+        btnConfirm.disabled = false;
+        updateStepper(3);
+        window._pendingImportData = movResult.events; // confirm usa writeMovimentacao
+        window._pendingImportFormat = detectResult.format;
+        return; // fluxo próprio; confirm detecta o formato e despacha
+      }
+      if (detectResult.parser === 'b3-posicao-xlsx') {
+        // XLSX de Posição B3 (5 sheets: Ações, Empréstimos, ETF, Fundos, Renda Fixa)
+        const sheets = window._xlsxSheets;
+        if (!sheets) throw new Error('XLSX não foi lido (detectFormat não rodou?)');
+        const posResult = window.ImportCenter.parseB3PosicaoXlsx(sheets);
+        detectedFormat.innerHTML += `<br>📊 ${posResult.total} ativos: ${posResult.acoes.length} ações, ${posResult.emprestimos.length} empréstimos, ${posResult.etfs.length} ETFs, ${posResult.fundos.length} FIIs, ${posResult.rendaFixa.length} RF`;
+
+        // Converte para o formato canônico de posições e segue pipeline normal (normalize → validate → preview)
+        rawData = posToCanonical(posResult);
+      }
+      else if (detectResult.parser === 'b3-position') {
         const text = await file.text();
         const json = JSON.parse(text);
         rawData = window.ImportCenter.parseB3Position(json);
@@ -1157,12 +1199,67 @@
     });
   }
 
+  // Converte resultado do parser de posição XLSX B3 para o formato canônico de posições
+  function posToCanonical(posResult) {
+    const norm = (a, cls) => ({
+      ticker: a.ticker,
+      name: a.name,
+      class: cls,
+      type: cls === 'stocks' ? 'Ação' : cls === 'fiis' ? 'FII' : cls === 'etfs' ? 'ETF' : 'Renda Fixa',
+      qty: a.qty,
+      avgPrice: a.currentPrice, // B3 posição não traz preço médio; usa preço de fechamento (avgPrice real via Fase 18/extrato PDF)
+      currentPrice: a.currentPrice,
+      value: a.value,
+      sector: 'Outros',
+      source: 'B3_POSICAO_XLSX',
+      raw: a.raw
+    });
+    const out = [];
+    for (const a of posResult.acoes) out.push(norm(a, 'stocks'));
+    for (const a of posResult.etfs) out.push(norm(a, 'etfs'));
+    for (const a of posResult.fundos) out.push(norm(a, 'fiis'));
+    // RF: avgPrice = preço unitário atual (cenário CURVA); valor é o saldo atualizado
+    for (const a of posResult.rendaFixa) out.push(norm(a, 'fixed'));
+    // Empréstimos: não são posições — são direitos/obrigações; registra como classe própria
+    for (const a of posResult.emprestimos) out.push({
+      ...norm(a, 'other'),
+      natureza: a.natureza, contrato: a.contrato, taxa: a.taxa,
+      dataVencimento: a.dataVencimento
+    });
+    return out;
+  }
+
   async function confirmImport() {
     console.log('[ImportCenter] confirmImport called');
     const rawData = window._pendingImportData;
     const validationResult = window._pendingValidationResult;
     const format = window._pendingImportFormat;
     if (!rawData?.length) return;
+
+    // Fluxo próprio da Movimentação (proventos + operações)
+    if (format === 'b3-movimentacao-xlsx') {
+      const btnConfirmMov = document.getElementById('btnConfirmImport');
+      btnConfirmMov.disabled = true;
+      btnConfirmMov.textContent = 'Importando...';
+      updateStepper(4);
+      try {
+        const res = window.ImportCenter.writeMovimentacao(rawData);
+        if (!res.success) throw new Error(res.error);
+        toast(`Importação concluída: +${res.addedEarnings} proventos, +${res.addedEntries} operações` + (res.duplicates ? `, ${res.duplicates} duplicatas ignoradas` : ''), 'success');
+        document.getElementById('importPreviewSection').style.display = 'none';
+        document.getElementById('importFile').value = '';
+        document.getElementById('importDetectedFormat').style.display = 'none';
+        btnConfirmMov.disabled = true;
+        btnConfirmMov.textContent = 'Confirmar Importação';
+        updateStepper(1);
+      } catch (e) {
+        console.error('[ImportCenter] erro writeMovimentacao:', e);
+        toast('Erro ao importar movimentação: ' + e.message, 'error');
+        btnConfirmMov.disabled = false;
+        btnConfirmMov.textContent = 'Confirmar Importação';
+      }
+      return;
+    }
 
     const btnConfirm = document.getElementById('btnConfirmImport');
     btnConfirm.disabled = true;
