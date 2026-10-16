@@ -48,6 +48,10 @@ HISTÓRICO DESTA SESSÃO: CI-GREEN antes desta (26→0 falhas, runs 38944485486+
 5. Rodar tests/rules no CI (ubuntu Java 17) — 10/10 obrigatório
 6. Depois: FASE 3 migração owner (FIREBASE_MIGRATION_PLAN.md) → FASE 4
    certificação cross-device → FASE 5 release DEMO → FASE 6 produção
+VERCEL (paralelo, opcional): vercel.json commitado (headers CSP + sw/carteira cache).
+  Ativar: vercel.com → Add New Project → import GitHub psmarquesdossantos-creator/
+  investidor10-dashboard → Framework "Other" (static, sem build) → Deploy.
+  Auto-deploy a cada push em main. Sem firebase-config.js = modo INACTIVE (demo).
 ```
 
 ---

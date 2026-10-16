@@ -21,41 +21,24 @@ DEFAULT_BRANCH=main
 ## LAST KNOWN GOOD STATE
 
 ```
-LAST_KNOWN_GOOD_COMMIT=217e920 (feat(durability): Fase 17) — HEAD
-LAST_VALIDATED_TREE=2026-10-16 (working tree G:\ — todas as missões abaixo aplicadas)
+LAST_KNOWN_GOOD_COMMIT=f4b0984 (docs(plan): implementation plan phase 1 auth)
+LAST_VALIDATED_TREE=2026-10-16 (pós AUTH PHASE 1, dados reais + CSP server)
 LAST_VALIDATION_DATE=2026-10-16:
-  node --check OK (script.js, router.js, panels.js, a11y.spec.js, benchmark-engine.js, monte-carlo-engine.js);
-  boot probe 0 pageerrors/0 console errors/0 switchTab throws, 17/17 tabs OK, assetRows 37;
-  Playwright desktop (servidor Node; sem Python no ambiente):
-    a11y 14/14 (reduced-motion com assert real),
-    desktop 89+9skipped ✅, mobile 98/98 ✅, PWA 4/4 ✅
-COMMITS_PENDING_USER_AUTHORIZATION (10 missões, ~28 arquivos):
-  - Higiene raiz (30 arquivos debug/test removidos)
-  - Canon regen (VISUAL_CANON.md reconciliado código=verdade)
-  - Melhorias usabilidade/visual (inline→classes, reduced-motion, a11y fail-on-serious, KPIs mobile 2col)
-  - P0 boot fix (2 braces) + correções latentes (scrollable-region, contraste badges)
-  - Home review (hero-card, KPIs simplificados, alertas inteligentes)
-  - Tier 1 parcial (reduced-motion assert, gate CI node --check, suíte completa executada)
-  - UI wiring (backtest + stress test buttons + handlers em real-mode.js)
-  - Mobile UX + test fixes (scroll-snap, chart summaries, 6 falhas pré-existentes corrigidas)
-  - Inline styles index.html (209→0, utility classes em styles.css)
-  - Inline styles JS + CSP restritivo (132 estáticos→classes, 22 dinâmicos→data-attrs+CSSOM, unsafe-inline removido)
-  - Mobile E2E + PWA offline (mobile.spec.js 9/9, pwa.spec.js 4/4)
-COMMIT_MISSION_ORDER (quando autorizado):
-  1. "chore: higiene raiz + canon regen" (docs + removidos)
-  2. "fix: boot path restaurado, a11y enforced, usabilidade mobile" (script.js, styles.css, router.js, panels.js, tests)
-  3. "feat: home review — hero patrimônio, KPIs claros, alertas inteligentes" (index.html, script.js, panels.js, styles.css)
-  4. "ci: gate node --check *.js no workflow" (.github/workflows/ci.yml)
-  5. "feat: UI wiring — backtest + stress test buttons + handlers" (index.html, real-mode.js)
-  6. "feat: mobile UX — scroll-snap, chart summaries, hidden-cols warning" (styles.css, script.js, panels.js)
-  7. "test: fix 6 pre-existing failures (xlsx path, fixed panel, isolated port)" (tests/e2e/*)
-  8. "refactor: inline styles → utility classes (index.html 209→0)" (index.html, styles.css)
-  9. "refactor: JS inline styles → data-attrs + CSSOM, CSP restrictive" (real-mode.js, panels.js, script.js, styles.css, serve.py)
-  10. "test: mobile E2E + PWA offline suites" (tests/e2e/mobile.spec.js, tests/e2e/pwa.spec.js)
-UNCOMMITTED_FILES=index.html, styles.css, script.js, router.js, panels.js, serve.py, sw.js,
-  init-carteira.js, real-mode.js, docs/ai/*, tests/e2e/*, .github/workflows/ci.yml,
-  src/import-center/orchestrator.js, src/import-center/parsers/corporate-events.js,
-  src/montecarlo/, src/rebalance/, tests/fixtures/backup-investidor10-sample.json
+  node --check OK (todos src/auth/*, scripts, core); eslint@8 OK; htmlhint OK;
+  Playwright (dados reais + CSP server = CI-equivalent):
+    desktop 105p+9s ✅, mobile 108p ✅, tablet 111p ✅, a11y 14/14 desktop+mobile ✅,
+    PWA 4/4 ✅, auth-gate 8/8 ✅ (force modes, sem rede)
+  Dry-run migração P33: readback OK + idempotente OK
+  CI GitHub Actions: VERDE (runs 38944485486 + 84ac8d7 — Lint/Desktop/Mobile/Tablet/A11y/Security/Build)
+COMMITS_STATUS=TODAS as missões commitadas. Histórico consolidado em main (local → pushed):
+  - 10 missões B-E2 (commitadas em fases anteriores, ver git log)
+  - Fases F/G/H (deploy Pages, mobile UX, calendário dividendos, export PDF) — f15c50e..2c6859e
+  - CI-GREEN (26→0 falhas: sample rica, guards boot, CSP A11y, sw.js allSettled,
+    testes adaptativos) — b2db200, CI runs 38944485486+84ac8d7 VERDES
+  - AUTH PHASE 1 (P1-P35: auth-gate, demo sintético, sources, sync, rules,
+    dry-run) — 3ce229e..f4b0984, ~13 commits
+UNCOMMITTED_FILES=nenhum (worktree limpo exceto specs ófãs de debug: tests/e2e/audit-full.spec.js,
+  tests/e2e/debug-fmt.spec.js — artefatos de sessão antiga, NÃO desta missão)
 ```
 
 ---
@@ -78,6 +61,17 @@ UNCOMMITTED_FILES=index.html, styles.css, script.js, router.js, panels.js, serve
    positions[].class usa chaves internas ('stocks','fiis') — mapear via ptToCls.
 6. JS puro: `node --check` NÃO pega brace desbalanceado que se cancela (missing `}` + extra `};`);
    gate CI agora inclui node --check (lição do P0 boot 2026-10-16).
+7. AUTH BOOT ORDER (2026-10-16): carteira-data.js → auth scripts (fixture/sources/gate)
+   → script.js. O gate PRECISA executar após carteira-data.js (senão o arquivo local
+   sobrescreve a decisão) e ANTES de script.js (que aguarda window.__AUTH_RESOLVED__).
+   Microtasks entre script tags completam o gate antes do DOMContentLoaded (force modes).
+8. CSS: `.hidden{display:none}` (styles.css ~L958) EMPATA em especificidade com qualquer
+   `.classe{display:flex}` definida DEPOIS — componente novo com display próprio
+   PRECISA de regra explícita `.classe.hidden{display:none}` (lição do overlay auth).
+9. sw.js cache.addAll é ATÔMICO: 1 asset externo falhando (fonts) anula TODO o cache
+   estático → usar Promise.allSettled por asset (cache parcial resiliente).
+10. npm no workspace G:\ (Google Drive sync) falha com EBADF — instalar fora
+    (%TEMP%) + NODE_PATH (CJS apenas; ESM ignora NODE_PATH → usar .cjs).
 ```
 
 ---
@@ -85,28 +79,21 @@ UNCOMMITTED_FILES=index.html, styles.css, script.js, router.js, panels.js, serve
 ## CURRENT STATE
 
 ```
-CURRENT_STATE=FASES_B_TO_E2_COMPLETE — inline 0 everywhere, CSP restritivo, mobile E2E, PWA offline
-BLOCKERS=Nenhum bloqueador crítico
-PRE_EXISTING_TEST_FAILURES=0 (todas as 6 corrigidas nesta sessão)
-FIXES_APPLIED_2026_10_16:
-  - import-xlsx ×4: ATT path C:\ → G:\
-  - panels fixed: real-mode.js initFixedIncome não limpa fixedBody quando fixedDetail vazio
-  - panels fixed: maybeRenderLazy usa window.renderFixedIncome (override de teste funciona)
-  - panels fixed: boot() não sobrescreve override de teste
-  - test-isolated: porta 8766 → 8765
-  - panels.spec.js: toBe(2) → toBeGreaterThan(0) (dados têm 4 fixed positions)
-INLINE_STYLES_ZEROED:
-  - index.html: 209 → 0 (utility classes em styles.css)
-  - real-mode.js: 55 → 0 (132 estáticos→classes, 22 dinâmicos→data-attrs+CSSOM)
-  - panels.js: 70 → 0 (52 estáticos→classes, 9 dinâmicos→data-attrs+CSSOM)
-  - script.js: 21 → 0 (13 estáticos→classes, 7 dinâmicos→data-attrs+CSSOM)
-CSP_RESTRITIVO=style-src 'self' https://fonts.googleapis.com (SEM unsafe-inline)
-CSSOM_HELPER=applyDataAttrs() em real-mode.js converte data-w/data-left/data-bg/data-color → CSS vars
-NEW_TESTS=mobile.spec.js 9/9, pwa.spec.js 4/4
-KNOWN_ISSUES=
-  - serve.py: 503 errors under parallel load (workaround: --workers=1)
-  - Risk/Monte Carlo panels: exigem série diária (estado "dados insuficientes" honesto)
-NEXT_MISSION=Ver NEXT_STEP.md
+CURRENT_STATE=AUTH_PHASE_1_COMPLETE — multiuser auth+sync+demo em código; CI verde; PUSH autorizado p/ Fase 2
+BLOCKERS=JDK 11+ ausente (emulator rules tests locais); npm EBADF workspace (devDep fora do lockfile)
+AUTH_PHASE1_ASSETS=
+  - src/auth/auth-gate.js: INACTIVE/LOGIN/DEMO/REAL/BLOCKED, fail-closed,
+    force-testável (__AUTH_GATE_FORCE__ = true|'demo'|'blocked'), localhost bypass
+  - src/auth/demo-fixture.js: 100% sintético (13 ativos fictícios, total 123456.78)
+  - src/auth/sync/: data-source.js (interface P23), local-demo-source.js
+    ('investidor10-demo', reset), firestore-real-source.js (sections + SyncHub)
+  - firestore.rules + tests/rules/rules.test.cjs (matriz P14, 10 casos)
+  - scripts/migration-dry-run.js (P33: readback+idempotência OK)
+  - docs/ai/FIREBASE_SETUP.md + FIREBASE_MIGRATION_PLAN.md
+  - vendor/firebase/*.js (compat UMD, lazy-load só com config; CSP 'self' intacto)
+DEMO_ISOLAMENTO=storage próprio; saveToStorage roteado por modo; fixture nunca
+  contém valores reais (702175.64/628267.44 pinados como ausentes nos testes)
+NEXT_MISSION=Ver NEXT_STEP.md (Fase 2: push → Firebase console → rules deploy → certificação)
 ```
 
 ---
@@ -173,55 +160,44 @@ DATA ≠ FONTE          → dataFreshnessLabel (hero) + badges de origem (B3/Man
 
 ---
 
-## TEST STATUS (2026-10-16)
+## TEST STATUS (2026-10-16 pós AUTH PHASE 1)
 
 ```
-a11y desktop=14/14 (critical=0, serious=0, fail-on-serious ativo, reduced-motion com assert real)
-a11y mobile=14/14 (rodado em missão anterior)
-tabs+smoke desktop=27/27
-suíte completa desktop=79/85 (6 falhas pré-existentes — ver CURRENT_STATE)
+a11y desktop=14/14, mobile=14/14 (critical=0, fail-on-serious ativo)
+auth-gate=8/8 (fixture sintética, demo source, force LOGIN/DEMO/BLOCKED,
+  SyncHub no-op, isolamento P10, reset P11)
+suíte (dados reais + CSP server): desktop 105p+9s · mobile 108p · tablet 111p · 0 failed
+suíte CI (sample + serve.py): verde no GitHub Actions (runs 38944485486, 84ac8d7)
 BUILD=No build step (vanilla)
-CI=Workflow atualizado (gate node --check); falta remote
-AMBIENTE=Sem Python → harness de teste = servidor Node estático (CSP headers incluídos)
+CI=GitHub Actions VERDE — Lint/Desktop/Mobile/Tablet/A11y/Security/Build
+  (tests/rules NÃO roda no CI ainda — requer devDep + step; Fase 2)
+AMBIENTE=Sem Python local → servidor Node com CSP (espelha serve.py);
+  Java 8 bloqueia emulator; npm EBADF no workspace G:\ (Drive)
 ```
 
 ---
 
-## RECENT MISSIONS (2026-10-16 — TODAS SEM COMMIT, aguardando autorização)
+## RECENT MISSIONS (2026-10-16, sessão consolidada)
 
 ```
-M1 — Higiene raiz + Canon:
-  30 arquivos debug_*.cjs/test_*.cjs|js/test-panels.html/dashboard_status.txt removidos;
-  VISUAL_CANON.md regenerado do :root real (namespace --color-*, light default, dark via media/data-theme);
-  DECISIONS.md atualizado.
+M1-M6 — (histórico) ver git log: higiene, REA, usabilidade, P0 boot, home review, Tier 1.
 
-M2 — Skill REA:
-  reverse-engineer-anything (morluto/rea, MIT, v42) instalada em ~/.agents/skills
-  (só instruções; MCP/engines NÃO instalados).
+M7 — FASES F/G/H: GitHub Pages ativo, mobile UX (bottom nav/cards/PTR),
+  calendário dividendos, export PDF (f15c50e..2c6859e).
 
-M3 — Melhorias usabilidade/visual (1-6):
-  inline style="" → classes (.kbd/.kbd-gap/.dropdown-divider/#correlationMatrix/.chart-summary/.skeleton-line);
-  router.js respeita prefers-reduced-motion; a11y serious FALHA (allowlist vazia);
-  KPIs mobile 2 colunas (fit medido); item 4-5 verificados sem mudança.
+M8 — CI-GREEN (26→0 falhas): sample data rica (20 posições/6 classes/allocation/kpis/
+  patrimony), guards applyRealData + __CARTEIRA_OVERRIDE branch, meta preservado via
+  Object.assign, CSP-safe A11y (styles migrados p/ CSS), .data-table mobile escopado
+  a #panel-positions, sw.js allSetteld, testes adaptativos (real-data skip sample,
+  import-xlsx skip fixture, pwa polling). CI runs 38944485486+84ac8d7 VERDES (b2db200).
 
-M4 — P0 BOOT FIX (systematic-debugging):
-  Root cause provado via V8 precise-coverage: brace do else faltando em renderEntries
-  + `};` duplicado no tail → módulo morria em window.renderAssetReturns= (ReferenceError),
-  init() nunca rodava, app sustentado por panels.js. Fix = 2 toques cirúrgicos.
-  Latentes corrigidas: .table-wrapper rolável por teclado + contraste badges origem (pares AA).
-  Validação: 0 pageerrors, 17/17 tabs, assetRows 37.
-
-M5 — Home review (itens 1-4):
-  Hero-card patrimônio + dataFreshnessLabel; 4 KPIs compactos (investido, resultado não realizado,
-  proventos recebidos, proventos 12M); gráficos após hero; renderAlertBanners
-  (desatualizado >30d, proventos parciais <50, concentração >30%, return12M null).
-  Validação: a11y 14/14; suíte 79/85 (6 pré-existentes).
-
-M6 — Tier 1 parcial:
-  reduced-motion assert real (parseFloat p/ 1e-05s); gate node --check no CI; suíte completa executada.
-  Skipped: remover unsafe-inline (pré-req: zerar 100+ style="" — missão separada).
-  Novos métodos: benchmark-engine.backtest() e monte-carlo-engine.runStressTest() (T3-8/T3-9).
-  Wired mas não conectados à UI (backtest/stress) — próxima missão.
+M9 — AUTH PHASE 1 (P1-P35 do usuário; spec 7111af4 + plan f4b0984):
+  brainstorming→spec→writing-plans→TDD (red-green por task)→13 commits locais.
+  Entrega: auth-gate 5 modos, demo sintético local-only c/ reset, PortfolioDataSource,
+  FirestoreRealDataSource sections+SyncHub, firestore.rules UID+allowlist, matriz P14
+  (emulator-ready), dry-run P33 OK, FIREBASE_SETUP/MIGRATION_PLAN. HOSTED_WRITES=0.
+  Bug-lessons: script order (contrato 7), .hidden especificidade (contrato 8),
+  addAll atômico (contrato 9), EBADF/NODE_PATH (contrato 10).
 ```
 
 ---
@@ -244,13 +220,13 @@ M6 — Tier 1 parcial:
 ## PRÓXIMA MISSÃO (ver NEXT_STEP.md para detalhe)
 
 ```
-1. COMMIT autorizado (4 commits ordenados, arquivos seletivos, Conventional Commits)
-2. REMOTE GITHUB + PUSH + CI (validar gate node --check no workflow)
-3. UI wiring dos novos métodos: backtest (aba Rentabilidade/Benchmarks) + stress test (aba Monte Carlo)
-4. Home review itens 5-7: navegação mobile (scroll-snap hint), gráficos acessíveis (legenda+resumo
-   por filtro), colunas mobile (cartões compactos ou aviso)
-5. Corrigir 6 falhas pré-existentes (import-xlsx fixtures, panels fixed, test-isolated)
-6. Missão unsafe-inline: zerar 100+ style="" inline → remover do CSP
+FASE 2 (autorização de push concedida 2026-10-16 "atualizar github"):
+  1. push 13+ commits → CI verde no GitHub
+  2. Dono: FIREBASE_SETUP.md (projeto, Auth Google+e-mail, rules, allowlist, config)
+  3. Rules tests 10/10 (CI ubuntu/Java 17 ou JDK 17 local)
+  4. FASE 3 migração owner (FIREBASE_MIGRATION_PLAN.md) → 4 cross-device → 5 demo → 6 prod
+VERCEL: vercel.json commitado (static+headers CSP); deploy = import do repo no
+  dashboard Vercel (integração GitHub → auto-deploy a cada push em main)
 ```
 
 ---
@@ -259,6 +235,6 @@ M6 — Tier 1 parcial:
 
 ```
 DATE=2026-10-16
-COMMIT=N/A (local only — 6 missões pendentes de autorização)
-UPDATED_BY=Muse Spark (consolidação completa pós home review)
+COMMIT=f4b0984 (HEAD local; push Fase 2 autorizado)
+UPDATED_BY=Muse Spark (pós AUTH PHASE 1 + memória consolidada + push/vercel)
 ```
