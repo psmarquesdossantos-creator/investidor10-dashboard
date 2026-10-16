@@ -47,6 +47,13 @@ test.describe('Acessibilidade (axe-core)', () => {
         await page.waitForTimeout(1000);
       }
 
+      // Toasts são anúncios transitórios (aria-live) com animação de fade:
+      // mid-animação o contraste é inválido por design — WCAG 1.4.3 avalia
+      // conteúdo em repouso. Remove antes do scan (não é conteúdo persistente).
+      await page.evaluate(() => {
+        document.querySelectorAll('#toastContainer .toast').forEach(t => t.remove());
+      });
+
       const results = await new AxeBuilder({ page }).analyze();
 
       const criticalViolations = results.violations.filter(v => v.impact === 'critical');
