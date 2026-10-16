@@ -7,7 +7,7 @@
 ## CURRENT PHASE
 
 ```
-CURRENT_PHASE=HOME_REVIEW_COMPLETE — próximo: commit + remote Git + UI wiring
+CURRENT_PHASE=FASES_B_TO_E2_COMPLETE — UI wiring + inline styles 0 + mobile E2E + PWA offline + CSP restritivo
 ```
 
 ---
@@ -19,25 +19,23 @@ CURRENT_BRANCH=main
 CURRENT_HEAD=217e920 (feat(durability): Fase 17)
 CURRENT_WORKTREE=G:\Meu Drive\Codex\investidor10-dashboard (canonical, autorizado por usuário)
 ORIGIN_MAIN=N/A (remote inexistente — criar repo "investidor10-dashboard")
-UNCOMMITTED=6 missões 2026-10-16 (~22 arquivos) — ver PROJECT_MEMORY COMMIT_MISSION_ORDER
+UNCOMMITTED=10 missões 2026-10-16 (~28 arquivos) — ver PROJECT_MEMORY COMMIT_MISSION_ORDER
 BACKUP=G:\Meu Drive\Codex\investidor10-dashboard (sync implícito = o próprio worktree)
 ```
 
 ---
 
-## BUILD & TEST STATUS (2026-10-16)
+## BUILD & TEST STATUS (2026-10-16 pós-fases B-E2)
 
 ```
 BUILD=vanilla, no build step; node --check OK em todos os JS tocados
-TESTES (servidor Node estático; Python indisponível no ambiente):
-  Desktop: 79/85 passing (2.8m)
-    a11y 14/14 ✅ (critical=0, serious=0, reduced-motion com assert real)
-    tabs+smoke 27/27 ✅
-    import-xlsx 0/4 ❌ PRÉ-EXISTENTE (fixtures XLSX ausentes no servidor Node)
-    panels fixed ❌ PRÉ-EXISTENTE
-    test-isolated ❌ PRÉ-EXISTENTE
-  Mobile: 14/14 a11y ✅ (missão anterior)
+TESTES (servidor Node estático com MIME correto para SW):
+  Desktop: 89 passed + 9 skipped (mobile.spec.js corretamente pulado) ✅
+  Mobile:  98 passed ✅ (inclui mobile.spec.js 9/9)
+  PWA:     4/4 ✅ (SW registra, cache offline, manifest válido)
 BLOCKERS=Nenhum
+INLINE_STYLES=index.html=0, real-mode.js=0, panels.js=0, script.js=0 (todos convertidos)
+CSP=style-src 'self' https://fonts.googleapis.com (SEM unsafe-inline)
 ```
 
 ---
@@ -45,9 +43,10 @@ BLOCKERS=Nenhum
 ## ACTIVE WORK
 
 ```
-OBJETIVO=Commit autorizado → remote GitHub → CI/CD → UI wiring (backtest + stress test)
+OBJETIVO=Commit autorizado → remote GitHub → CI/CD
 STATUS=READY_TO_COMMIT (aguardando autorização)
-NEXT_MISSION=UI wiring dos novos métodos + home review itens 5-7 (ver NEXT_STEP.md)
+COMPLETED_THIS_SESSION=Fases B+C+D+E+E2 (ver PROJECT_MEMORY)
+NEXT_MISSION=Commit 10 missões + remote + próximas melhorias
 ```
 
 ---
@@ -67,5 +66,5 @@ Home: hero patrimônio + 4 KPIs + gráficos + alertas inteligentes
 
 ```
 DATE=2026-10-16
-UPDATED_BY=Muse Spark
+UPDATED_BY=Muse Spark (pós fases B-E2: inline 0, mobile E2E, PWA offline, CSP restritivo)
 ```

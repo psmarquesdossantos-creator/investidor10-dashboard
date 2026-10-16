@@ -14,6 +14,47 @@
     positionsCache: null             // snapshot posições antes do refresh
   };
 
+  // ---- CSSOM Helper (CSP-safe): data-attrs → CSS custom properties ----
+  // element.style.setProperty() não é bloqueado por style-src sem unsafe-inline
+  function applyDataAttrs(root) {
+    const scope = root || document;
+    scope.querySelectorAll('[data-w]').forEach(el => {
+      const v = parseFloat(el.dataset.w);
+      if (!isNaN(v)) el.style.setProperty('--w', v + '%');
+    });
+    scope.querySelectorAll('[data-left]').forEach(el => {
+      const v = parseFloat(el.dataset.left);
+      if (!isNaN(v)) el.style.setProperty('--left', v + '%');
+    });
+    scope.querySelectorAll('[data-bg]').forEach(el => {
+      el.style.setProperty('--dyn-bg', el.dataset.bg);
+    });
+    scope.querySelectorAll('[data-color]').forEach(el => {
+      el.style.setProperty('--dyn-color', el.dataset.color);
+    });
+    scope.querySelectorAll('[data-border]').forEach(el => {
+      el.style.setProperty('--sev-border', el.dataset.border);
+    });
+  }
+  window.__applyDataAttrs = applyDataAttrs;
+
+  // MutationObserver: aplica automaticamente em nós adicionados ao DOM
+  const __dataAttrObserver = new MutationObserver(mutations => {
+    for (const m of mutations) {
+      for (const node of m.addedNodes) {
+        if (node.nodeType !== 1) continue;
+        applyDataAttrs(node);
+        if (node.querySelectorAll && node.querySelectorAll('[data-w],[data-left],[data-bg],[data-color],[data-border]').length) {
+          applyDataAttrs(node);
+        }
+      }
+    }
+  });
+  document.addEventListener('DOMContentLoaded', () => {
+    applyDataAttrs(document);
+    __dataAttrObserver.observe(document.body, { childList: true, subtree: true });
+  });
+
   // ---- Helpers ----
   const fmt = {
     cur: v => new Intl.NumberFormat('pt-BR', {style:'currency',currency:'BRL'}).format(v),
@@ -99,14 +140,17 @@
     btn.className = 'btn btn-ghost';
     btn.setAttribute('aria-label', 'Alternar entre dados reais e mock');
     btn.innerHTML = `
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:var(--real-show,inline)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" data-real-show>
         <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
       </svg>
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:var(--mock-show,none)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" data-mock-show>
         <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
       </svg>
       <span id="modeLabel">Minha Carteira</span>
     `;
+    // CSSOM: seta CSS vars (CSP-safe, não precisa de unsafe-inline)
+    btn.querySelector('[data-real-show]').style.display = 'var(--real-show,inline)';
+    btn.querySelector('[data-mock-show]').style.display = 'var(--mock-show,none)';
     btn.style.cssText = '--real-show:inline; --mock-show:none;';
     btn.addEventListener('click', toggleMode);
     nav.insertBefore(btn, nav.querySelector('#themeToggle'));
@@ -450,7 +494,7 @@
   // ---- 4. Rebalance vs Metas ----
   function initRebalance() {
     const meta = window.CARTEIRA_META?.goals?.allocation;
-    if (!meta) { document.getElementById('rebalanceBody').innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--color-muted);padding:var(--space-6)">Metas não definidas no backup</td></tr>'; return; }
+    if (!meta) { document.getElementById('rebalanceBody').innerHTML = '<tr><td colspan="7" class="center-muted-p6">Metas não definidas no backup</td></tr>'; return; }
     const total = MOCK_DATA.kpis.total;
     const cls = {}; MOCK_DATA.positions.forEach(p=>cls[p.class]=(cls[p.class]||0)+p.value);
     const cn={'stocks':'Ação','fiis':'FII','etfs':'ETF','fixed':'Renda Fixa','crypto':'Cripto','bdr':'BDR','other':'Outros'};
@@ -505,7 +549,7 @@
   async function runAdvancedRebalance() {
     const btn = document.getElementById('btnAdvancedRebalance');
     const originalText = btn.innerHTML;
-    btn.innerHTML = '<svg class="spinner" width="16" height="16" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="30" stroke-dashoffset="0" style="animation:spin 1s linear infinite"></circle></svg> Calculando...';
+    btn.innerHTML = '<svg class="spinner" width="16" height="16" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="30" stroke-dashoffset="0" class="spin"></circle></svg> Calculando...';
     btn.disabled = true;
     
     try {
@@ -573,19 +617,19 @@
     if (!container) return;
     
     let html = `
-      <div class="card" style="margin-top: var(--space-4); padding: var(--space-4); max-height: 400px; overflow-y: auto;">
-        <h4 style="margin: 0 0 var(--space-3); display: flex; justify-content: space-between; align-items: center;">
+      <div class="card mt-4-p-4 scroll-400">
+        <h4 class="mb-3-flex-between">
           Otimização Avançada (Solver)
           <button class="btn btn-ghost btn-sm" onclick="this.closest('.card').remove()">✕</button>
         </h4>
-        <p class="text-muted" style="margin: 0 0 var(--space-3); font-size: var(--font-size-sm)">
+        <p class="text-muted mb-3-sm">
           ${result.summary.buys} compras, ${result.summary.sells} vendas | 
           Cash: ${fmt.cur(result.summary.cashAfter)} | Custos: ${fmt.cur(result.summary.totalCost)}
         </p>
     `;
     
     if (result.trades.length > 0) {
-      html += '<table class="data-table" style="font-size: var(--font-size-sm)"><thead><tr><th>Ativo</th><th>Ação</th><th>Qtd</th><th>Preço</th><th>Valor</th><th>Custo</th></tr></thead><tbody>';
+      html += '<table class="data-table text-sm"><thead><tr><th>Ativo</th><th>Ação</th><th>Qtd</th><th>Preço</th><th>Valor</th><th>Custo</th></tr></thead><tbody>';
       result.trades.forEach(t => {
         html += `<tr>
           <td>${t.ticker}</td>
@@ -598,13 +642,13 @@
       });
       html += '</tbody></table>';
     } else {
-      html += '<p class="text-muted" style="text-align:center;padding:var(--space-4)">Nenhum trade necessário dentro dos parâmetros.</p>';
+      html += '<p class="text-muted" class="p-4-center">Nenhum trade necessário dentro dos parâmetros.</p>';
     }
     
     html += `
-        <details style="margin-top: var(--space-3)">
-          <summary class="text-muted" style="cursor:pointer">Ver alocação final detalhada</summary>
-          <pre style="margin-top: var(--space-2); font-size: 11px; background: var(--color-bg); padding: var(--space-2); border-radius: var(--radius-sm); overflow-x: auto;">${JSON.stringify(result.allocations.after, null, 2)}</pre>
+        <details class="mt-3">
+          <summary class="text-muted cursor-pointer">Ver alocação final detalhada</summary>
+          <pre class="debug-box">${JSON.stringify(result.allocations.after, null, 2)}</pre>
         </details>
       </div>
     `;
@@ -624,18 +668,18 @@
       const final = cur + aporte * target/100;
       const curPct = total ? (cur/total)*100 : 0;
       const finalPct = target;
-      return `<div style="display:flex;gap:var(--space-3);align-items:center;margin:var(--space-2) 0">
-        <span style="width:80px;font-weight:500">${cn[k]||k}</span>
-        <div style="flex:1;background:var(--color-bg);border-radius:4px;height:8px;position:relative">
-          <div style="height:100%;width:${curPct}%;background:var(--color-border);border-radius:4px"></div>
-          <div style="position:absolute;left:${finalPct}%;top:-4px;width:2px;height:16px;background:var(--color-primary);transform:translateX(-50%)"></div>
+      return `<div class="flex-3-center mt-2 mb-2">
+        <span class="w-80 fw-500">${cn[k]||k}</span>
+        <div class="bar-track">
+          <div class="bar-fill" data-w="${curPct}"></div>
+          <div class="bar-marker" data-left="${finalPct}"></div>
         </div>
-        <span style="width:60px;text-align:right">${finalPct}%</span>
-        <span style="width:100px;text-align:right;color:${final>cur?'var(--color-success)':'var(--color-error)'}">${fmt.cur(final-cur)}</span>
+        <span class="w-60 text-right">${finalPct}%</span>
+        <span class="w-100 text-right dyn-color" data-color="${final>cur?'var(--color-success)':'var(--color-error)'}">${fmt.cur(final-cur)}</span>
       </div>`;
     }).join('');
     document.getElementById('rebalanceAllocation').innerHTML = `
-      <p class="text-muted" style="margin:0 0 var(--space-2)">Com aporte de ${fmt.cur(aporte)} (total projetado: ${fmt.cur(total)})</p>
+      <p class="text-muted mb-2">Com aporte de ${fmt.cur(aporte)} (total projetado: ${fmt.cur(total)})</p>
       ${html}`;
   }
 
@@ -644,7 +688,7 @@
     const items = window.CARTEIRA_META?.fixedDetail || [];
     if (!items.length) {
       document.getElementById('fixedKpis').innerHTML = '<p class="text-muted">Nenhuma posição de renda fixa no backup</p>';
-      document.getElementById('fixedBody').innerHTML = '';
+      // Não limpa fixedBody — panels.js:renderFixedIncome() é quem popula
       return;
     }
     // KPIs
@@ -670,13 +714,13 @@
     }
     document.getElementById('fixedByIndexer').innerHTML = Object.entries(byIdx).map(([idx, v])=>{
       const gain = v.current - v.applied;
-      return `<div class="card" style="padding:var(--space-4);margin-bottom:var(--space-3)">
-        <div style="display:flex;justify-content:space-between;align-items:center">
+      return `<div class="card p-4-mb-3">
+        <div class="flex-between">
           <strong>${idx}</strong>
           <span>${v.count} títulos · ${fmt.cur(v.current)} (${fmt.pct(v.applied?gain/v.applied*100:0)})</span>
         </div>
-        <div style="height:6px;background:var(--color-bg);border-radius:3px;margin-top:var(--space-2)">
-          <div style="height:100%;width:${v.applied?Math.min(100,(v.current/v.applied)*100):0}%;background:${gain>=0?'var(--color-success)':'var(--color-error)'};border-radius:3px"></div>
+        <div class="bar-track-sm">
+          <div class="bar-fill-sm dyn-bg" data-w="${v.applied?Math.min(100,(v.current/v.applied)*100):0}" data-bg="${gain>=0?'var(--color-success)':'var(--color-error)'}"></div>
         </div>
       </div>`;
     }).join('');
@@ -730,11 +774,11 @@
     overlay.id = 'cmdPalette';
     overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:1000;display:flex;align-items:flex-start;padding-top:10vh;justify-content:center';
     overlay.innerHTML = `
-      <div class="card" style="width:min(600px,90vw);max-height:70vh;overflow:auto">
-        <div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-4)">
+      <div class="card modal-content">
+        <div class="flex-3-center-mb-4">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" id="cmdInput" placeholder="Digite um comando..." style="flex:1;border:none;background:transparent;font-size:var(--font-size-lg);outline:none">
-          <kbd style="font-size:10px;padding:2px 6px;border-radius:4px;background:var(--color-bg);border:1px solid var(--color-border)">Esc</kbd>
+          <input type="text" id="cmdInput" placeholder="Digite um comando..." class="search-input">
+          <kbd class="badge-sm">Esc</kbd>
         </div>
         <div id="cmdList"></div>
       </div>`;
@@ -758,8 +802,8 @@
     ];
     function render(filter='') {
       list.innerHTML = cmds.filter(c=>c.keys.some(k=>k.toLowerCase().includes(filter.toLowerCase())))
-        .map(c=>`<button class="cmd-item" style="width:100%;text-align:left;padding:var(--space-2) var(--space-3);border:none;background:transparent;cursor:pointer;border-radius:var(--radius-sm);display:flex;justify-content:space-between;gap:var(--space-3)"
-          ><span>${c.keys.slice(1).join(' ')}</span><kbd style="opacity:.6">${c.keys[0]}</kbd></button>`).join('');
+        .map(c=>`<button class="cmd-item list-item"
+          ><span>${c.keys.slice(1).join(' ')}</span><kbd class="opacity-60">${c.keys[0]}</kbd></button>`).join('');
       list.querySelectorAll('.cmd-item').forEach((el,i)=>{
         const cmd = cmds.filter(c=>c.keys.some(k=>k.toLowerCase().includes(filter.toLowerCase())))[i];
         el.addEventListener('click',()=>{cmd.action(); close();});
@@ -868,23 +912,23 @@
     };
     
     container.innerHTML = `
-      <div class="card" style="padding:var(--space-4);">
-        <h3 style="margin:0 0 var(--space-4);display:flex;align-items:center;gap:var(--space-2)">
+      <div class="card p-4">
+        <h3 class="mb-4-flex-2-center">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="6" y2="6"/><path d="M12 18V6"/></svg>
           Rentabilidade Real (TWR / XIRR)
         </h3>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-4);">
-          <div class="card" style="padding:var(--space-4);">
-            <h4 style="margin:0 0 var(--space-2);color:var(--color-muted)">TWR — Time-Weighted Return</h4>
-            <div style="font-size:var(--font-size-2xl);font-weight:700;margin-bottom:var(--space-2)">${fmtPct(twrResult.twr)}</div>
+        <div class="grid-280-4">
+          <div class="card p-4">
+            <h4 class="mb-0-2-muted">TWR — Time-Weighted Return</h4>
+            <div class="fs-2xl-700 mb-2">${fmtPct(twrResult.twr)}</div>
             ${stateBadge(twrResult.status, twrResult.reason)}
-            <p class="text-muted" style="margin:var(--space-2) 0 0;font-size:var(--font-size-sm)">
+            <p class="text-muted mt-2-sm">
               ${twrResult.reason || 'Cálculo baseado em snapshots diários de patrimônio'}
             </p>
             ${twrResult.series ? `
-              <details style="margin-top:var(--space-3)">
-                <summary class="text-muted" style="cursor:pointer;font-size:var(--font-size-sm)">Ver série (${twrResult.series.length} pontos)</summary>
-                <div class="table-wrapper" style="margin-top:var(--space-2);max-height:200px;overflow:auto">
+              <details class="mt-3">
+                <summary class="text-muted cursor-pointer text-sm">Ver série (${twrResult.series.length} pontos)</summary>
+                <div class="table-wrapper mt-2-scroll-200">
                   <table class="data-table"><thead><tr><th>Data</th><th>Patrimônio</th><th>Investido</th></tr></thead><tbody>
                     ${twrResult.series.slice(-20).map(s => `<tr><td>${s.date}</td><td>${new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(s.value)}</td><td>${new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(s.invested)}</td></tr>`).join('')}
                   </tbody></table>
@@ -893,17 +937,17 @@
             ` : ''}
           </div>
           
-          <div class="card" style="padding:var(--space-4);">
-            <h4 style="margin:0 0 var(--space-2);color:var(--color-muted)">XIRR — Extended Internal Rate of Return</h4>
-            <div style="font-size:var(--font-size-2xl);font-weight:700;margin-bottom:var(--space-2)">${fmtPct(xirrResult.xirr)}</div>
+          <div class="card p-4">
+            <h4 class="mb-0-2-muted">XIRR — Extended Internal Rate of Return</h4>
+            <div class="fs-2xl-700 mb-2">${fmtPct(xirrResult.xirr)}</div>
             ${stateBadge(xirrResult.status, xirrResult.reason)}
-            <p class="text-muted" style="margin:var(--space-2) 0 0;font-size:var(--font-size-sm)">
+            <p class="text-muted mt-2-sm">
               ${xirrResult.reason || 'Baseado em todos os aportes/retiradas + valor atual'}
             </p>
             ${xirrResult.cashflows ? `
-              <details style="margin-top:var(--space-3)">
-                <summary class="text-muted" style="cursor:pointer;font-size:var(--font-size-sm)">Ver fluxos (${xirrResult.cashflows.length} transações)</summary>
-                <div class="table-wrapper" style="margin-top:var(--space-2);max-height:200px;overflow:auto">
+              <details class="mt-3">
+                <summary class="text-muted cursor-pointer text-sm">Ver fluxos (${xirrResult.cashflows.length} transações)</summary>
+                <div class="table-wrapper mt-2-scroll-200">
                   <table class="data-table"><thead><tr><th>Data</th><th>Tipo</th><th>Ativo</th><th>Valor</th></tr></thead><tbody>
                     ${xirrResult.cashflows.slice(-20).map(c => `<tr><td>${c.date}</td><td>${c.type}</td><td>${c.ticker}</td><td class="${c.amount>0?'text-success':'text-error'}">${c.amount>0?'+':''}${new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Math.abs(c.amount))}</td></tr>`).join('')}
                   </tbody></table>
@@ -913,9 +957,9 @@
           </div>
         </div>
         
-        <div class="card" style="padding:var(--space-3);margin-top:var(--space-3);background:var(--color-bg);">
+        <div class="card p-3-mt-3-bg">
           <strong>Metodologia:</strong>
-          <ul style="margin:var(--space-2) 0 0;padding-left:var(--space-4);font-size:var(--font-size-sm);color:var(--color-muted)">
+          <ul class="mt-2-ml-4-sm-muted">
             <li><strong>TWR</strong>: Retorno ponderado pelo tempo — elimina efeito de aportes/retiradas. Calculado encadeando retornos de sub-períodos entre fluxos de caixa.</li>
             <li><strong>XIRR</strong>: Taxa interna de retorno estendida — considera timing e valor de cada aporte/retirada. Resolve NPV=0 via Newton-Raphson.</li>
             <li><strong>Fontes</strong>: Snapshots diários automáticos + lançamentos manuais/importados.</li>
@@ -1488,7 +1532,7 @@
     legend.style.cssText = 'margin-top:var(--space-4);padding:var(--space-3);background:var(--color-bg);border-radius:var(--radius-sm);font-size:var(--font-size-sm);';
     legend.innerHTML = `
       <strong>Legenda de Confiança RF:</strong>
-      <div style="display:flex;gap:var(--space-3);flex-wrap:wrap;margin-top:var(--space-2);">
+      <div class="flex-3-wrap-mt-2">
         ${Object.entries({SUPPORTED:'✅ Suportado',SHADOW:'👁️ Sombra',MANUAL:'✏️ Manual',STALE:'⏳ Desatualizado',UNKNOWN:'❓ Desconhecido'}).map(([k,v])=>`<span title="${window.Investidor10Advanced.RFConfidence.getDisplay(k).description}">${v}</span>`).join('')}
       </div>
     `;
@@ -1591,7 +1635,7 @@ function renderRiskPanel(report) {
   if (corr && corr.tickers.length) {
     const container = document.getElementById('correlationMatrix');
     if (container) {
-      let html = '<table class="data-table" style="font-size:12px"><thead><tr><th></th>';
+      let html = '<table class="data-table text-12"><thead><tr><th></th>';
       corr.tickers.forEach(t => html += `<th>${t}</th>`);
       html += '</tr></thead><tbody>';
       corr.tickers.forEach(t1 => {
@@ -1672,7 +1716,7 @@ function initMonteCarloPanel() {
         if (div && tbl) {
           const rows = Object.entries(results).map(([k, v]) => `
             <tr><th>${v.label}</th><td>${v.median}</td><td>${v.p10}</td><td>${v.survival}</td></tr>`).join('');
-          tbl.innerHTML = `<table class="data-table" style="font-size:var(--font-size-sm)"><tr><th>Cenário</th><th>Mediana</th><th>P10 (pior)</th><th>Sobrevivência</th></tr>${rows}</table>`;
+          tbl.innerHTML = `<table class="data-table text-sm"><tr><th>Cenário</th><th>Mediana</th><th>P10 (pior)</th><th>Sobrevivência</th></tr>${rows}</table>`;
           div.style.display = 'block';
         }
         btnStress.disabled = false;
@@ -1797,14 +1841,14 @@ function initBenchmarksPanel() {
       const result = new BenchmarkEngine({}).backtest(rets, benchRets, { ticker: 'Carteira', currentPct: 100, targetPct: 100 }, null);
       const div = document.getElementById('backtestResults');
       if (div) {
-        const recs = (result.recommendations || []).map(r => `<p style="margin:2px 0;color:var(--color-text-secondary)">• ${r}</p>`).join('');
+        const recs = (result.recommendations || []).map(r => `<p class="m-2px text-secondary">• ${r}</p>`).join('');
         div.innerHTML = `
-          <table class="data-table" style="font-size:var(--font-size-sm)">
+          <table class="data-table text-sm">
             <tr><th>Métrica</th><th>Carteira</th><th>CDI</th><th>Excess</th></tr>
             <tr><td>Retorno total</td><td>${result.portTotal}</td><td>${result.benchTotal}</td><td>${result.excess}</td></tr>
             <tr><td>Max Drawdown</td><td colspan="3">${result.maxDD}</td></tr>
           </table>
-          ${recs ? `<p style="margin-top:var(--space-2);font-weight:600">Recomendações:</p>${recs}` : '<p style="margin-top:var(--space-2);color:var(--color-text-muted)">Sem recomendações — carteira alinhada à meta.</p>'}
+          ${recs ? `<p class="mt-2-fw-600">Recomendações:</p>${recs}` : '<p class="mt-2 text-muted">Sem recomendações — carteira alinhada à meta.</p>'}
         `;
       }
     });
@@ -1822,11 +1866,11 @@ function renderBenchmarksPanel(data) {
     if (!d) return;
     const cls = d.change1d >= 0 ? 'text-success' : 'text-error';
     html += `
-      <div class="kpi-card" style="min-width:160px">
+      <div class="kpi-card minw-160">
         <span class="kpi-label">${d.name}</span>
         <span class="kpi-value">${d.currentPrice?.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:2}) || 'N/A'}</span>
         <span class="kpi-change ${cls}">${fmtPct(d.change1d)} (1D)</span>
-        <span class="kpi-change ${d.changeYTD >= 0 ? 'text-success' : 'text-error'}" style="font-size:11px">${fmtPct(d.changeYTD)} YTD</span>
+        <span class="kpi-change ${d.changeYTD >= 0 ? 'text-success' : 'text-error'}" data-fase-e-class="text-11">${fmtPct(d.changeYTD)} YTD</span>
       </div>`;
   });
   kpis.innerHTML = html;
@@ -2005,16 +2049,16 @@ function renderTaxPanel(report) {
     const irpf = tax.calculateAnnualIRPF(0);
     const fmtPct = (v) => (v * 100).toFixed(2) + '%';
     summaryDiv.innerHTML = `
-      <div class="card" style="padding:var(--space-4)">
+      <div class="card p-4">
         <h4>Cálculo IRPF Anual</h4>
         <p>Renda tributável: ${fmt(irpf.totalTaxableIncome)}</p>
         <p>Imposto devido: ${fmt(irpf.taxDue)}</p>
         <p>IRRF retido + DARFs: ${fmt(irpf.totalIRRF)}</p>
         <p class="${irpf.status === 'RESTITUIÇÃO' ? 'text-success' : 'text-error'}"><strong>${irpf.status}: ${fmt(Math.abs(irpf.balance))}</strong></p>
       </div>
-      <details style="margin-top:var(--space-4)">
+      <details class="mt-4">
         <summary>Ver XML pré-preenchido</summary>
-        <pre style="margin-top:var(--space-2);font-size:10px;background:var(--color-bg);padding:var(--space-2);border-radius:var(--radius-sm);overflow-x:auto;max-height:300px">${tax.exportToIRPFXML().substring(0, 5000)}...</pre>
+        <pre class="debug-box-300">${tax.exportToIRPFXML().substring(0, 5000)}...</pre>
       </details>
     `;
   }
@@ -2257,7 +2301,7 @@ function renderDataTrustPanel() {
     summaryDiv.innerHTML = `
       <div class="kpi-card">
         <span class="kpi-label">Score Geral</span>
-        <span class="kpi-value" style="color: ${portfolioConf.color}">${(portfolioConf.score * 100).toFixed(0)}%</span>
+        <span class="kpi-value" class="dyn-color" data-color="${portfolioConf.color}">${(portfolioConf.score * 100).toFixed(0)}%</span>
       </div>
       <div class="kpi-card">
         <span class="kpi-label">Nível</span>
@@ -2288,7 +2332,7 @@ function renderDataTrustPanel() {
           <td><strong>${ac.ticker}</strong></td>
           <td>${asset?.name || '—'}</td>
           <td><span class="badge badge-info">${ac.source}</span></td>
-          <td><div class="confidence-indicator"><div class="confidence-bar" style="width: ${Math.round(ac.score*100)}%; background: ${ac.color}"></div><span>${Math.round(ac.score*100)}%</span></div></td>
+          <td><div class="confidence-indicator"><div class="confidence-bar" class="dyn-bg" data-w="${Math.round(ac.score*100)}" data-bg="${ac.color}"></div><span>${Math.round(ac.score*100)}%</span></div></td>
           <td><span class="badge badge-${ac.level}">${ac.label}</span></td>
           <td>${factorsHtml || '<span class="text-muted">OK</span>'}</td>
           <td>${ac.lastUpdate ? new Date(ac.lastUpdate).toLocaleDateString('pt-BR') : '<span class="text-muted">—</span>'}</td>
@@ -2323,7 +2367,7 @@ function renderAuditSnapshots() {
   const all = [...dt, ...sm].sort((a, b) => new Date(b.when || 0) - new Date(a.when || 0));
 
   if (all.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--color-muted);padding:var(--space-4)">Nenhum snapshot registrado. Clique em "Criar Snapshot Manual" ou "Backup Agora".</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="center-muted-p4">Nenhum snapshot registrado. Clique em "Criar Snapshot Manual" ou "Backup Agora".</td></tr>';
     return;
   }
 

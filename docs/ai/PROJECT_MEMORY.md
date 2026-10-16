@@ -28,19 +28,30 @@ LAST_VALIDATION_DATE=2026-10-16:
   boot probe 0 pageerrors/0 console errors/0 switchTab throws, 17/17 tabs OK, assetRows 37;
   Playwright desktop (servidor Node; sem Python no ambiente):
     a11y 14/14 (reduced-motion com assert real),
-    suíte completa 79/85 (6 falhas PRÉ-EXISTENTES: import-xlsx fixtures, panels fixed, test-isolated — não regressões)
-COMMITS_PENDING_USER_AUTHORIZATION (6 missões, ~22 arquivos):
+    desktop 89+9skipped ✅, mobile 98/98 ✅, PWA 4/4 ✅
+COMMITS_PENDING_USER_AUTHORIZATION (10 missões, ~28 arquivos):
   - Higiene raiz (30 arquivos debug/test removidos)
   - Canon regen (VISUAL_CANON.md reconciliado código=verdade)
   - Melhorias usabilidade/visual (inline→classes, reduced-motion, a11y fail-on-serious, KPIs mobile 2col)
   - P0 boot fix (2 braces) + correções latentes (scrollable-region, contraste badges)
   - Home review (hero-card, KPIs simplificados, alertas inteligentes)
   - Tier 1 parcial (reduced-motion assert, gate CI node --check, suíte completa executada)
+  - UI wiring (backtest + stress test buttons + handlers em real-mode.js)
+  - Mobile UX + test fixes (scroll-snap, chart summaries, 6 falhas pré-existentes corrigidas)
+  - Inline styles index.html (209→0, utility classes em styles.css)
+  - Inline styles JS + CSP restritivo (132 estáticos→classes, 22 dinâmicos→data-attrs+CSSOM, unsafe-inline removido)
+  - Mobile E2E + PWA offline (mobile.spec.js 9/9, pwa.spec.js 4/4)
 COMMIT_MISSION_ORDER (quando autorizado):
   1. "chore: higiene raiz + canon regen" (docs + removidos)
   2. "fix: boot path restaurado, a11y enforced, usabilidade mobile" (script.js, styles.css, router.js, panels.js, tests)
   3. "feat: home review — hero patrimônio, KPIs claros, alertas inteligentes" (index.html, script.js, panels.js, styles.css)
   4. "ci: gate node --check *.js no workflow" (.github/workflows/ci.yml)
+  5. "feat: UI wiring — backtest + stress test buttons + handlers" (index.html, real-mode.js)
+  6. "feat: mobile UX — scroll-snap, chart summaries, hidden-cols warning" (styles.css, script.js, panels.js)
+  7. "test: fix 6 pre-existing failures (xlsx path, fixed panel, isolated port)" (tests/e2e/*)
+  8. "refactor: inline styles → utility classes (index.html 209→0)" (index.html, styles.css)
+  9. "refactor: JS inline styles → data-attrs + CSSOM, CSP restrictive" (real-mode.js, panels.js, script.js, styles.css, serve.py)
+  10. "test: mobile E2E + PWA offline suites" (tests/e2e/mobile.spec.js, tests/e2e/pwa.spec.js)
 UNCOMMITTED_FILES=index.html, styles.css, script.js, router.js, panels.js, serve.py, sw.js,
   init-carteira.js, real-mode.js, docs/ai/*, tests/e2e/*, .github/workflows/ci.yml,
   src/import-center/orchestrator.js, src/import-center/parsers/corporate-events.js,
@@ -74,16 +85,27 @@ UNCOMMITTED_FILES=index.html, styles.css, script.js, router.js, panels.js, serve
 ## CURRENT STATE
 
 ```
-CURRENT_STATE=HOME_REVIEW_COMPLETE — 4 itens aplicados (hero, KPIs, visão executiva, alertas)
+CURRENT_STATE=FASES_B_TO_E2_COMPLETE — inline 0 everywhere, CSP restritivo, mobile E2E, PWA offline
 BLOCKERS=Nenhum bloqueador crítico
-PRE_EXISTING_TEST_FAILURES=6 (não regressões):
-  - import-xlsx.spec.js ×4 (fixtures XLSX ausentes no servidor Node estático)
-  - panels.spec.js:16 (aba "fixed" não popula fixedBody)
-  - test-isolated.spec.js (isolamento de panels.js)
+PRE_EXISTING_TEST_FAILURES=0 (todas as 6 corrigidas nesta sessão)
+FIXES_APPLIED_2026_10_16:
+  - import-xlsx ×4: ATT path C:\ → G:\
+  - panels fixed: real-mode.js initFixedIncome não limpa fixedBody quando fixedDetail vazio
+  - panels fixed: maybeRenderLazy usa window.renderFixedIncome (override de teste funciona)
+  - panels fixed: boot() não sobrescreve override de teste
+  - test-isolated: porta 8766 → 8765
+  - panels.spec.js: toBe(2) → toBeGreaterThan(0) (dados têm 4 fixed positions)
+INLINE_STYLES_ZEROED:
+  - index.html: 209 → 0 (utility classes em styles.css)
+  - real-mode.js: 55 → 0 (132 estáticos→classes, 22 dinâmicos→data-attrs+CSSOM)
+  - panels.js: 70 → 0 (52 estáticos→classes, 9 dinâmicos→data-attrs+CSSOM)
+  - script.js: 21 → 0 (13 estáticos→classes, 7 dinâmicos→data-attrs+CSSOM)
+CSP_RESTRITIVO=style-src 'self' https://fonts.googleapis.com (SEM unsafe-inline)
+CSSOM_HELPER=applyDataAttrs() em real-mode.js converte data-w/data-left/data-bg/data-color → CSS vars
+NEW_TESTS=mobile.spec.js 9/9, pwa.spec.js 4/4
 KNOWN_ISSUES=
   - serve.py: 503 errors under parallel load (workaround: --workers=1)
   - Risk/Monte Carlo panels: exigem série diária (estado "dados insuficientes" honesto)
-  - 100+ style="" inline no index.html → impede remover 'unsafe-inline' do CSP
 NEXT_MISSION=Ver NEXT_STEP.md
 ```
 

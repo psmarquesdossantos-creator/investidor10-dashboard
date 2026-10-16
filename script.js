@@ -1020,7 +1020,7 @@ function renderAllocationLegend() {
   const data = MOCK_DATA.allocation.byClass;
   els.allocationLegend.innerHTML = data.map(d => `
     <div class="legend-item">
-      <span class="legend-color" style="background:${d.color}"></span>
+      <span class="legend-color" class="chart-legend-dot dyn-bg" data-bg="${d.color}"></span>
       ${d.name}: ${fmt.percent(d.pct)}
     </div>
   `).join('');
@@ -1187,7 +1187,7 @@ function renderPatrimonyDetailLegend() {
     .filter((_, i) => i === 0 || !chart.getDatasetMeta(i).hidden)
     .map((ds, i) => `
       <div class="legend-item">
-        <span class="legend-color" style="background:${ds.borderColor}"></span>
+        <span class="legend-color" class="chart-legend-dot dyn-bg" data-bg="${ds.borderColor}"></span>
         ${ds.label}
       </div>
     `).join('');
@@ -1239,9 +1239,9 @@ function updateReturnsChart() {
 
 function renderReturnsLegend() {
   els.returnLegend.innerHTML = `
-    <div class="legend-item"><span class="legend-color" style="background:${CHART_COLORS.portfolio}"></span> Carteira (Retorno Total: ${fmt.percent(MOCK_DATA.kpis.returnTotal)})</div>
-    <div class="legend-item"><span class="legend-color" style="background:${CHART_COLORS.cdi}"></span> CDI</div>
-    <div class="legend-item"><span class="legend-color" style="background:${CHART_COLORS.ibov}"></span> IBOV</div>
+    <div class="legend-item"><span class="legend-color" class="chart-legend-dot dyn-bg" data-bg="${CHART_COLORS.portfolio}"></span> Carteira (Retorno Total: ${fmt.percent(MOCK_DATA.kpis.returnTotal)})</div>
+    <div class="legend-item"><span class="legend-color" class="chart-legend-dot dyn-bg" data-bg="${CHART_COLORS.cdi}"></span> CDI</div>
+    <div class="legend-item"><span class="legend-color" class="chart-legend-dot dyn-bg" data-bg="${CHART_COLORS.ibov}"></span> IBOV</div>
   `;
   els.twrrValue.textContent = fmt.percent(11.09);
   els.mwrrValue.textContent = fmt.percent(10.42);
@@ -1282,10 +1282,10 @@ function renderPositions() {
     const totalInvested = MOCK_DATA.kpis.invested || 0;
     const lucro = totalValue - totalInvested;
     const valorizacao = totalInvested > 0 ? lucro / totalInvested * 100 : 0;
-    const kpi = (label, value, sub, cls = '') => `<div style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-3);background:var(--color-bg-white)">
-      <div style="font-size:11px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em">${label}</div>
-      <div style="font-size:var(--font-size-lg);font-weight:700;margin:4px 0 2px" class="${cls}">${value}</div>
-      ${sub ? `<div style="font-size:11px;color:var(--color-text-muted)">${sub}</div>` : ''}
+    const kpi = (label, value, sub, cls = '') => `<div class="stat-block">
+      <div class="fs-11-caps">${label}</div>
+      <div class="${cls} fs-lg-700-mt">${value}</div>
+      ${sub ? `<div class="fs-11-muted">${sub}</div>` : ''}
     </div>`;
     strip.innerHTML =
       kpi('Total investido', fmt.currency(totalInvested), `${allPos.length} ativos`) +
@@ -1369,11 +1369,11 @@ function renderPositions() {
           <td class="text-right">${fmt.number(p.qty, 4)}</td>
           <td class="text-right">${fmt.currency(p.avgPrice)}</td>
           <td class="text-right">${fmt.currency(p.currentPrice)}</td>
-          <td class="text-right" style="font-weight:600">${fmt.currency(p.value)}</td>
+          <td class="text-right fw-600">${fmt.currency(p.value)}</td>
           <td class="text-right pl-cell ${p.pl >= 0 ? 'positive' : 'negative'}">${fmt.currency(p.pl)}</td>
           <td class="text-right pct-cell ${p.return >= 0 ? 'positive' : 'negative'}">${fmt.percent(p.return)}</td>
           <td class="text-right">${fmt.percent(p.weight)}</td>
-          <td class="text-right" style="color:var(--color-primary-ink)">${idealAssetPct > 0 ? fmt.percent(idealAssetPct) : '—'}</td>
+          <td class="text-right" class="text-primary-ink">${idealAssetPct > 0 ? fmt.percent(idealAssetPct) : '—'}</td>
           <td class="text-right">${idealAssetPct > 0 ? `<span class="asset-class ${shouldBuy ? 'fiis' : 'bdr'}">${shouldBuy ? 'Sim' : '—'}</span>` : '—'}</td>
           <td class="text-right">${div12mByTicker[p.ticker] > 0 ? fmt.currency(div12mByTicker[p.ticker] / 12) : '—'}</td>
            <td class="text-right">${div12mByTicker[p.ticker] > 0 && p.value > 0 ? fmt.percent(div12mByTicker[p.ticker] / p.value * 100) : '—'}</td>
@@ -1489,7 +1489,7 @@ function renderEarnings() {
     if (filteredEarnings.length === 0) {
       // Empty state
       els.earningsBody.innerHTML = `<tr><td colspan="8" class="empty-cell">
-        <div class="empty-state" style="display:flex;flex-direction:column;align-items:center;padding:var(--space-6);">
+        <div class="empty-state flex-center-col">
           <span class="empty-state-icon" aria-hidden="true">📭</span>
           <p class="empty-state-title">Sem proventos</p>
           <p class="empty-state-desc">Nenhum provento encontrado para os filtros atuais.</p>
@@ -1505,7 +1505,7 @@ function renderEarnings() {
           <td class="text-right">${fmt.number(e.qty)}</td>
           <td class="text-right">${fmt.currency(e.gross)}</td>
           <td class="text-right ${e.tax > 0 ? 'negative' : ''}">${e.tax > 0 ? '-' + fmt.currency(e.tax) : '-'}</td>
-          <td class="text-right" style="font-weight:600">${fmt.currency(e.net)}</td>
+          <td class="text-right fw-600">${fmt.currency(e.net)}</td>
         </tr>
       `).join('');
     }
@@ -1596,7 +1596,7 @@ function renderEntries() {
   if (filteredEntries.length === 0) {
     // Empty state
     els.entriesBody.innerHTML = `<tr><td colspan="10" class="empty-cell">
-      <div class="empty-state" style="display:flex;flex-direction:column;align-items:center;padding:var(--space-6);">
+      <div class="empty-state flex-center-col">
         <span class="empty-state-icon" aria-hidden="true">📝</span>
         <p class="empty-state-title">Sem lançamentos</p>
         <p class="empty-state-desc">Nenhum lançamento encontrado para os filtros atuais.</p>
@@ -1612,9 +1612,9 @@ function renderEntries() {
       <td><span class="asset-class ${e.type}">${getEntryTypeLabel(e.type)}</span></td>
       <td class="text-right">${fmt.number(e.qty, 4)}</td>
       <td class="text-right">${fmt.currency(e.price)}</td>
-      <td class="text-right" style="font-weight:600">${fmt.currency(e.value)}</td>
+      <td class="text-right fw-600">${fmt.currency(e.value)}</td>
       <td class="text-right">${fmt.currency(e.fees)}</td>
-      <td><span class="asset-class" style="background:${getSourceColor(e.source)};color:${getSourceTextColor(e.source)}">${getSourceLabel(e.source)}</span></td>
+      <td><span class="asset-class" class="tag-pill dyn-bg dyn-color" data-bg="${getSourceColor(e.source)}" data-color="${getSourceTextColor(e.source)}">${getSourceLabel(e.source)}</span></td>
       <td>
         <button class="action-btn edit-entry-btn" data-index="${globalIndex}" aria-label="Editar lançamento ${e.ticker}">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -2055,7 +2055,7 @@ function renderLegend(container, items) {
   if (!container) return;
   container.innerHTML = items.map(item => `
     <div class="legend-item">
-      <span class="legend-color" style="background:${item.color}${item.dash ? ';border-top:2px dashed ' + item.color : ''}"></span>
+      <span class="legend-color" class="chart-legend-dot dyn-bg" data-bg="${item.color}${item.dash ? ';border-top:2px dashed ' + item.color : ''}"></span>
       ${item.label}
     </div>
   `).join('');
@@ -2490,7 +2490,7 @@ function renderAlertsList() {
   const alerts = MOCK_DATA.priceAlerts || [];
   
   if (alerts.length === 0) {
-    list.innerHTML = '<p style="padding: var(--space-6); text-align: center; color: var(--color-text-muted);">Nenhum alerta configurado. Clique em "Novo alerta" para começar.</p>';
+    list.innerHTML = '<p class="center-muted-p6">Nenhum alerta configurado. Clique em "Novo alerta" para começar.</p>';
     return;
   }
   
@@ -2522,12 +2522,12 @@ function openAlertModal(alert = null, index = null) {
   const enabled = alert?.enabled !== false;
   
   const html = `
-    <form id="alertForm" class="modal-form" style="margin-top: var(--space-4);">
+    <form id="alertForm" class="modal-form mt-4">
       <input type="hidden" name="editIndex" value="${index ?? ''}">
       <div class="form-row">
         <div class="form-group">
           <label for="alertTicker">Ativo *</label>
-          <input type="text" id="alertTicker" name="ticker" value="${ticker}" placeholder="Ex: PETR4" required style="text-transform: uppercase;">
+          <input type="text" id="alertTicker" name="ticker" value="${ticker}" placeholder="Ex: PETR4" required class="uppercase">
         </div>
         <div class="form-group">
           <label for="alertPrice">Preço alvo *</label>
@@ -2543,7 +2543,7 @@ function openAlertModal(alert = null, index = null) {
           </select>
         </div>
         <div class="form-group">
-          <label style="display: flex; align-items: center; gap: var(--space-2); cursor: pointer;">
+          <label class="flex-2-center cursor-pointer">
             <input type="checkbox" name="enabled" ${enabled ? 'checked' : ''}>
             Ativo
           </label>

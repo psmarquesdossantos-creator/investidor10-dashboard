@@ -469,13 +469,13 @@
     }
 
     host.innerHTML = insights.slice(0, 6).map(i => `
-      <div style="display:flex;gap:var(--space-3);padding:var(--space-3);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-bg-white);align-items:flex-start">
-        <span style="font-size:20px;line-height:1" aria-hidden="true">${i.icon}</span>
+      <div class="flex-3-card">
+        <span class="icon-lg" aria-hidden="true">${i.icon}</span>
         <div>
-          <div style="font-weight:600;font-size:13px">${esc(i.title)}</div>
-          <div class="text-muted" style="font-size:12px;margin-top:2px">${esc(i.text)}</div>
+          <div class="fw-600-13">${esc(i.title)}</div>
+          <div class="text-muted fs-12-mt-2">${esc(i.text)}</div>
         </div>
-      </div>`).join('') || '<p class="text-muted" style="padding:var(--space-3)">Sem insights no momento.</p>';
+      </div>`).join('') || '<p class="text-muted p-3">Sem insights no momento.</p>';
   }
 
   // ===== RESUMO POR CLASSE (modelo Investidor10: % na carteira / % ideal) =====
@@ -483,7 +483,7 @@
     const host = document.getElementById('classSummaryCards');
     if (!host) return;
     const positions = DATA().positions || [];
-    if (!positions.length) { host.innerHTML = '<p class="text-muted" style="padding:var(--space-3)">Sem posições.</p>'; return; }
+    if (!positions.length) { host.innerHTML = '<p class="text-muted p-3">Sem posições.</p>'; return; }
 
     const total = positions.reduce((s, p) => s + (p.value || 0), 0);
     const labels = { stocks: 'Ações', fiis: 'FIIs', etfs: 'ETFs', fixed: 'Renda Fixa', crypto: 'Criptos', bdr: 'BDRs', other: 'Outros', funds: 'Fundos' };
@@ -511,13 +511,13 @@
       const d = byClass[r.c];
       const label = labels[r.c] || r.c;
       const retPct = d.value > 0 ? (d.pl / (d.value - d.pl)) * 100 : null; // PL / custo
-      return `<div style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-3);background:var(--color-bg-white)">
-        <div style="font-weight:700;font-size:var(--font-size-sm);margin-bottom:var(--space-2)">${esc(label)}</div>
-        <div style="font-size:12px;color:var(--color-text-muted)">Ativos: <strong>${d.count}</strong></div>
-        <div style="font-size:12px;color:var(--color-text-muted)">Valor: <strong>${fmtBRL(d.value)}</strong></div>
-        ${retPct != null && Number.isFinite(retPct) ? `<div style="font-size:12px;color:var(--color-text-muted)">Rentab.: <strong class="${retPct >= 0 ? 'positive' : 'negative'}">${fmtPct(retPct)}</strong></div>` : ''}
-        <div style="font-size:12px;margin-top:var(--space-1);color:var(--color-text-muted)">
-          ${fmtNum(r.pct, 0)}% na carteira <span style="opacity:.6">/</span> <strong style="color:var(--color-primary-ink)">${r.ideal}% ideal</strong>
+      return `<div class="stat-block">
+        <div class="fw-700-sm mb-2">${esc(label)}</div>
+        <div class="fs-12-muted">Ativos: <strong>${d.count}</strong></div>
+        <div class="fs-12-muted">Valor: <strong>${fmtBRL(d.value)}</strong></div>
+        ${retPct != null && Number.isFinite(retPct) ? `<div class="fs-12-muted">Rentab.: <strong class="${retPct >= 0 ? 'positive' : 'negative'}">${fmtPct(retPct)}</strong></div>` : ''}
+        <div class="fs-12-mt-1-muted">
+          ${fmtNum(r.pct, 0)}% na carteira <span class="opacity-60">/</span> <strong class="text-primary-ink">${r.ideal}% ideal</strong>
         </div>
       </div>`;
     }).join('');
@@ -585,12 +585,12 @@
       kpi('Sharpe Ratio', sharpe != null ? sharpe.toFixed(2) : '—', sharpe != null && sharpe >= 1 ? 'text-success' : 'text-warning') +
       kpi('Sortino Ratio', sortino != null ? sortino.toFixed(2) : '—', sortino != null && sortino >= 1 ? 'text-success' : 'text-warning') +
       kpi('Meses de histórico', String(n), '') +
-      `<p class="text-muted" style="grid-column:1/-1;font-size:12px;margin:0">Base: ${n} retornos mensais reais da série do patrimônio (amostra limitada — importe snapshots diários para métricas mais robustas).</p>`;
+      `<p class="text-muted grid-1/-1-fs-12-m0">Base: ${n} retornos mensais reais da série do patrimônio (amostra limitada — importe snapshots diários para métricas mais robustas).</p>`;
 
     // Correlação por ativo: requer histórico de preços por ativo — sem inventar dados
     const corrEl = document.getElementById('correlationMatrix');
     if (corrEl) {
-      corrEl.innerHTML = '<p class="text-muted" style="padding:var(--space-4)">Correlação por ativo requer histórico de preços por ativo (ainda não importado). Importe cotações por ativo para habilitar a matriz de correlação real.</p>';
+      corrEl.innerHTML = '<p class="text-muted p-4">Correlação por ativo requer histórico de preços por ativo (ainda não importado). Importe cotações por ativo para habilitar a matriz de correlação real.</p>';
     }
 
     // Rolling chart: 13 pontos mensais são insuficientes para janela de 63 dias
@@ -645,24 +645,24 @@
     const { stats, alerts } = result;
     const order = ['critical', 'warning', 'info'];
     summaryEl.innerHTML = order.map(s => `
-      <div style="padding:var(--space-3);border:1px solid ${Sev[s].border};background:${Sev[s].bg};border-radius:var(--radius-md);text-align:center;">
-        <div style="font-size:var(--font-size-2xl);font-weight:700;color:${Sev[s].color};">${stats[s] || 0}</div>
-        <div style="font-size:var(--font-size-sm);color:${Sev[s].color};">${Sev[s].icon} ${Sev[s].label}</div>
+      <div class="p-3 sev-card" data-border="${Sev[s].border}" data-bg="${Sev[s].bg}">
+        <div class="fs-2xl-700 dyn-color" data-color="${Sev[s].color}">${stats[s] || 0}</div>
+        <div class="text-sm dyn-color" data-color="${Sev[s].color}">${Sev[s].icon} ${Sev[s].label}</div>
       </div>`).join('');
     if (!alerts.length) {
-      listEl.innerHTML = '<p class="text-muted" style="padding:var(--space-4);text-align:center;">✅ Nenhum problema de qualidade detectado.</p>';
+      listEl.innerHTML = '<p class="text-muted p-4-center">✅ Nenhum problema de qualidade detectado.</p>';
       return;
     }
     const sorted = [...alerts].sort((a, b) => order.indexOf(a.severity) - order.indexOf(b.severity));
     listEl.innerHTML = sorted.map(a => `
-      <div style="display:flex;gap:var(--space-3);padding:var(--space-3);border-bottom:1px solid var(--color-border);align-items:flex-start;">
-        <span style="color:${Sev[a.severity].color};font-size:var(--font-size-lg);line-height:1;">${Sev[a.severity].icon}</span>
-        <div style="flex:1;">
-          <div style="font-weight:600;font-size:var(--font-size-sm);">${esc(a.message)}</div>
-          ${a.detail ? `<div class="text-muted" style="font-size:var(--font-size-xs);margin-top:2px;">${esc(a.detail)}</div>` : ''}
-          <div style="font-size:var(--font-size-xs);color:var(--color-muted-foreground);margin-top:2px;">
-            <span class="asset-class" style="font-size:10px;padding:1px 6px;">${esc(a.area)}</span>
-            <span style="color:${Sev[a.severity].color};font-weight:600;margin-left:6px;">${Sev[a.severity].label}</span>
+      <div class="flex-3-card-border-bottom">
+        <span class="dyn-color" data-color="${Sev[a.severity].color}" class="icon-md">${Sev[a.severity].icon}</span>
+        <div class="flex-1">
+          <div class="fw-600-sm">${esc(a.message)}</div>
+          ${a.detail ? `<div class="text-muted fs-xs-mt-2">${esc(a.detail)}</div>` : ''}
+          <div class="fs-xs-mt-2-muted">
+            <span class="asset-class fs-10-p1">${esc(a.area)}</span>
+            <span class="dyn-color fw-600" data-color="${Sev[a.severity].color}">${Sev[a.severity].label}</span>
           </div>
         </div>
       </div>`).join('');
@@ -712,7 +712,7 @@
     const entries = DATA().entries || [];
     const buys = entries.filter(e => e.type === 'buy');
     if (!buys.length) {
-      strip.innerHTML = '<p class="text-muted" style="grid-column:1/-1;padding:var(--space-3)">Nenhum aporte (compra) registrado.</p>';
+      strip.innerHTML = '<p class="text-muted grid-1/-1-p3">Nenhum aporte (compra) registrado.</p>';
       return;
     }
 
@@ -727,10 +727,10 @@
     const mediaMensal = months.length ? totalAportado / months.length : 0;
     const maiorAporte = buys.reduce((mx, e) => Math.max(mx, val(e)), 0);
 
-    const kpi = (label, value, sub, cls = '') => `<div style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-3);background:var(--color-bg-white)">
-      <div style="font-size:11px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em">${label}</div>
-      <div style="font-size:var(--font-size-lg);font-weight:700;margin:4px 0 2px" class="${cls}">${value}</div>
-      ${sub ? `<div style="font-size:11px;color:var(--color-text-muted)">${sub}</div>` : ''}
+    const kpi = (label, value, sub, cls = '') => `<div class="stat-block">
+      <div class="fs-11-caps">${label}</div>
+      <div class="${cls} fs-lg-700-mt">${value}</div>
+      ${sub ? `<div class="fs-11-muted">${sub}</div>` : ''}
     </div>`;
 
     strip.innerHTML =
@@ -797,29 +797,29 @@
     }
 
     const cardHtml = c => `
-      <div class="card" style="padding:var(--space-4)">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:var(--space-2)">
+      <div class="card p-4">
+        <div class="flex-between-start-mb-2">
           <div>
-            <div style="font-weight:700;font-size:15px">${esc(c.title)}</div>
-            <div style="font-size:11px;color:var(--color-primary-ink);text-transform:uppercase;letter-spacing:.05em">${esc(c.tag)}</div>
+            <div class="fs-15-700">${esc(c.title)}</div>
+            <div class="fs-11-caps-ink">${esc(c.tag)}</div>
           </div>
-          <div style="text-align:right">
-            <div style="font-size:22px;font-weight:800;color:var(--color-primary)">${fmtNum(c.pct)}%</div>
+          <div class="text-right">
+            <div class="fs-22-800">${fmtNum(c.pct)}%</div>
           </div>
         </div>
-        <div style="height:10px;border-radius:5px;background:var(--color-bg);overflow:hidden;margin:var(--space-2) 0 var(--space-3)">
-          <div style="width:${Math.min(100, c.pct)}%;height:100%;background:var(--color-primary);border-radius:5px;transition:width .3s"></div>
+        <div class="h-10-track">
+          <div class="h-10-fill" data-w="${Math.min(100, c.pct)}"></div>
         </div>
-        <div style="display:flex;justify-content:space-between;font-size:12px">
+        <div class="flex-between fs-12">
           <span class="text-muted">Atual: <strong>${fmtBRL(c.current)}${c.unit === 'R$/mês' ? '/mês' : ''}</strong></span>
           <span class="text-muted">Objetivo: <strong>${fmtBRL(c.target)}${c.unit === 'R$/mês' ? '/mês' : ''}</strong></span>
         </div>
-        <p class="text-muted" style="font-size:12px;margin:var(--space-2) 0 0">${esc(c.note)}</p>
+        <p class="text-muted fs-12 mt-2">${esc(c.note)}</p>
       </div>`;
 
     host.innerHTML = cards.length
       ? cards.map(cardHtml).join('')
-      : '<p class="text-muted" style="grid-column:1/-1;padding:var(--space-4)">Nenhuma meta configurada. Defina metas em CARTEIRA_META.goals.</p>';
+      : '<p class="text-muted grid-1/-1-p4">Nenhuma meta configurada. Defina metas em CARTEIRA_META.goals.</p>';
 
     // Metas de alocação por classe (real: goals.allocation)
     if (allocHost) {
@@ -830,7 +830,7 @@
       const labelToClass = { 'FII': 'fiis', 'FIIs': 'fiis', 'ETF': 'etfs', 'ETFs': 'etfs', 'Ação': 'stocks', 'Ações': 'stocks', 'Renda Fixa': 'fixed' };
       const allocKeys = Object.keys(alloc);
       if (!allocKeys.length) {
-        allocHost.innerHTML = '<p class="text-muted" style="padding:var(--space-3)">Nenhuma meta de alocação configurada.</p>';
+        allocHost.innerHTML = '<p class="text-muted p-3">Nenhuma meta de alocação configurada.</p>';
       } else {
         allocHost.innerHTML = allocKeys.map(label => {
           const targetPct = alloc[label];
@@ -839,19 +839,19 @@
           const currentPct = byClass / total * 100;
           const diff = currentPct - targetPct;
           const ok = Math.abs(diff) <= 2;
-          return `<div style="display:flex;align-items:center;gap:var(--space-3);padding:var(--space-2) 0;border-bottom:1px solid var(--color-border-light)">
-            <span style="min-width:110px;font-weight:600;font-size:13px">${esc(label)}</span>
-            <div style="flex:1;height:10px;border-radius:5px;background:var(--color-bg);overflow:hidden;position:relative">
-              <div style="width:${Math.min(100, currentPct)}%;height:100%;background:var(--color-primary);border-radius:5px"></div>
-              <div style="position:absolute;top:-2px;left:${Math.min(100, targetPct)}%;width:3px;height:14px;background:var(--color-danger-text);border-radius:1px" title="Meta: ${targetPct}%"></div>
+          return `<div class="flex-3-center-p2-border">
+            <span class="minw-110-fw-600-13">${esc(label)}</span>
+            <div class="h-10-track-rel">
+              <div class="h-10-fill-anim" data-w="${Math.min(100, currentPct)}"></div>
+              <div class="h-10-marker" data-left="${Math.min(100, targetPct)}" title="Meta: ${targetPct}%"></div>
             </div>
-            <span style="min-width:170px;text-align:right;font-size:12px">
+            <span class="minw-170">
               <strong>${fmtNum(currentPct)}%</strong> atual
               <span class="text-muted">/ meta ${targetPct}%</span>
-              <span class="${ok ? 'text-success' : (diff > 0 ? 'text-error' : 'text-warning')}" style="font-weight:600">(${diff >= 0 ? '+' : ''}${fmtNum(diff)}pp)</span>
+              <span class="${ok ? 'text-success' : (diff > 0 ? 'text-error' : 'text-warning')}" data-fe="fw-600">(${diff >= 0 ? '+' : ''}${fmtNum(diff)}pp)</span>
             </span>
           </div>`;
-        }).join('') + '<p class="text-muted" style="font-size:11px;margin:var(--space-2) 0 0">A linha vermelha indica a meta por classe. Verde = dentro da tolerância (±2pp).</p>';
+        }).join('') + '<p class="text-muted fs-11-mt-2">A linha vermelha indica a meta por classe. Verde = dentro da tolerância (±2pp).</p>';
       }
     }
   }
@@ -866,7 +866,7 @@
     const yearEl = document.getElementById('divYearSummary');
     if (!kpiStrip) return;
     if (!earnings.length) {
-      kpiStrip.innerHTML = '<p class="text-muted" style="grid-column:1/-1;padding:var(--space-3)">Sem proventos importados.</p>';
+      kpiStrip.innerHTML = '<p class="text-muted grid-1/-1-p3">Sem proventos importados.</p>';
       return;
     }
 
@@ -905,10 +905,10 @@
     const total12m = (kpis.earnings12m != null) ? kpis.earnings12m : recebidoAno;
     const yieldAtual = kpis.total > 0 ? total12m / kpis.total * 100 : 0;
 
-    const kpiCard = (label, value, sub, cls = '') => `<div style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-3);background:var(--color-bg-white)">
-      <div style="font-size:11px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em">${label}</div>
-      <div style="font-size:var(--font-size-lg);font-weight:700;margin:4px 0 2px" class="${cls}">${value}</div>
-      ${sub ? `<div style="font-size:11px;color:var(--color-text-muted)">${sub}</div>` : ''}
+    const kpiCard = (label, value, sub, cls = '') => `<div class="stat-block">
+      <div class="fs-11-caps">${label}</div>
+      <div class="${cls} fs-lg-700-mt">${value}</div>
+      ${sub ? `<div class="fs-11-muted">${sub}</div>` : ''}
     </div>`;
 
     kpiStrip.innerHTML =
@@ -923,10 +923,10 @@
       const totalAll = Object.values(byTicker).reduce((s, v) => s + v, 0) || 1;
       const ranked = Object.entries(byTicker).sort((a, b) => b[1] - a[1]);
       topEl.innerHTML = ranked.slice(0, 10).map(([t, v], i) => `
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-2) 0;border-bottom:1px solid var(--color-border-light)">
-          <span style="font-weight:600;font-size:13px">${i + 1}. ${esc(t)}</span>
-          <span style="font-size:12px">${fmtBRL(v)} <span class="text-muted">(${fmtNum(v / totalAll * 100)}%)</span></span>
-        </div>`).join('') + (ranked.length > 10 ? `<p class="text-muted" style="font-size:11px;margin:var(--space-2) 0 0">+ ${ranked.length - 10} outros ativos</p>` : '');
+        <div class="flex-between-center-p2-border">
+          <span class="fw-600-13">${i + 1}. ${esc(t)}</span>
+          <span class="text-12">${fmtBRL(v)} <span class="text-muted">(${fmtNum(v / totalAll * 100)}%)</span></span>
+        </div>`).join('') + (ranked.length > 10 ? `<p class="text-muted fs-11-mt-2">+ ${ranked.length - 10} outros ativos</p>` : '');
     }
 
     // --- Histórico mensal Ano × Jan-Dez ---
@@ -937,17 +937,17 @@
         const arr = byMonth[y] || new Array(12).fill(0);
         const mesesAtivos = arr.filter(v => v > 0).length;
         const media = mesesAtivos > 0 ? byYear[y] / mesesAtivos : 0;
-        return `<tr${+y === lastYearWithData ? ' style="font-weight:600;background:var(--color-bg)"' : ''}>
+        return `<tr${+y === lastYearWithData ? ' class="fw-600-bg"' : ''}>
           <td>${y}</td>
           ${arr.map(v => `<td class="text-right">${fmtCell(v)}</td>`).join('')}
           <td class="text-right">${media > 0 ? fmtNum(media, 0) : '—'}</td>
           <td class="text-right">${fmtNum(byYear[y], 0)}</td>
         </tr>`;
       }).join('');
-      gridEl.innerHTML = `<table class="data-table" style="font-size:12px">
+      gridEl.innerHTML = `<table class="data-table text-12">
         <thead><tr><th>Ano</th>${MESES.map(m => `<th class="text-right">${m}</th>`).join('')}<th class="text-right">Média</th><th class="text-right">Total</th></tr></thead>
         <tbody>${rows}</tbody></table>
-        <p class="text-muted" style="font-size:11px;padding:var(--space-2);margin:0">Valores brutos dos proventos importados${years.length ? ' • ' + years.length + ' ano(s) com histórico' : ''}.</p>`;
+        <p class="text-muted fs-11-p2">Valores brutos dos proventos importados${years.length ? ' • ' + years.length + ' ano(s) com histórico' : ''}.</p>`;
     }
 
     // --- Resumo por ano ---
@@ -955,15 +955,15 @@
       const totalAll = Object.values(byYear).reduce((s, v) => s + v, 0) || 1;
       const anoRows = years.slice().reverse().map(y => {
         const pct = byYear[y] / totalAll * 100;
-        return `<div style="display:flex;align-items:center;gap:var(--space-3);padding:var(--space-2) 0">
-          <span style="min-width:44px;font-weight:600">${y}</span>
-          <div style="flex:1;height:10px;border-radius:5px;background:var(--color-bg);overflow:hidden">
-            <div style="width:${pct}%;height:100%;background:var(--color-primary);border-radius:5px"></div>
+        return `<div class="flex-3-center-p2">
+          <span class="minw-44-fw-600">${y}</span>
+          <div class="h-10-track-simple">
+            <div class="h-10-fill-anim" data-w="${pct}"></div>
           </div>
-          <span style="min-width:110px;text-align:right">${fmtBRL(byYear[y])} <span class="text-muted">(${fmtNum(pct)}%)</span></span>
+          <span class="minw-110 text-right">${fmtBRL(byYear[y])} <span class="text-muted">(${fmtNum(pct)}%)</span></span>
         </div>`;
       }).join('');
-      yearEl.innerHTML = anoRows + `<p class="text-muted" style="font-size:11px;margin:var(--space-2) 0 0">Total geral: <strong>${fmtBRL(totalAll)}</strong></p>`;
+      yearEl.innerHTML = anoRows + `<p class="text-muted fs-11-mt-2">Total geral: <strong>${fmtBRL(totalAll)}</strong></p>`;
     }
 
     // --- Gráfico de evolução (2 anos mais recentes) ---
