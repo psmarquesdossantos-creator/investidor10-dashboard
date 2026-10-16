@@ -1354,3 +1354,43 @@ html[data-theme="dark"] {
 .btn:focus-visible, .tab-btn:focus-visible, .filter-select:focus-visible { outline-offset: 2px; }
 .tab-btn, .filter-select, .dropdown-item, [role="menuitem"], [role="tab"] { min-height: 44px; min-width: 44px; }
 .btn-sm, .btn-ghost { padding: 10px 16px; }
+
+/* ========================================
+   Auth Gate (Phase 1) — P21/P22/P27
+   ======================================== */
+body.auth-locked .header,
+body.auth-locked .main,
+body.auth-locked .bottom-nav,
+body.auth-locked #toastContainer { visibility: hidden; }
+
+.auth-loading { position: fixed; inset: 0; z-index: calc(var(--z-toast) + 20); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-4); background: var(--color-bg); color: var(--color-text-secondary); }
+.auth-loading .spinner { width: 32px; height: 32px; border: 3px solid var(--color-border); border-top-color: var(--color-primary); border-radius: 50%; animation: spin .8s linear infinite; }
+
+.auth-gate { position: fixed; inset: 0; z-index: calc(var(--z-toast) + 10); display: flex; align-items: center; justify-content: center; background: var(--color-bg); padding: var(--space-4); overflow-y: auto; }
+.auth-card { background: var(--color-bg-white); border: 1px solid var(--color-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg, 0 8px 24px rgba(0,0,0,.12)); max-width: 400px; width: 100%; padding: var(--space-8); display: flex; flex-direction: column; gap: var(--space-3); }
+.auth-logo { font-size: var(--font-size-xl); font-weight: var(--font-weight-bold); color: var(--color-primary); }
+.auth-card h2 { margin: 0; font-size: var(--font-size-lg); }
+.auth-sub { margin: 0; color: var(--color-text-muted); font-size: var(--font-size-sm); }
+.auth-error { background: color-mix(in srgb, var(--color-error) 10%, transparent); color: var(--color-danger-text); border: 1px solid color-mix(in srgb, var(--color-error) 30%, transparent); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); font-size: var(--font-size-sm); }
+.auth-btn { width: 100%; }
+.auth-divider { display: flex; align-items: center; gap: var(--space-3); color: var(--color-text-muted); font-size: var(--font-size-xs); }
+.auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--color-border-light); }
+.auth-label { font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold); color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+.auth-input { width: 100%; padding: var(--space-2) var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg-white); color: var(--color-text); min-height: 44px; }
+.auth-input:focus-visible { outline: 2px solid var(--color-border-focus); outline-offset: 2px; }
+.auth-link-btn { width: 100%; }
+.auth-hint { margin: 0; font-size: var(--font-size-xs); color: var(--color-text-muted); text-align: center; }
+
+/* Demo badge — P27: persistente, discreto, distinguível do REAL */
+/* hidden explícito (especificidade > display:flex dos componentes acima) */
+.auth-gate.hidden, .auth-loading.hidden, .demo-badge.hidden, .auth-error.hidden { display: none; }
+
+.demo-badge { position: fixed; bottom: var(--space-3); left: var(--space-3); z-index: calc(var(--z-toast) + 5); max-width: 340px; background: color-mix(in srgb, var(--color-warning, #F9AB00) 14%, var(--color-bg-white)); border: 1px solid color-mix(in srgb, var(--color-warning, #F9AB00) 45%, transparent); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); box-shadow: var(--shadow-md, 0 4px 12px rgba(0,0,0,.10)); }
+.demo-badge-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); flex-wrap: wrap; }
+.demo-badge-label { font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; color: var(--color-warning-text, #8a6d00); }
+.demo-badge-text { margin: var(--space-1) 0 0; font-size: var(--font-size-xs); color: var(--color-text-muted); }
+.demo-reset-btn { padding: var(--space-1) var(--space-2); font-size: var(--font-size-xs); min-height: 36px; }
+
+@media (max-width: 639px) {
+  .demo-badge { max-width: calc(100vw - var(--space-6)); bottom: calc(var(--bottom-nav-height, 64px) + var(--space-2)); }
+}

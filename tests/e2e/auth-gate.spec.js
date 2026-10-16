@@ -51,3 +51,49 @@ test.describe('Auth Gate — fixture demo sintética', () => {
     await page.evaluate(() => localStorage.removeItem('investidor10-demo'));
   });
 });
+
+test.describe('Auth Gate — modos forçados (sem Firebase, sem rede)', () => {
+  test('force LOGIN: overlay visível, app oculto, validação inline', async ({ page }) => {
+    await page.addInitScript(() => { window.__AUTH_GATE_FORCE__ = true; });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.locator('#authGate')).toBeVisible();
+    // P22: app não renderiza dados antes da decisão de acesso
+    await expect(page.locator('#kpiTotal')).toBeHidden();
+    await expect(page.locator('body')).toHaveClass(/auth-locked/);
+
+    // submit vazio → erro inline (validação sem rede)
+    await page.click('#authSubmit');
+    await expect(page.locator('#authError')).toBeVisible();
+  });
+
+  test("force DEMO: badge + fixture aplicada + copy P9, app visível", async ({ page }) => {
+    await page.addInitScript(() => { window.__AUTH_GATE_FORCE__ = 'demo'; });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    await page.evaluate(() => localStorage.removeItem('investidor10-demo'));
+
+    await expect(page.locator('#demoBadge')).toBeVisible();
+    await expect(page.locator('#authGate')).toBeHidden();
+    await expect(page.locator('body')).not.toHaveClass(/auth-locked/);
+
+    const total = await page.evaluate(() => window.MOCK_DATA.kpis.total);
+    expect(total).toBe(123456.78); // fixture demo aplicada, não dados locais/reais
+
+    const badgeText = await page.locator('#demoBadge').textContent();
+    expect(badgeText).toContain('MODO DEMONSTRAÇÃO'); // P27
+    expect(badgeText).toContain('fictícios');          // P9 copy exata (frase completa)
+
+    await expect(page.locator('#kpiTotal')).toContainText('123.456');
+  });
+
+  test('force BLOCKED: tela dedicada, app oculto, sem dados', async ({ page }) => {
+    await page.addInitScript(() => { window.__AUTH_GATE_FORCE__ = 'blocked'; });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.locator('#authBlocked')).toBeVisible();
+    await expect(page.locator('#kpiTotal')).toBeHidden();
+  });
+});

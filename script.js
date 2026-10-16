@@ -2751,7 +2751,12 @@ if (typeof Chart === 'undefined') {
 // Init
 // ========================================
 
-function init() {
+async function init() {
+  // P22 (auth): aguarda decisão de acesso (INACTIVE resolve imediato) antes de
+  // renderizar ou carregar qualquer dado. Overlay/loading cobre a UI enquanto isso.
+  if (window.__AUTH_RESOLVED__) { try { await window.__AUTH_RESOLVED__; } catch (e) { console.warn('[boot] auth resolve falhou:', e && e.message); } }
+  const gateMode = (window.AuthGate && window.AuthGate.mode) || 'INACTIVE';
+
   // Initialize DOM references first
   initDOM();
 
@@ -2767,8 +2772,9 @@ function init() {
     if (C.earnings) MOCK_DATA.earnings = C.earnings;
     if (C.entries) MOCK_DATA.entries = C.entries;
     if (C.assetReturns) MOCK_DATA.assetReturns = C.assetReturns;
-  } else {
-    // Load persisted data only when not overriding
+  } else if (gateMode === 'INACTIVE') {
+    // Load persisted data only when not overriding e sem gate ativo
+    // (P26: LOGIN/BLOCKED não carregam cache local; DEMO/REAL têm fonte própria)
     loadFromStorage();
   }
 
@@ -2804,23 +2810,28 @@ function init() {
     }
 
     // Expose data globally for panels.js and other modules (UNKNOWN≠ZERO: data must be accessible)
-    // Object.assign preserva chaves extras (meta, assets, fixedIncome, goals...) da fonte real
-    window.CARTEIRA_DATA = Object.assign({}, window.CARTEIRA_DATA, {
-      kpis: MOCK_DATA.kpis,
-      monthly: MOCK_DATA.monthly,
-      patrimony: MOCK_DATA.patrimony,
-      allocation: MOCK_DATA.allocation,
-      positions: MOCK_DATA.positions,
-      earnings: MOCK_DATA.earnings,
-      entries: MOCK_DATA.entries,
-      assetReturns: MOCK_DATA.assetReturns
-    });
+    // Object.assign preserva chaves extras (meta, assets, fixedIncome, goals...) da fonte real.
+    // DEMO/REAL: o gate é dono de CARTEIRA_DATA (fonte demo/cloud) — não sobrescrever.
+    if (gateMode === 'INACTIVE') {
+      window.CARTEIRA_DATA = Object.assign({}, window.CARTEIRA_DATA, {
+        kpis: MOCK_DATA.kpis,
+        monthly: MOCK_DATA.monthly,
+        patrimony: MOCK_DATA.patrimony,
+        allocation: MOCK_DATA.allocation,
+        positions: MOCK_DATA.positions,
+        earnings: MOCK_DATA.earnings,
+        entries: MOCK_DATA.entries,
+        assetReturns: MOCK_DATA.assetReturns
+      });
+    }
 
     // Setup table export buttons
     setupExportButtons();
 
   // Show welcome toast
-  setTimeout(() => showToast('Dashboard carregado com dados de demonstração', 'info'), 500);
+  if (gateMode === 'INACTIVE') {
+    setTimeout(() => showToast('Dashboard carregado com dados de demonstração', 'info'), 500);
+  }
 }
 
 // Start when DOM ready

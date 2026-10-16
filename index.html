@@ -1488,12 +1488,51 @@
   <!-- TOAST CONTAINER -->
     <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
 
-    <!-- Auth (Phase 1): gate de acesso + fixture demo sintética (P12/P26) -->
+    <!-- AUTH GATE (Phase 1): overlay de acesso — P21/P22/P27 -->
+    <div id="authLoading" class="auth-loading hidden" role="status" aria-live="polite">
+      <div class="spinner" aria-hidden="true"></div>
+      <p>Verificando acesso…</p>
+    </div>
+    <section id="authGate" class="auth-gate hidden" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+      <div class="auth-card">
+        <div class="auth-logo" aria-hidden="true">Investidor10</div>
+        <h2 id="authTitle">Acesso restrito</h2>
+        <p class="auth-sub">Entre para acessar sua carteira. Contas não autorizadas entram no modo demonstração.</p>
+        <div id="authError" class="auth-error hidden"></div>
+        <button id="authGoogle" class="btn btn-secondary auth-btn" type="button">Continuar com Google</button>
+        <div class="auth-divider" aria-hidden="true"><span>ou</span></div>
+        <label class="auth-label" for="authEmail">E-mail</label>
+        <input id="authEmail" type="email" autocomplete="email" class="auth-input" />
+        <label class="auth-label" for="authPassword">Senha</label>
+        <input id="authPassword" type="password" autocomplete="current-password" class="auth-input" />
+        <button id="authSubmit" class="btn btn-primary auth-btn" type="button">Entrar</button>
+        <button id="authSignup" class="btn btn-ghost auth-link-btn" type="button">Criar conta</button>
+        <p class="auth-hint">Não tem acesso autorizado? Entre com sua conta para explorar o modo demonstração.</p>
+      </div>
+    </section>
+    <section id="authBlocked" class="auth-gate hidden" role="dialog" aria-modal="true" aria-labelledby="authBlockedTitle">
+      <div class="auth-card">
+        <h2 id="authBlockedTitle">Acesso bloqueado</h2>
+        <p class="auth-sub">Sua conta não tem permissão para acessar este aplicativo. Contate o administrador.</p>
+      </div>
+    </section>
+    <div id="demoBadge" class="demo-badge hidden" role="status">
+      <div class="demo-badge-row">
+        <span class="demo-badge-label">MODO DEMONSTRAÇÃO</span>
+        <button id="btnDemoReset" class="btn btn-ghost demo-reset-btn" type="button">Restaurar dados de demonstração</button>
+      </div>
+      <p class="demo-badge-text">Os dados desta carteira são fictícios e servem apenas para demonstrar o funcionamento do sistema.</p>
+    </div>
+
+    <!-- Ordem P22: carteira-data.js (fonte local, se existir) → gate sobrescreve
+         conforme modo (DEMO=fixture / REAL=cloud) → script.js aplica após resolver -->
+    <script src="carteira-data.js?v=20261012"></script>
+    <!-- Auth (Phase 1): fixture demo + data sources ANTES do gate (gate os usa no boot) -->
     <script src="src/auth/demo-fixture.js"></script>
     <script src="src/auth/sync/data-source.js"></script>
     <script src="src/auth/sync/local-demo-source.js"></script>
+    <script src="src/auth/auth-gate.js"></script>
     <script src="script.js"></script>
-    <script src="carteira-data.js?v=20261012"></script>
     <!-- Import Center -->
     <script src="src/import-center/parsers/xlsx-core.js"></script>
     <script src="src/import-center/detectors.js"></script>
