@@ -2526,3 +2526,100 @@ function initDataTrustPanel() {
 // Expose for global access
 window.renderDataTrustPanel = renderDataTrustPanel;
 window.initDataTrustPanel = initDataTrustPanel;
+
+// ========================================
+// Fase H — Calendário de Dividendos + Export PDF
+// ========================================
+(function() {
+  'use strict';
+
+  let calYear = new Date().getFullYear();
+  let calMonth = new Date().getMonth(); // 0-11
+
+  const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const DOW = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+  function getEarningsByDate() {
+    const earnings = window.CARTEIRA_DATA?.earnings || window.MOCK_DATA?.earnings || [];
+    const map = {};
+    earnings.forEach(e => {
+      if (!e.date) return;
+      const key = e.date; // YYYY-MM-DD
+      if (!map[key]) map[key] = [];
+      map[key].push(e);
+    });
+    return map;
+  }
+
+  function renderCalendar() {
+    const container = document.getElementById('divCalendar');
+    const label = document.getElementById('calMonthLabel');
+    if (!container) return;
+    if (label) label.textContent = `${MONTHS[calMonth]} ${calYear}`;
+
+    const byDate = getEarningsByDate();
+    const firstDay = new Date(calYear, calMonth, 1).getDay();
+    const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+    const today = new Date();
+    const todayStr = today.toISOString().slice(0, 10);
+
+    let html = DOW.map(d => `<div class="cal-header">${d}</div>`).join('');
+
+    // Empty cells before first day
+    for (let i = 0; i < firstDay; i++) {
+      html += '<div class="cal-day empty"></div>';
+    }
+
+    // Days
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const events = byDate[dateStr] || [];
+      const isToday = dateStr === todayStr;
+      html += `<div class="cal-day${isToday ? ' today' : ''}" aria-label="${d} de ${MONTHS[calMonth]}${events.length ? ', ' + events.length + ' provento(s)' : ''}">
+        <span class="cal-day-num">${d}</span>`;
+      events.slice(0, 2).forEach(e => {
+        const type = (e.type || 'dividend').toLowerCase();
+        const label = e.ticker || '?';
+        html += `<span class="cal-event${type === 'jcp' ? ' jcp' : ''}" title="${e.ticker}: ${fmt.cur(e.gross ?? e.grossValue ?? 0)}">${label}</span>`;
+      });
+      if (events.length > 2) html += `<span class="cal-event">+${events.length - 2}</span>`;
+      html += '</div>';
+    }
+
+    container.innerHTML = html;
+  }
+
+  // Nav buttons
+  document.addEventListener('DOMContentLoaded', () => {
+    const prev = document.getElementById('calPrevBtn');
+    const next = document.getElementById('calNextBtn');
+    if (prev) prev.addEventListener('click', () => {
+      calMonth--;
+      if (calMonth < 0) { calMonth = 11; calYear--; }
+      renderCalendar();
+    });
+    if (next) next.addEventListener('click', () => {
+      calMonth++;
+      if (calMonth > 11) { calMonth = 0; calYear++; }
+      renderCalendar();
+    });
+
+    // Render calendar when earnings tab becomes visible
+    const observer = new MutationObserver(() => {
+      const panel = document.getElementById('panel-earnings');
+      if (panel && !panel.hidden) renderCalendar();
+    });
+    const earningsTab = document.getElementById('tab-earnings');
+    if (earningsTab) observer.observe(earningsTab, { attributes: true, attributeFilter: ['class'] });
+
+    // Export PDF
+    const pdfBtn = document.getElementById('exportPdfBtn');
+    if (pdfBtn) pdfBtn.addEventListener('click', () => {
+      toast('Preparando PDF…', 'info');
+      setTimeout(() => window.print(), 300);
+    });
+  });
+
+  // Expose for manual render
+  window.renderDivCalendar = renderCalendar;
+})();

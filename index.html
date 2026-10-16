@@ -400,6 +400,29 @@
           </div>
         </article>
 
+        <!-- Calendário de Dividendos (Fase H) -->
+        <article class="card mb-6" aria-labelledby="divCalTitle">
+          <div class="flex-between mb-3">
+            <h3 id="divCalTitle">Calendário de Proventos</h3>
+            <div class="flex-2-center">
+              <button class="btn btn-ghost btn-sm" id="calPrevBtn" aria-label="Mês anterior">‹</button>
+              <span id="calMonthLabel" class="fw-600">—</span>
+              <button class="btn btn-ghost btn-sm" id="calNextBtn" aria-label="Próximo mês">›</button>
+            </div>
+          </div>
+          <div id="divCalendar" class="div-calendar">
+            <p class="text-muted p-4">Carregando…</p>
+          </div>
+        </article>
+
+        <!-- Export PDF (Fase H) -->
+        <div class="flex-2-center mb-4">
+          <button class="btn btn-ghost btn-sm" id="exportPdfBtn" aria-label="Exportar relatório em PDF">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            Exportar PDF
+          </button>
+        </div>
+
         <!-- Tabela de eventos (existente) -->
         <div class="table-toolbar">
           <div class="toolbar-filters">
