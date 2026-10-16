@@ -39,6 +39,7 @@ TESTES (dados reais sem CSP, full): 276 passed + 18 skipped ✅
 CSP: style-src 'self' sem unsafe-inline — 0 violações (A11y styles migrados p/ CSS)
 INLINE_STYLES=0; SW cache parcial resiliente (allSettled)
 DEPLOY=GitHub Pages ativo (push automático a cada commit em main)
+CI=VERDE — run 38944485486 (b2db200): Lint ✅ Desktop ✅ Mobile ✅ Tablet ✅ A11y ✅ Security ✅ Build ✅
 BLOCKERS=nenhum
 ```
 
