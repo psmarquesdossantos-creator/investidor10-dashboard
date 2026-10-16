@@ -1,0 +1,33 @@
+rules_version = '2';
+
+// Firestore Rules — Investidor10 Dashboard (Phase 1)
+// P5: frontend account mode é UX apenas — estas rules são a barreira real.
+// P6: dados isolados por UID (User A nunca acessa User B).
+// P14: matriz de ataque coberta em tests/rules/rules.test.js (emulator).
+// P16: registry de autorização só é escrito pelo Admin SDK/console (client: deny).
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // P3/P15/P16: allowlist — authorization/{uid} = { email(normalizado), enabled, role, blocked }
+    // Leitura: apenas pelo próprio uid autenticado. Escrita: NUNCA pelo client.
+    match /authorization/{uid} {
+      allow get, list: if request.auth != null && request.auth.uid == uid;
+      allow create, update, delete: if false; // só console/Admin SDK
+    }
+
+    // P6/P24: dados do usuário — isolamento por UID + autorização server-side.
+    match /users/{uid}/{document=**} {
+      allow read, write: if isAuthorized(uid);
+    }
+
+    function isAuthorized(uid) {
+      return request.auth != null
+        && request.auth.uid == uid
+        // P15: enforcement por UID (determinístico); email normalizado vive no doc p/ policy
+        && exists(/databases/$(database)/documents/authorization/$(request.auth.uid))
+        && get(/databases/$(database)/documents/authorization/$(request.auth.uid)).data.enabled == true
+        && get(/databases/$(database)/documents/authorization/$(request.auth.uid)).data.blocked != true;
+    }
+  }
+}
