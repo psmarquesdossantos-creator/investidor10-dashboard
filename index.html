@@ -49,7 +49,7 @@
                 </button>
                 <button class="btn btn-ghost" id="commandPaletteToggle" aria-label="Abrir paleta de comandos (Cmd+K)">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                  <kbd style="font-size:10px;padding:1px 4px;border-radius:3px;background:var(--color-bg);border:1px solid var(--color-border);margin-left:4px">⌘K</kbd>
+                  <kbd class="kbd kbd-gap">⌘K</kbd>
                 </button>
                 <div class="user-menu">
               <button class="user-avatar" id="userAvatar" aria-expanded="false" aria-haspopup="true" aria-label="Menu do usuário">
@@ -59,7 +59,7 @@
                 <button class="dropdown-item" role="menuitem">Meu perfil</button>
                 <button class="dropdown-item" role="menuitem">Configurações</button>
                 <button class="dropdown-item" role="menuitem">Ajuda</button>
-                <hr style="margin: var(--space-2) 0; border-color: var(--color-border);">
+                <hr class="dropdown-divider">
                 <button class="dropdown-item" role="menuitem" style="color: var(--color-error);">Sair</button>
               </div>
             </div>
@@ -81,17 +81,15 @@
                     <button role="tab" id="tab-rebalance" aria-controls="panel-rebalance" aria-selected="false" class="tab-btn" data-tab="rebalance" tabindex="-1">Rebalancear</button>
                     <button role="tab" id="tab-risk" aria-controls="panel-risk" aria-selected="false" class="tab-btn" data-tab="risk" tabindex="-1">Risco</button>
                     <button role="tab" id="tab-montecarlo" aria-controls="panel-montecarlo" aria-selected="false" class="tab-btn" data-tab="montecarlo" tabindex="-1">Monte Carlo</button>
+                    <button role="tab" id="tab-data-trust" aria-controls="panel-data-trust" aria-selected="false" class="tab-btn" data-tab="data-trust" tabindex="-1">Data Trust</button>
+                    <button role="tab" id="tab-goals" aria-controls="panel-goals" aria-selected="false" class="tab-btn" data-tab="goals" tabindex="-1">Metas</button>
                     <span class="tabs-group-label" aria-hidden="true">Mercado</span>
                     <button role="tab" id="tab-benchmarks" aria-controls="panel-benchmarks" aria-selected="false" class="tab-btn" data-tab="benchmarks" tabindex="-1">Benchmarks</button>
                     <button role="tab" id="tab-tax" aria-controls="panel-tax" aria-selected="false" class="tab-btn" data-tab="tax" tabindex="-1">Impostos</button>
+                    <button role="tab" id="tab-corporate-events" aria-controls="panel-corporate-events" aria-selected="false" class="tab-btn" data-tab="corporate-events" tabindex="-1">Eventos Corp.</button>
                     <span class="tabs-group-label" aria-hidden="true">Configurações</span>
                     <button role="tab" id="tab-import" aria-controls="panel-import" aria-selected="false" class="tab-btn" data-tab="import" tabindex="-1">Importar</button>
                     <button role="tab" id="tab-backup" aria-controls="panel-backup" aria-selected="false" class="tab-btn" data-tab="backup" tabindex="-1">Backup</button>
-                    <span class="tabs-group-label" aria-hidden="true">Eventos</span>
-                    <button role="tab" id="tab-corporate-events" aria-controls="panel-corporate-events" aria-selected="false" class="tab-btn" data-tab="corporate-events" tabindex="-1">Eventos Corp.</button>
-                    <span class="tabs-group-label" aria-hidden="true">Confiança</span>
-                    <button role="tab" id="tab-data-trust" aria-controls="panel-data-trust" aria-selected="false" class="tab-btn" data-tab="data-trust" tabindex="-1">Data Trust</button>
-                    <span class="tabs-group-label" aria-hidden="true">Backup</span>
                     <button role="tab" id="tab-backup-portability" aria-controls="panel-backup-portability" aria-selected="false" class="tab-btn" data-tab="backup-portability" tabindex="-1">Backup Port.</button>
                     <div class="tab-indicator"></div>
                   </div>
@@ -108,18 +106,26 @@
 
       <!-- SUMMARY TAB -->
       <section role="tabpanel" aria-labelledby="tab-summary" class="tab-panel active" id="panel-summary">
-        <!-- KPI Cards -->
-        <div class="kpi-grid" role="region" aria-label="Indicadores principais">
-          <article class="kpi-card kpi-card--primary">
-            <div class="kpi-icon" aria-hidden="true">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-            </div>
-            <div class="kpi-content">
-              <p class="kpi-label">Patrimônio total</p>
-              <p class="kpi-value" id="kpiTotal">R$ 686.972,13</p>
-              <p class="kpi-change positive" id="kpiTotalChange">+1,77% <span class="kpi-period">(12M)</span></p>
-            </div>
-          </article>
+
+        <!-- Alertas inteligentes -->
+        <div id="alertBanners" role="region" aria-label="Alertas" style="margin-bottom: var(--space-4)"></div>
+
+        <!-- Hero: Patrimônio em destaque -->
+        <article class="hero-card" aria-labelledby="heroTitle">
+          <div class="hero-left">
+            <p class="hero-label">Patrimônio total</p>
+            <p class="hero-value" id="kpiTotal">R$ 686.972,13</p>
+            <p class="hero-change" id="kpiTotalChange">— <span class="kpi-period">(Total)</span></p>
+          </div>
+          <div class="hero-right">
+            <p class="hero-date-label">Última atualização</p>
+            <p class="hero-date-value" id="dataFreshnessLabel">—</p>
+            <p class="hero-period">12 meses</p>
+          </div>
+        </article>
+
+        <!-- KPIs secundários: 4 indicadores essenciais -->
+        <div class="kpi-grid kpi-grid--compact" role="region" aria-label="Indicadores principais">
           <article class="kpi-card kpi-card--secondary">
             <div class="kpi-icon" aria-hidden="true">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
@@ -135,9 +141,9 @@
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
             </div>
             <div class="kpi-content">
-              <p class="kpi-label">Lucro total</p>
-              <p class="kpi-value positive" id="kpiProfit">R$ 131.023,55</p>
-              <p class="kpi-change positive">+32,41% <span class="kpi-period">(Total)</span></p>
+              <p class="kpi-label">Resultado não realizado</p>
+              <p class="kpi-value" id="kpiCapitalGain">R$ 11.928,84</p>
+              <p class="kpi-change neutral">Ganho de capital (patrimônio − investido)</p>
             </div>
           </article>
           <article class="kpi-card kpi-card--secondary">
@@ -145,19 +151,9 @@
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/><circle cx="12" cy="12" r="3" fill="#34A853"/></svg>
             </div>
             <div class="kpi-content">
-              <p class="kpi-label">Ganho de Capital</p>
-              <p class="kpi-value" id="kpiCapitalGain">R$ 11.928,84</p>
-              <p class="kpi-change neutral">Realizado no período</p>
-            </div>
-          </article>
-          <article class="kpi-card kpi-card--secondary">
-            <div class="kpi-icon" aria-hidden="true">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/><path d="M12 8v4M10 12h4" stroke="#F9AB00" stroke-width="2"/></svg>
-            </div>
-            <div class="kpi-content">
-              <p class="kpi-label">Dividendos Recebidos</p>
-              <p class="kpi-value" id="kpiDividends">R$ 119.094,71</p>
-              <p class="kpi-change neutral">Acumulado histórico</p>
+              <p class="kpi-label">Proventos recebidos</p>
+              <p class="kpi-value" id="kpiDividends">R$ —</p>
+              <p class="kpi-change neutral" id="kpiDividendsChange">Média dos últimos 12 meses</p>
             </div>
           </article>
           <article class="kpi-card kpi-card--secondary">
@@ -167,7 +163,7 @@
             <div class="kpi-content">
               <p class="kpi-label">Proventos (12M)</p>
               <p class="kpi-value" id="kpiEarnings12m">R$ 32.323,72</p>
-              <p class="kpi-change positive">Renda passiva anual</p>
+              <p class="kpi-change neutral" id="kpiYield12m">Yield 12M: —</p>
             </div>
           </article>
         </div>
@@ -214,7 +210,23 @@
               Exportar CSV
             </button>
           </article>
+
+          <!-- Cards por classe (modelo Investidor10): % na carteira / % ideal -->
+          <article class="card full-width" style="margin-top:var(--space-6)" aria-labelledby="classSummaryTitle">
+            <h2 id="classSummaryTitle" style="margin:0 0 var(--space-3)">Resumo por Classe de Ativo</h2>
+            <div id="classSummaryCards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:var(--space-3)">
+              <p class="text-muted" style="padding:var(--space-3)">Carregando…</p>
+            </div>
+          </article>
         </div>
+
+        <!-- Alertas e insights (modelo Tela Principal de referência) -->
+        <article class="card full-width" style="margin-top:var(--space-6)" aria-labelledby="insightsTitle">
+          <h2 id="insightsTitle" style="margin:0 0 var(--space-3)">Alertas e Insights</h2>
+          <div id="insightsList" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:var(--space-3)">
+            <p class="text-muted" style="padding:var(--space-3)">Carregando…</p>
+          </div>
+        </article>
 
         <!-- Returns Summary -->
         <div class="returns-grid">
@@ -223,7 +235,7 @@
               <h3 id="return12mTitle" class="return-title">Rentabilidade (12M)</h3>
               <p class="return-subtitle">vs CDI: +2,3pp</p>
             </header>
-            <div class="return-value positive" id="return12m">11,09%</div>
+            <div class="return-value" id="return12m">—</div>
             <div class="return-benchmarks">
               <span class="benchmark"><span class="benchmark-dot" style="background:#1A73E8"></span> CDI: 8,79%</span>
               <span class="benchmark"><span class="benchmark-dot" style="background:#EA4335"></span> IBOV: 14,22%</span>
@@ -234,7 +246,7 @@
               <h3 id="returnTotalTitle" class="return-title">Rentabilidade Total</h3>
               <p class="return-subtitle">Desde o primeiro aporte</p>
             </header>
-            <div class="return-value positive" id="returnTotal">32,41%</div>
+            <div class="return-value" id="returnTotal">—</div>
             <div class="return-benchmarks">
               <span class="benchmark"><span class="benchmark-dot" style="background:#1A73E8"></span> CDI: 18,45%</span>
               <span class="benchmark"><span class="benchmark-dot" style="background:#EA4335"></span> IBOV: 28,10%</span>
@@ -276,6 +288,10 @@
 
       <!-- POSITIONS TAB -->
       <section role="tabpanel" aria-labelledby="tab-positions" class="tab-panel" id="panel-positions" hidden>
+        <!-- KPI strip (modelo Tela de aportes e ativos) -->
+        <div id="positionsKpiStrip" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-3);margin-bottom:var(--space-4)">
+          <p class="text-muted" style="padding:var(--space-3)">Carregando…</p>
+        </div>
         <div class="table-toolbar">
           <div class="toolbar-search">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -313,6 +329,10 @@
                 <th scope="col">P&L</th>
                 <th scope="col">Rentab.</th>
                 <th scope="col">% Carteira</th>
+                <th scope="col">% Ideal</th>
+                <th scope="col">Comprar?</th>
+                <th scope="col">Div./mês (12M)</th>
+                <th scope="col">DY</th>
                 <th scope="col"><span class="visually-hidden">Ações</span></th>
               </tr>
             </thead>
@@ -337,26 +357,48 @@
 
       <!-- EARNINGS TAB -->
       <section role="tabpanel" aria-labelledby="tab-earnings" class="tab-panel" id="panel-earnings" hidden>
-        <div class="earnings-header">
-          <div class="earnings-summary">
-            <div class="earnings-kpi">
-              <p class="kpi-label">Total recebido</p>
-              <p class="kpi-value">R$ 119.094,71</p>
-            </div>
-            <div class="earnings-kpi">
-              <p class="kpi-label">Últimos 12 meses</p>
-              <p class="kpi-value">R$ 32.323,72</p>
-            </div>
-            <div class="earnings-kpi">
-              <p class="kpi-label">Próximos 30 dias</p>
-              <p class="kpi-value">R$ 4.210,50</p>
-            </div>
-            <div class="earnings-kpi">
-              <p class="kpi-label">Yield projetado</p>
-              <p class="kpi-value">4,71% a.a.</p>
-            </div>
-          </div>
+        <div class="panel-header" style="margin-bottom: var(--space-4)">
+          <h2 style="font-size: var(--font-size-xl);margin:0 0 var(--space-1)">Dividendos</h2>
+          <p class="text-muted" style="margin:0">Acompanhe sua renda passiva mês a mês</p>
         </div>
+
+        <!-- KPI strip (modelo Investidor10/reference) -->
+        <div id="divKpiStrip" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--space-3);margin-bottom:var(--space-6)">
+          <p class="text-muted" style="padding:var(--space-3)">Carregando…</p>
+        </div>
+
+        <!-- Evolução + Top ativos lado a lado -->
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:var(--space-4);margin-bottom:var(--space-6)" id="divChartsRow">
+          <article class="chart-card" aria-labelledby="divEvoTitle">
+            <header class="chart-header"><h2 id="divEvoTitle" class="chart-title">Evolução da Renda (Total por mês)</h2></header>
+            <div class="chart-container" role="img" aria-label="Gráfico de linha comparando evolução dos proventos nos dois anos mais recentes"><canvas id="divEvoChart"></canvas></div>
+            <p class="text-muted" style="font-size:12px;padding:0 var(--space-4) var(--space-3);margin:0">Comparação entre os dois anos mais recentes com proventos.</p>
+          </article>
+          <article class="card" aria-labelledby="divTopTitle">
+            <h3 id="divTopTitle" style="margin:0 0 var(--space-3)">Top Ativos</h3>
+            <div id="divTopAssets" style="max-height:340px;overflow-y:auto">
+              <p class="text-muted" style="padding:var(--space-3)">Carregando…</p>
+            </div>
+          </article>
+        </div>
+
+        <!-- Histórico mensal Ano × Jan-Dez -->
+        <article class="card" style="margin-bottom:var(--space-6)" aria-labelledby="divHistTitle">
+          <h3 id="divHistTitle" style="margin:0 0 var(--space-3)">Histórico Mensal</h3>
+          <div id="divMonthlyGrid" class="table-wrapper">
+            <p class="text-muted" style="padding:var(--space-4)">Carregando…</p>
+          </div>
+        </article>
+
+        <!-- Resumo por ano -->
+        <article class="card" style="margin-bottom:var(--space-6)" aria-labelledby="divYearTitle">
+          <h3 id="divYearTitle" style="margin:0 0 var(--space-3)">Resumo por Ano</h3>
+          <div id="divYearSummary">
+            <p class="text-muted" style="padding:var(--space-4)">Carregando…</p>
+          </div>
+        </article>
+
+        <!-- Tabela de eventos (existente) -->
         <div class="table-toolbar">
           <div class="toolbar-filters">
             <select class="filter-select" id="earningsType" aria-label="Tipo de provento">
@@ -430,6 +472,13 @@
           </header>
           <div class="chart-container large" role="img" aria-label="Gráfico de área comparando patrimônio com benchmarks"><canvas id="patrimonyDetailChart" width="1200" height="450"></canvas></div>
           <div class="chart-legend" id="patrimonyDetailLegend"></div>
+        </article>
+
+        <article class="card" style="margin-top:var(--space-6)" aria-labelledby="patrimonyTableTitle">
+          <h2 id="patrimonyTableTitle" style="margin:0 0 var(--space-3)">Resumo Mensal</h2>
+          <div id="patrimonySummaryTable" class="table-wrapper">
+            <p class="text-muted" style="padding:var(--space-4)">Carregando série mensal…</p>
+          </div>
         </article>
       </section>
 
@@ -517,12 +566,48 @@
                 </table>
               </div>
             </article>
+
+            <!-- Rentabilidade por classe (modelo investidor10: por tipo de ativo) -->
+            <article class="table-card" aria-labelledby="classReturnTitle" style="margin-top:var(--space-4)">
+              <header class="table-header">
+                <h2 id="classReturnTitle" class="table-title">Rentabilidade por Classe</h2>
+              </header>
+              <div class="table-wrapper">
+                <table class="data-table" id="classReturnTable">
+                  <thead>
+                    <tr>
+                      <th scope="col">Classe</th>
+                      <th scope="col">Ativos</th>
+                      <th scope="col">Custo total</th>
+                      <th scope="col">Valor atual</th>
+                      <th scope="col">Resultado (P&L)</th>
+                      <th scope="col">Rentab. ponderada</th>
+                      <th scope="col">% na carteira</th>
+                    </tr>
+                  </thead>
+                  <tbody id="classReturnBody"></tbody>
+                </table>
+              </div>
+              <p class="text-muted" style="font-size:11px;padding:0 var(--space-4) var(--space-3);margin:0">Rentabilidade ponderada desde aquisição (P&L / custo). "No ano" requer cotação de 01/01 — importe snapshots diários para habilitar.</p>
+            </article>
           </div>
         </div>
       </section>
 
       <!-- ENTRIES TAB -->
       <section role="tabpanel" aria-labelledby="tab-entries" class="tab-panel" id="panel-entries" hidden>
+        <!-- APORTES: KPI strip + gráfico mensal (modelo Tela de aportes e ativos) -->
+        <div class="panel-header" style="margin-bottom: var(--space-4)">
+          <h2 style="font-size: var(--font-size-xl);margin:0 0 var(--space-1)">Lançamentos & Aportes</h2>
+          <p class="text-muted" style="margin:0">Acompanhe todos os aportes e operações da carteira</p>
+        </div>
+        <div id="aportesKpiStrip" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:var(--space-3);margin-bottom:var(--space-4)">
+          <p class="text-muted" style="padding:var(--space-3)">Carregando…</p>
+        </div>
+        <article class="chart-card" style="margin-bottom:var(--space-6)" aria-labelledby="aportesChartTitle">
+                  <header class="chart-header"><h2 id="aportesChartTitle" class="chart-title">Aportes por Mês</h2></header>
+                  <div class="chart-container" role="img" aria-label="Gráfico de barras mostrando valor dos aportes mensais"><canvas id="aportesChart"></canvas></div>
+        </article>
         <div class="table-toolbar">
           <div class="toolbar-filters">
             <select class="filter-select" id="entriesType" aria-label="Tipo de lançamento">
@@ -637,7 +722,6 @@
           </table>
         </div>
       </section>
-    </div>
 
     <!-- NOVOS PAINÉIS: Risco, Monte Carlo, Benchmarks, Impostos -->
     <section role="tabpanel" aria-labelledby="tab-risk" class="tab-panel" id="panel-risk" hidden>
@@ -648,7 +732,7 @@
     <div class="kpi-grid" id="riskKpis" style="margin-bottom: var(--space-4)"></div>
     <div class="card" style="padding: var(--space-6);margin-bottom: var(--space-4)">
       <h3 style="margin:0 0 var(--space-3)">Correlation Matrix</h3>
-      <div id="correlationMatrix" style="overflow-x:auto"></div>
+      <div id="correlationMatrix"></div>
     </div>
     <div class="card" style="padding: var(--space-6)">
       <h3 style="margin:0 0 var(--space-3)">Rolling Metrics (63 dias)</h3>
@@ -684,11 +768,16 @@
           <input type="number" id="mcVol" value="18" min="0" max="100" step="0.5" style="width:100px">
         </div>
         <button class="btn btn-primary" id="btnRunMC" style="height:38px">Executar Simulação</button>
+        <button class="btn btn-ghost" id="btnRunStress">Stress Test</button>
       </div>
     </div>
     <div class="kpi-grid" id="mcKpis" style="margin-bottom: var(--space-4)"></div>
     <div class="card" style="padding: var(--space-6)">
       <canvas id="mcChart" height="400"></canvas>
+    </div>
+    <div class="card" style="padding: var(--space-4);margin-top: var(--space-4);display:none" id="stressResults">
+      <h3 style="margin:0 0 var(--space-3)">Stress Test — Cenários Extremos</h3>
+      <div id="stressTable"></div>
     </div>
   </section>
 
@@ -705,6 +794,10 @@
     <div class="card" style="padding: var(--space-6);margin-bottom: var(--space-4)">
       <h3 style="margin:0 0 var(--space-3)">Comparação vs Carteira</h3>
       <div id="benchComparison"></div>
+    </div>
+    <div class="card" style="padding: var(--space-4);margin-bottom: var(--space-4)">
+      <button class="btn btn-ghost" id="btnBacktest">Backtest vs Meta</button>
+      <div id="backtestResults" style="margin-top: var(--space-3)"></div>
     </div>
     <div class="table-wrapper">
       <table class="data-table" id="benchTable">
@@ -783,8 +876,7 @@
       <div id="taxSummary"></div>
     </div>
   </section>
-    </div>
-  
+
   <!-- IMPORT TAB -->
   <section role="tabpanel" aria-labelledby="tab-import" class="tab-panel" id="panel-import" hidden>
     <div class="panel-header" style="margin-bottom: var(--space-4)">
@@ -827,6 +919,31 @@
         <button class="btn btn-secondary" id="btnCancelImport">Cancelar</button>
         <button class="btn btn-primary" id="btnConfirmImport">Confirmar Importação</button>
       </div>
+    </div>
+
+    <!-- Conciliação (Fase 18): extrato PDF × posição B3 -->
+    <div class="card" id="reconciliationCard" style="margin-top:var(--space-6);">
+      <h3 style="margin:0 0 var(--space-2)">Conciliação</h3>
+      <p class="text-muted" style="margin:0 0 var(--space-3);font-size:var(--font-size-sm)">
+        Cole o texto do extrato PDF do Inter (Renda Variável e/ou Renda Fixa) e importe a Posição B3 (XLSX).
+        O relatório mostra divergências de quantidade e recupera o <strong>preço médio</strong> que a posição B3 não traz.
+      </p>
+      <div style="display:grid;gap:var(--space-3);grid-template-columns:repeat(auto-fit,minmax(280px,1fr));">
+        <div class="form-group">
+          <label for="reconExtratoText">Texto do extrato (RV ou RF)</label>
+          <textarea id="reconExtratoText" rows="6" placeholder="Cole aqui o texto do PDF (Ctrl+A, Ctrl+C no visualizador de PDF)…" style="width:100%;font-family:var(--font-family-mono,monospace);font-size:var(--font-size-xs);"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="reconPosicaoFile">Posição B3 (XLSX) — opcional</label>
+          <input type="file" id="reconPosicaoFile" accept=".xlsx">
+          <p class="text-muted" style="margin:var(--space-1) 0 0;font-size:var(--font-size-xs)">Se não informar, usa a última posição importada.</p>
+        </div>
+      </div>
+      <div style="display:flex;gap:var(--space-3);margin-top:var(--space-3);flex-wrap:wrap;">
+        <button class="btn btn-primary" id="btnRunReconciliation">Conciliar</button>
+        <button class="btn btn-secondary" id="btnApplyAvgPrices">Aplicar preços médios à carteira</button>
+      </div>
+      <div id="reconResult" style="margin-top:var(--space-4);display:none;"></div>
     </div>
   </section>
 
@@ -1045,6 +1162,23 @@
     </div>
   </section>
 
+  <!-- METAS TAB (modelo "Tela remtabilidade e metas e patrimonio") -->
+  <section role="tabpanel" aria-labelledby="tab-goals" class="tab-panel" id="panel-goals" hidden>
+    <div class="panel-header" style="margin-bottom: var(--space-4)">
+      <h2 style="font-size: var(--font-size-xl);margin:0 0 var(--space-1)">Metas</h2>
+      <p class="text-muted" style="margin:0">Resumo das metas financeiras da carteira</p>
+    </div>
+    <div id="goalsList" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--space-4)">
+      <p class="text-muted" style="padding:var(--space-4)">Carregando…</p>
+    </div>
+    <div id="allocationGoals" class="card" style="margin-top:var(--space-6)">
+      <h3 style="margin:0 0 var(--space-3)">Metas de Alocação por Classe</h3>
+      <div id="allocationGoalsBody">
+        <p class="text-muted" style="padding:var(--space-3)">Carregando…</p>
+      </div>
+    </div>
+  </section>
+
 
   <!-- BACKUP PORTABILITY TAB -->
   <section role="tabpanel" aria-labelledby="tab-backup-portability" class="tab-panel" id="panel-backup-portability" hidden>
@@ -1109,6 +1243,7 @@
       </div>
     </div>
   </section>
+    </div>
 
 </main>
 
@@ -1298,7 +1433,7 @@
       <header class="palette-header">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="search" id="paletteSearch" placeholder="Digite um comando ou busque..." aria-label="Buscar comandos" autocomplete="off">
-        <kbd style="font-size:10px;padding:1px 6px;border-radius:3px;background:var(--color-bg);border:1px solid var(--color-border)">⌘K</kbd>
+        <kbd class="kbd">⌘K</kbd>
       </header>
       <div class="palette-results" id="paletteResults" role="listbox"></div>
       <footer class="palette-footer">
@@ -1326,39 +1461,46 @@
   </dialog>
 
   <!-- TOAST CONTAINER -->
-  <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+    <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
 
-  <script type="module" src="script.js"></script>
-  <script src="carteira-data.js"></script>
-  <!-- Import Center -->
-  <script src="src/import-center/parsers/xlsx-core.js"></script>
-  <script src="src/import-center/detectors.js"></script>
-  <script src="src/import-center/parsers/b3-position.js"></script>
-  <script src="src/import-center/parsers/b3-events.js"></script>
-  <script src="src/import-center/parsers/b3-movimentacao.js"></script>
-  <script src="src/import-center/parsers/b3-posicao-xlsx.js"></script>
-  <script src="src/import-center/parsers/broker-csv.js"></script>
-  <script src="src/import-center/parsers/brapi-enricher.js"></script>
-  <script src="src/import-center/parsers/generic-csv.js"></script>
-  <script src="src/import-center/normalizer.js"></script>
-  <script src="src/import-center/validator.js"></script>
-  <script src="src/import-center/deduper.js"></script>
-  <script src="src/import-center/writer.js"></script>
-  <!-- Corporate Events -->
+    <script src="script.js"></script>
+    <script src="carteira-data.js?v=20261012"></script>
+    <!-- Import Center -->
+    <script src="src/import-center/parsers/xlsx-core.js"></script>
+    <script src="src/import-center/detectors.js"></script>
+    <script src="src/import-center/parsers/b3-position.js"></script>
+    <script src="src/import-center/parsers/b3-events.js"></script>
+    <script src="src/import-center/parsers/b3-movimentacao.js"></script>
+    <script src="src/import-center/parsers/b3-posicao-xlsx.js"></script>
+    <script src="src/import-center/parsers/inter-pdf-extrato.js"></script>
+    <script src="src/import-center/parsers/broker-csv.js"></script>
+    <script src="src/import-center/parsers/brapi-enricher.js"></script>
+    <script src="src/import-center/parsers/generic-csv.js"></script>
+    <script src="src/import-center/normalizer.js"></script>
+    <script src="src/import-center/validator.js"></script>
+    <script src="src/import-center/deduper.js"></script>
+    <script src="src/import-center/writer.js"></script>
+    <!-- Corporate Events -->
     <script src="src/corporate-events/corporate-events.js"></script>
     <script src="src/data-trust/data-trust.js"></script>
     <script src="src/backup-portability/backup-portability.js"></script>
     <script src="src/backup-portability/durability.js"></script>
-    <script src="real-mode.js"></script>
+    <script src="real-mode.js?v=20261012"></script>
     <script src="advanced-engine.js"></script>
     <script src="rebalance-engine.js"></script>
     <script src="risk-engine.js"></script>
     <script src="benchmark-engine.js"></script>
-    <script src="monte-carlo-engine.js"></script>
-    <script src="tax-engine.js"></script>
-    <script src="init-carteira.js"></script>
+        <script src="monte-carlo-engine.js"></script>
+        <script src="tax-engine.js"></script>
+        <script src="init-carteira.js"></script>
+        <script src="src/rebalance/rebalance-engine.js"></script>
+        <script src="src/montecarlo/montecarlo-worker.js"></script>
+        <script src="src/montecarlo/montecarlo.js"></script>
+        <script src="src/import-center/orchestrator.js"></script>
+        <script src="src/import-center/parsers/corporate-events.js"></script>
+        <script src="src/backup-portability/backup-portability.js"></script>
         <script src="panels.js"></script>
-            <script src="router.js"></script>
-            <script src="data-trust-engine.js"></script>
+    <script src="router.js"></script>
+    <script src="data-trust-engine.js"></script>
   </body>
   </html>

@@ -7,7 +7,7 @@
 ## CURRENT PHASE
 
 ```
-CURRENT_PHASE=PRODUCTION_READY (Governance bootstrap + test stabilization complete)
+CURRENT_PHASE=HOME_REVIEW_COMPLETE — próximo: commit + remote Git + UI wiring
 ```
 
 ---
@@ -15,34 +15,29 @@ CURRENT_PHASE=PRODUCTION_READY (Governance bootstrap + test stabilization comple
 ## GIT STATE
 
 ```
-CURRENT_BRANCH=main (local, baseline 7f68870)
-CURRENT_HEAD=7f68870 (feat: governance bootstrap + test stabilization)
-CURRENT_WORKTREE=G:\Meu Drive\Codex\investidor10-dashboard (canonical)
-ORIGIN_MAIN=N/A (push adiado — decisao do usuario: subir no final)
+CURRENT_BRANCH=main
+CURRENT_HEAD=217e920 (feat(durability): Fase 17)
+CURRENT_WORKTREE=G:\Meu Drive\Codex\investidor10-dashboard (canonical, autorizado por usuário)
+ORIGIN_MAIN=N/A (remote inexistente — criar repo "investidor10-dashboard")
+UNCOMMITTED=6 missões 2026-10-16 (~22 arquivos) — ver PROJECT_MEMORY COMMIT_MISSION_ORDER
+BACKUP=G:\Meu Drive\Codex\investidor10-dashboard (sync implícito = o próprio worktree)
 ```
 
 ---
 
-## BUILD & TEST STATUS
+## BUILD & TEST STATUS (2026-10-16)
 
 ```
-LAST_VALIDATED_BUILD=2026-10-05 (vanilla, no build step)
-LAST_TEST_RESULT=
-  Desktop:  57/57 passing (2.0m, serial)
-  Mobile:   56/56 passing (2.0m, serial)
-  Tablet:   57/57 passing (2.1m, serial — projeto tablet ADICIONADO)
-  A11y:     incluido na suite (14 testes dentro do total acima)
-CURRENT_ACTIVE_FEATURE=Fase 15-20 (estabilidade, notas de corretagem, extratos, durabilidade)
-CURRENT_BLOCKERS=
-  - No remote Git (disaster recovery gap)
-  - No active CI/CD (workflow ready, not activated)
-CURRENT_KNOWN_ISSUES=
-  - serve.py: 503 errors under parallel load (serial workers=1 workaround)
-  - Chart.js CDN load failures intermittent (network dependency)
-  - DataTrust.initDataTrustCenter not exposed globally (console error only)
-CURRENT_BACKUP=G:\Meu Drive\Codex\investidor10-dashboard\ (synced 2026-09-28)
-LAST_STORAGE_AUDIT=2026-09-28
-LAST_UPDATED=2026-09-28
+BUILD=vanilla, no build step; node --check OK em todos os JS tocados
+TESTES (servidor Node estático; Python indisponível no ambiente):
+  Desktop: 79/85 passing (2.8m)
+    a11y 14/14 ✅ (critical=0, serious=0, reduced-motion com assert real)
+    tabs+smoke 27/27 ✅
+    import-xlsx 0/4 ❌ PRÉ-EXISTENTE (fixtures XLSX ausentes no servidor Node)
+    panels fixed ❌ PRÉ-EXISTENTE
+    test-isolated ❌ PRÉ-EXISTENTE
+  Mobile: 14/14 a11y ✅ (missão anterior)
+BLOCKERS=Nenhum
 ```
 
 ---
@@ -50,84 +45,27 @@ LAST_UPDATED=2026-09-28
 ## ACTIVE WORK
 
 ```
-OBJETIVO=Criar remote GitHub + push + ativar CI/CD
-STATUS=IN_PROGRESS
-ARQUIVOS_PERMITIDOS=
-  - .gitignore (se necessário ajustar)
-  - README.md (se necessário atualizar badges)
-ARQUIVOS_NÃO_TOCAR=
-  - Carteira data (carteira-data.js, data.js)
-  - Engines core (*.engine.js)
-  - index.html (estrutura tabs)
-  - styles.css (design system)
-  - advanced-engine.js (pipeline core)
-  - corporate-events.js, data-trust.js, backup-portability.js
-  - tests/e2e/*.spec.js (estáveis)
-VALIDAÇÃO_OBRIGATÓRIA=
-  - git init + remote add origin
-  - git add . (respeitando .gitignore)
-  - git commit -m "feat: governance bootstrap + test stabilization"
-  - git push -u origin main
-  - CI roda no GitHub Actions
-  - Smoke test produção
-CONDIÇÕES_PARADA=
-  - GitHub repo creation falhar
-  - CI falhar consistentemente
-  - Segredos expostos
+OBJETIVO=Commit autorizado → remote GitHub → CI/CD → UI wiring (backtest + stress test)
+STATUS=READY_TO_COMMIT (aguardando autorização)
+NEXT_MISSION=UI wiring dos novos métodos + home review itens 5-7 (ver NEXT_STEP.md)
 ```
 
 ---
 
-## RECENT CHANGES (2026-09-28)
+## METRICS SNAPSHOT (B3 26/09)
 
 ```
-GOVERNANCE BOOTSTRAP (14 docs canônicas):
-  - .project-identity, AGENTS.md
-  - docs/ai/PROJECT_MEMORY.md, PROJECT_STATE.md, NEXT_STEP.md
-  - docs/ai/CURRENT_PROJECT_MAP.md, SKILLS_ROUTING.md, DECISIONS.md
-  - docs/ai/VISUAL_CANON.md, TESTING_AND_RELEASE.md
-  - docs/ai/STORAGE_AND_WORKTREE_POLICY.md, BACKUP_MANIFEST.md
-  - docs/ai/AGENT_ROUTER.md, AGENT_AUTONOMY.md, RECOVERY_PLAYBOOK.md
-  - docs/ai/OPEN_WORK.md, CHANGELOG.md
-
-TEST STABILIZATION:
-  - Fixed flaky import.spec.js (increased timeouts, improved waitForFunction)
-  - Desktop: 47/47 passing (serial)
-  - Mobile: 47/47 passing (serial)
-  - A11y: 14/14 passing (critical=0)
-
-FASE 13+14 COMPLETE (4 Centers):
-  - Import Center (12-stage pipeline)
-  - Corporate Events Center (5 event types)
-  - Data Trust Center (confidence + audit + freshness)
-  - Backup Portability (JSON/CSV/Excel + schema + migration)
+Patrimônio:  R$ 610.219,89 | Investido: R$ 630.889,63 | P&L: -3,28% | Yield 12m: 5,73%
+Ativos: 40 | Transações: 72 | Proventos: 435 (earnings[] parcial: 120)
+Alocação: FIIs 43,8% · RF 32,1% · ETFs 21,5% · Ações 2,6%
+Home: hero patrimônio + 4 KPIs + gráficos + alertas inteligentes
 ```
 
 ---
 
-## METRICS SNAPSHOT
+## LAST UPDATED
 
 ```
-Patrimônio (B3 26/09):     R$ 610.219,89
-Investido:                 R$ 630.889,63
-P&L:                       -R$ 20.669,74 (-3,28%)
-Proventos 12m:             R$ 34.980,10
-Yield 12m:                 5,73%
-Ativos:                    40
-Transações:                72
-Proventos:                 435
-Alocação:                  FIIs 43,8% · RF 32,1% · ETFs 21,5% · Ações 2,6%
-```
-
----
-
-## SERVER STATUS
-
-```
-SERVE_PY=ThreadingHTTPServer (multi-thread) — PID ativo
-PORT=8765
-CSP=Ativo (completo)
-SECURITY_HEADERS=Ativos (X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, COOP, CORP)
-UPLOAD_LIMIT=5MB (.json/.csv only)
-KNOWN_ISSUE=503 Service Unavailable under parallel load (workaround: --workers=1)
+DATE=2026-10-16
+UPDATED_BY=Muse Spark
 ```

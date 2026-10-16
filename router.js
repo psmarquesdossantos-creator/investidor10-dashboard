@@ -21,6 +21,7 @@
     backup:       { panel: 'backup',       title: 'Backup' },
     'corporate-events': { panel: 'corporate-events', title: 'Eventos Corp.' },
     'data-trust': { panel: 'data-trust',   title: 'Data Trust' },
+    'goals':      { panel: 'goals',        title: 'Metas' },
     'backup-portability': { panel: 'backup-portability', title: 'Backup Port.' },
   };
 
@@ -57,8 +58,14 @@
       window.switchTab(route.panel);
     }
 
-    // Scroll to top ao navegar
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Scroll to top ao navegar (imediato para testes, suave para usuários;
+    // 'auto' quando o usuário prefere movimento reduzido — WCAG 2.3.3)
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (window.__TESTING__ || reduceMotion) {
+      window.scrollTo(0, 0);
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
     // Atualiza indicador ativo nas tabs
     updateActiveTab(tab);
@@ -101,7 +108,22 @@
       });
     });
 
-    // 4. Expor API pública
+    // 4. Deep-link por ativo: ?ticker=PETR4#positions → scroll + highlight
+    const { ticker } = params;
+    if (ticker) {
+      setTimeout(() => {
+        const cells = document.querySelectorAll(`#panel-positions td .asset-ticker`);
+        for (const cell of cells) {
+          if (cell.textContent.trim() === ticker.toUpperCase()) {
+            cell.closest('tr')?.classList.add('row-highlight');
+            cell.closest('tr')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            break;
+          }
+        }
+      }, 800);
+    }
+
+    // 5. Expor API pública
     window.router = {
       navigate: (tab, params) => applyRoute(tab, params instanceof URLSearchParams ? params : new URLSearchParams(params)),
       replace:  (tab, params) => applyRoute(tab, params instanceof URLSearchParams ? params : new URLSearchParams(params)),

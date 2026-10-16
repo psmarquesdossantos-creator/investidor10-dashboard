@@ -217,3 +217,20 @@
 **REVERSIBLE**: true
 **RELATED_FILES**: sw.js, manifest.json, robots.txt, index.html
 **RELATED_COMMIT**: N/A
+
+---
+
+## 2026-10-16 — VISUAL_CANON regenerado a partir do código (código = verdade)
+
+**CONTEXT**: VISUAL_CANON.md documentava namespace `--primary`/`--bg-*`/`--text-*` e "Dark Mode" como padrão; o `styles.css` real usa namespace `--color-*`, tema default light (Material) e dark via `@media (prefers-color-scheme: dark)` + `html[data-theme]`.
+**DECISION**: Canon regenerado do `:root` real (styles.css:5-38, 107-184); decisão NEXT_STEP 2026-10-08 executada — código light/Material é a verdade, canon dark era ficção.
+**WHY**:
+- Canon que mente quebra qualquer manutenção futura (agente ou humano)
+- Tokens `-text`/`-ink`/tags com ratios AA documentados no CSS viram referência oficial
+- Tipografia real `--font-size-*` (0.7rem–1.875rem) substitui escala fictícia `--text-*`
+**ALTERNATIVES_REJECTED**:
+- Reescrever CSS para o canon antigo (risco alto, zero benefício)
+**RISKS**: Nenhum — só documentação
+**REVERSIBLE**: true
+**RELATED_FILES**: docs/ai/VISUAL_CANON.md, styles.css
+**RELATED_COMMIT**: N/A (uncommitted — commit pendente de autorização)

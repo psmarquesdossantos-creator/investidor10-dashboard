@@ -25,6 +25,11 @@ jobs:
             node-version: ${{ env.NODE_VERSION }}
             cache: 'npm'
         - run: npm ci --prefer-offline --no-audit
+        - name: Syntax check all JS files
+          run: |
+            for f in *.js src/**/*.js tests/e2e/*.spec.js; do
+              node --check "$f" || exit 1
+            done
         - run: npx htmlhint index.html --format unix
         - run: |
             npx eslint *.js --format unix --no-eslintrc \

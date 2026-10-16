@@ -360,6 +360,36 @@ class BenchmarkEngine {
   clearCache() {
     this.cache.clear();
   }
+
+  /**
+   * Backtest: compara carteira vs benchmark usando retornos diários simulados
+   * Gaps de alocação, drawdown máximo, e recomendações de rebalanceamento
+   */
+  backtest(portfolioReturns, benchmarkReturns, portfolioMeta, benchmarkMeta) {
+    const aligned = this._alignSeries(portfolioReturns.a || portfolioReturns, [], benchmarkReturns.b || benchmarkReturns, []);
+    const a = aligned.a, b = aligned.b;
+    const n = a.length;
+
+    const portCum = [1]; const benchCum = [1];
+    for (let i = 0; i < n; i++) { portCum.push(portCum[i] * (1 + a[i])); benchCum.push(benchCum[i] * (1 + b[i])); }
+
+    let maxDD = 0, peak = 1;
+    for (const v of portCum) { if (v > peak) peak = v; const dd = (peak - v) / peak; if (dd > maxDD) maxDD = dd; }
+
+    const portTotal = (portCum[portCum.length - 1] - 1) * 100;
+    const benchTotal = (benchCum[benchCum.length - 1] - 1) * 100;
+    const excess = portTotal - benchTotal;
+
+    const recs = [];
+    if (portfolioMeta && benchmarkMeta) {
+      const allocGap = Math.abs(portfolioMeta.currentPct - portfolioMeta.targetPct);
+      if (allocGap > 5) recs.push(`Gap de alocação: ${allocGap.toFixed(1)}pp — rebalancear ${portfolioMeta.ticker}`);
+    }
+    if (maxDD > 0.15) recs.push(`Drawdown máximo ${(maxDD * 100).toFixed(1)}% — revisar risco`);
+    if (excess < -5) recs.push(`Underperformance ${(excess).toFixed(1)}pp — avaliar estratégia`);
+
+    return { portTotal: portTotal.toFixed(2) + '%', benchTotal: benchTotal.toFixed(2) + '%', excess: excess.toFixed(2) + '%', maxDD: (maxDD * 100).toFixed(2) + '%', recommendations: recs };
+  }
 }
 
 window.BenchmarkEngine = BenchmarkEngine;

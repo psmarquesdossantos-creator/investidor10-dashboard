@@ -356,6 +356,42 @@ class MonteCarloEngine {
     
     return { labels: years.map(y => `Ano ${y}`), datasets };
   }
+
+  /**
+   * Stress test: simula cenários extremos (2008, 2020, 2022)
+   */
+  runStressTest(scenarios = ['2008', '2020', '2022']) {
+    const results = {};
+    const baseParams = { ...this.portfolioParams };
+
+    const stressConfigs = {
+      '2008': { expectedReturn: -0.25, volatility: 0.45, label: 'Crise Financeira Global' },
+      '2020': { expectedReturn: -0.15, volatility: 0.60, label: 'COVID-19' },
+      '2022': { expectedReturn: -0.10, volatility: 0.35, label: 'Alta Juros + Guerra' }
+    };
+
+    for (const scenario of scenarios) {
+      const cfg = stressConfigs[scenario];
+      if (!cfg) continue;
+      this.portfolioParams = { ...baseParams, ...cfg };
+      this._initPRNG(42);
+      this.run();
+
+      const finalStep = this.results.cone['50'].length - 1;
+      const median = this.results.cone['50'][finalStep]?.nominal || 0;
+      const p10 = this.results.cone['10'][finalStep]?.nominal || 0;
+
+      results[scenario] = {
+        label: cfg.label,
+        median: fmt(median),
+        p10: fmt(p10),
+        survival: median > 0 ? 'Sobrevive' : 'Ruína'
+      };
+    }
+
+    this.portfolioParams = baseParams;
+    return results;
+  }
 }
 
 window.MonteCarloEngine = MonteCarloEngine;

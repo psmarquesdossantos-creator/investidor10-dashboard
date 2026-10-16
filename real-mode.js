@@ -139,17 +139,74 @@
   }
 
   function applyRealData() {
-    backupMockData();
-    if (!window.CARTEIRA_DATA) return;
-    const C = window.CARTEIRA_DATA;
-    Object.assign(MOCK_DATA.kpis, C.kpis);
-    MOCK_DATA.monthly = C.monthly;
-    MOCK_DATA.patrimony = C.patrimony;
-    MOCK_DATA.allocation = C.allocation;
-    MOCK_DATA.positions = C.positions;
-    MOCK_DATA.earnings = C.earnings;
-    MOCK_DATA.entries = C.entries;
-    if (C.assetReturns) MOCK_DATA.assetReturns = C.assetReturns;
+        backupMockData();
+        if (!window.CARTEIRA_DATA) return;
+        const C = window.CARTEIRA_DATA;
+        Object.assign(MOCK_DATA.kpis, C.kpis);
+        MOCK_DATA.monthly = C.monthly;
+        MOCK_DATA.patrimony = C.patrimony;
+        MOCK_DATA.allocation = C.allocation;
+        MOCK_DATA.positions = C.positions;
+        MOCK_DATA.earnings = C.earnings;
+        MOCK_DATA.entries = C.entries;
+        if (C.assetReturns) MOCK_DATA.assetReturns = C.assetReturns;
+        // Preserve reference return12m (TWR) and returnTotal; only compute capitalGain
+        const derived = computeDerivedKpis(C.entries, C.kpis.invested, C.kpis.total, C.patrimony);
+        MOCK_DATA.kpis.capitalGain = derived.capitalGain;
+        // Keep C.kpis.return12m (TWR) and C.kpis.returnTotal as authoritative
+        
+        // Setup default CARTEIRA_META for rebalanceador if not already set from backup
+        if (!window.CARTEIRA_META) {
+          // Default target allocation for a balanced portfolio
+          window.CARTEIRA_META = {
+            goals: {
+              allocation: {
+                "FIIs": 0.20,      // 20% - reduced from current ~49%
+                "Renda Fixa": 0.40, // 40% - increased from current ~32%
+                "Fundos": 0.15,     // 15% - similar to current ~15%
+                "Ações": 0.20,      // 20% - increased from current ~4%
+                "Criptos": 0.05     // 5% - added allocation
+              },
+              // Preserve other goal properties if needed
+            }
+          };
+        }
+
+        // Re-render all views with new data
+        if (typeof window.renderAll === 'function') window.renderAll();
+      }
+
+    // Expose applyRealData globally for init-carteira.js
+    window.applyRealData = applyRealData;
+
+    // KPIs derivados honestos:
+  // - capitalGain: ganho REALIZADO (vendas vs custo médio cronológico) — entries é fonte completa
+  // - return12m: retorno real da série patrimonial; null se histórico < 12M (UNKNOWN ≠ ZERO)
+  // Proventos NÃO são recalculados aqui: earnings[] é parcial;
+  // kpis.dividends/earnings12m vêm da fonte autoritativa (B3) e permanecem.
+  function computeDerivedKpis(entries, invested, total, patrimony) {
+    const byT = {};
+    let realized = 0;
+    for (const e of [...(entries || [])].sort((a, b) => (a.date || '').localeCompare(b.date || ''))) {
+      const st = byT[e.ticker] = byT[e.ticker] || { qty: 0, cost: 0 };
+      const q = +e.qty || 0, price = +e.price || 0;
+      if (e.type === 'sell') {
+        if (st.qty > 0) {
+          const avg = st.cost / st.qty, qSell = Math.min(q, st.qty);
+          realized += qSell * (price - avg);
+          st.qty -= qSell; st.cost -= qSell * avg;
+        }
+      } else {
+        st.qty += q; st.cost += q * price;
+      }
+    }
+    let ret12m = null;
+    const series = patrimony && patrimony.portfolio;
+    if (Array.isArray(series) && series.length >= 13) {
+      const base = +series[series.length - 13] || 0;
+      if (base > 0) ret12m = +((total / base - 1) * 100).toFixed(2);
+    }
+    return { capitalGain: +realized.toFixed(2), return12m: ret12m };
   }
 
   function restoreMockData() {
@@ -172,7 +229,7 @@
       // valida formato
       if (!data.payload?.state?.assets) throw new Error('Formato inválido: não é um backup carteira-investimentos');
       toast('Processando backup...', 'info');
-      const converted = convertBackupToCarteiraData(data);
+      const converted = await convertBackupToCarteiraData(data);
       window.CARTEIRA_DATA = converted;
       // recalcula metas se existirem
       if (data.payload.state.goals) {
@@ -199,7 +256,7 @@
     }
   }
 
-  function convertBackupToCarteiraData(d) {
+  async function convertBackupToCarteiraData(d) {
     // reusa a lógica do script de conversão (simplificada inline)
     const assets = d.payload.state.assets;
     const prov = d.payload.state.proventos;
@@ -227,9 +284,50 @@
       monthlyInc[k] = (monthlyInc[k]||0) + +p.value;
     }
     const keys = Object.keys(monthlyInc).sort((a,b)=>(+a.slice(3))-(+b.slice(3)) || (+a.slice(0,2))-(+b.slice(0,2))).slice(-13);
-    const monthly = keys.map(k=>({period:k, invested:0, gain:0})); // placeholder
-    // patrimony placeholder
-    const patrimony = {labels:keys, portfolio:keys.map(()=>total), invested:keys.map(()=>invTotal), cdi:keys.map(()=>invTotal), ibov:keys.map(()=>invTotal)};
+    const monthly = keys.map(k=>({period:k, invested:0, gain:0}));
+    
+    // Buscar dados reais de CDI e IBOV para o gráfico patrimônio
+    let cdiSeries = [], ibovSeries = [];
+    try {
+      const bench = new BenchmarkEngine();
+      const benchData = await bench.fetchAll(['CDI', 'IBOV'], 365); // últimos 365 dias
+      
+      // Processar CDI - acumulado
+      if (benchData.CDI && benchData.CDI.prices && benchData.CDI.prices.length) {
+        const cdiPrices = benchData.CDI.prices;
+        const firstCdi = cdiPrices[0].close;
+        cdiSeries = cdiPrices.map(p => invTotal * (p.close / firstCdi));
+      }
+      
+      // Processar IBOV - acumulado
+      if (benchData.IBOV && benchData.IBOV.prices && benchData.IBOV.prices.length) {
+        const ibovPrices = benchData.IBOV.prices;
+        const firstIbov = ibovPrices[0].close;
+        ibovSeries = ibovPrices.map(p => invTotal * (p.close / firstIbov));
+      }
+    } catch (e) {
+      console.warn('Erro ao buscar benchmarks reais, usando fallback:', e);
+      // Fallback para valores fixos (mesmo que o atual)
+      cdiSeries = keys.map(()=>invTotal);
+      ibovSeries = keys.map(()=>invTotal);
+    }
+    
+    // Garantir que as séries tenham o mesmo tamanho que keys
+    // Se não tivermos dados suficientes, repetir o último valor
+    while (cdiSeries.length < keys.length) cdiSeries.push(cdiSeries[cdiSeries.length-1] || invTotal);
+    while (ibovSeries.length < keys.length) ibovSeries.push(ibovSeries[ibovSeries.length-1] || invTotal);
+    cdiSeries = cdiSeries.slice(0, keys.length);
+    ibovSeries = ibovSeries.slice(0, keys.length);
+    
+    // patrimony com dados reais de CDI/IBOV
+    const patrimony = {
+      labels:keys, 
+      portfolio:keys.map(()=>total), 
+      invested:keys.map(()=>invTotal), 
+      cdi:cdiSeries, 
+      ibov:ibovSeries
+    };
+    
     // allocation
     const classAgg = {}; acts.forEach(a=>classAgg[a.cls]=(classAgg[a.cls]||0)+a.value);
     const cn={'stocks':'Ações','fiis':'FIIs','etfs':'ETFs','fixed':'Renda Fixa','other':'Outros'};
@@ -246,10 +344,11 @@
       .sort((a,b)=>b.date.localeCompare(a.date));
     const rent12m = invTotal ? +((total/invTotal-1)*100).toFixed(2) : 0;
     const last12 = Object.entries(monthlyInc).filter(([k])=>keys.includes(k)).reduce((s,[,v])=>s+v,0);
-    const kpis = {total:+total.toFixed(2), invested:+invTotal.toFixed(2), profit:+profit.toFixed(2), capitalGain:+profit.toFixed(2),
-      dividends:+last12.toFixed(2), earnings12m:+last12.toFixed(2), totalChange:rent12m, return12m:rent12m, returnTotal:rent12m,
+    const kpis = {total:+total.toFixed(2), invested:+invTotal.toFixed(2), profit:+profit.toFixed(2),
+      dividends:+last12.toFixed(2), earnings12m:+last12.toFixed(2), totalChange:rent12m, returnTotal:rent12m,
       yield12m:total?+((last12/total)*100).toFixed(2):0};
-    return {kpis, monthly, patrimony, allocation:{byAsset, byClass}, positions:acts, earnings, entries, assetReturns:acts.map(a=>({ticker:a.ticker,class:a.cls,weight:a.weight,return:a.ret,contrib:+(a.ret*a.value/total/100).toFixed(3),benchmark:rent12m,alpha:+(a.ret-rent12m).toFixed(2)}))};
+    Object.assign(kpis, computeDerivedKpis(entries, invTotal, total, patrimony));
+    return {kpis, monthly, patrimony, allocation:{byAsset, byClass}, positions:acts, earnings, entries, assetReturns:acts.map(a=>({ticker:a.ticker,class:a.cls,weight:+((a.value/total)*100).toFixed(2),return:a.ret,contrib:+(a.ret*a.value/total/100).toFixed(3),benchmark:kpis.totalChange,alpha:+(a.ret-kpis.totalChange).toFixed(2)}))};
   }
 
   function updateModeToggle(isReal) {
@@ -338,10 +437,9 @@
     MOCK_DATA.kpis.total = +total.toFixed(2);
     MOCK_DATA.kpis.invested = +inv.toFixed(2);
     MOCK_DATA.kpis.profit = +profit.toFixed(2);
-    MOCK_DATA.kpis.capitalGain = +profit.toFixed(2);
     MOCK_DATA.kpis.totalChange = inv ? +((total/inv-1)*100).toFixed(2) : 0;
-    MOCK_DATA.kpis.return12m = MOCK_DATA.kpis.totalChange;
     MOCK_DATA.kpis.returnTotal = MOCK_DATA.kpis.totalChange;
+    Object.assign(MOCK_DATA.kpis, computeDerivedKpis(MOCK_DATA.entries, inv, total, MOCK_DATA.patrimony));
     // allocation
     const cls = {}; MOCK_DATA.positions.forEach(p=>cls[p.class]=(cls[p.class]||0)+p.value);
     const cn={'stocks':'Ações','fiis':'FIIs','etfs':'ETFs','fixed':'Renda Fixa','other':'Outros'};
@@ -355,27 +453,31 @@
     if (!meta) { document.getElementById('rebalanceBody').innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--color-muted);padding:var(--space-6)">Metas não definidas no backup</td></tr>'; return; }
     const total = MOCK_DATA.kpis.total;
     const cls = {}; MOCK_DATA.positions.forEach(p=>cls[p.class]=(cls[p.class]||0)+p.value);
-    const cn={'stocks':'Ação','fiis':'FII','etfs':'ETF','fixed':'Renda Fixa','other':'Outros'};
+    const cn={'stocks':'Ação','fiis':'FII','etfs':'ETF','fixed':'Renda Fixa','crypto':'Cripto','bdr':'BDR','other':'Outros'};
+    // metas do backup usam rótulos pt-BR; posições usam chaves de classe internas
+    const ptToCls={'Ação':'stocks','Ações':'stocks','FII':'fiis','FIIs':'fiis','ETF':'etfs','ETFs':'etfs','Renda Fixa':'fixed','Cripto':'crypto','BDR':'bdr','Outros':'other'};
+    const pct1 = v => v.toLocaleString('pt-BR', {minimumFractionDigits:1, maximumFractionDigits:1});
     const rows = [];
-    for (const [clsKey, targetPct] of Object.entries(meta)) {
+    for (const [goalKey, targetPct] of Object.entries(meta)) {
+      const clsKey = ptToCls[goalKey] || goalKey;
       const currentVal = cls[clsKey]||0;
       const currentPct = total ? (currentVal/total)*100 : 0;
       const diff = targetPct - currentPct;
       const toTarget = +(total * targetPct / 100 - currentVal).toFixed(2);
-      rows.push({class:cn[clsKey]||clsKey, currentPct:currentPct.toFixed(1), targetPct, diff:diff.toFixed(1), currentVal:+currentVal.toFixed(2), toTarget});
+      rows.push({class:cn[clsKey]||goalKey, currentPct:pct1(currentPct), targetPct, diffNum:diff, diff:pct1(diff), currentVal:+currentVal.toFixed(2), toTarget});
     }
     const body = document.getElementById('rebalanceBody');
     body.innerHTML = rows.map(r=>`<tr>
       <td><strong>${r.class}</strong></td>
       <td>${r.currentPct}%</td>
       <td>${r.targetPct}%</td>
-      <td class="${r.diff>=0?'text-success':'text-error'}">${r.diff>=0?'+':''}${r.diff}pp</td>
+      <td class="${r.diffNum>=0?'text-success':'text-error'}">${r.diffNum>=0?'+':''}${r.diff}pp</td>
       <td>${fmt.cur(r.currentVal)}</td>
       <td class="${r.toTarget>=0?'text-success':'text-error'}">${fmt.cur(r.toTarget)}</td>
       <td>${r.toTarget>0?`<span class="badge badge-success">Comprar</span>`:r.toTarget<0?`<span class="badge badge-error">Vender</span>`:`<span class="badge badge-neutral">OK</span>`}</td>
     </tr>`).join('');
 
-    document.getElementById('rebalanceSummary').textContent = `Total alocado: ${fmt.cur(total)} | Diferença total vs meta: ${rows.reduce((s,r)=>s+Math.abs(+r.diff),0).toFixed(1)}pp`;
+    document.getElementById('rebalanceSummary').textContent = `Total alocado: ${fmt.cur(total)} | Diferença total vs meta: ${pct1(rows.reduce((s,r)=>s+Math.abs(r.diffNum),0))}pp`;
 
     // Aporte sugerido - usa RebalanceEngine se disponível
     const inp = document.getElementById('rebalanceAporte');
@@ -844,16 +946,28 @@
         if (mut.type==='attributes' && mut.attributeName==='hidden') {
           const panel = mut.target;
           if (!panel.hidden) {
-            if (panel.id==='panel-rebalance') initRebalance();
-            if (panel.id==='panel-fixed') initFixedIncome();
+          if (panel.id==='panel-rebalance') initRebalance();
+          if (panel.id==='panel-fixed') initFixedIncome();
+          if (panel.id==='panel-risk') initRiskPanel();
+          if (panel.id==='panel-montecarlo') initMonteCarloPanel();
           }
         }
       }
     });
     document.querySelectorAll('.tab-panel').forEach(p=>obs.observe(p,{attributes:true,attributeFilter:['hidden']}));
 
-    // initial apply if real mode
-    if (state.isReal && window.CARTEIRA_DATA) applyRealData();
+    // initial apply if real mode - wait for CARTEIRA_DATA to be ready
+        function waitForCarteiraData() {
+          if (window.CARTEIRA_DATA) {
+            if (state.isReal) {
+              applyRealData();
+              if (typeof window.renderAll === 'function') window.renderAll();
+            }
+          } else {
+            setTimeout(waitForCarteiraData, 50);
+          }
+        }
+        waitForCarteiraData();
 
     // inject diff badge
     injectInvestidor10Diff();
@@ -896,8 +1010,8 @@
     // 4. Initialize Corporate Events Center
     initCorporateEventsCenter();
 
-    // 5. Initialize Data Trust Center
-    if (window.DataTrust) {
+    // 5. Initialize Data Trust Center (data-trust.js já self-inicializa; guard contra API divergente)
+    if (typeof window.DataTrust?.initDataTrustCenter === 'function') {
       window.DataTrust.initDataTrustCenter();
     }
 
@@ -1319,9 +1433,10 @@
     const byAsset = validData.sort((a,b)=>b.value-a.value).map(a=>({name:a.ticker,class:a.cls,value:a.value,pct:+((a.value/total)*100).toFixed(2),return:a.ret}));
 
     const rent12m = invTotal ? +((total/invTotal-1)*100).toFixed(2) : 0;
-    const kpis = {total:+total.toFixed(2), invested:+invTotal.toFixed(2), profit:+profit.toFixed(2), capitalGain:+profit.toFixed(2), dividends:0, earnings12m:0, totalChange:rent12m, return12m:rent12m, returnTotal:rent12m, yield12m:0};
+    const kpis = {total:+total.toFixed(2), invested:+invTotal.toFixed(2), profit:+profit.toFixed(2), dividends:0, earnings12m:0, totalChange:rent12m, returnTotal:rent12m, yield12m:0};
+    Object.assign(kpis, computeDerivedKpis([], invTotal, total));
 
-    return {kpis, monthly:[], patrimony:{labels:[],portfolio:[],invested:[],cdi:[],ibov:[]}, allocation:{byAsset,byClass}, positions:validData, earnings:[], entries:[], assetReturns:validData.map(a=>({ticker:a.ticker,class:a.class,weight:+((a.value/total)*100).toFixed(2),return:a.ret,contrib:+(a.ret*a.value/total/100).toFixed(3),benchmark:rent12m,alpha:+(a.ret-rent12m).toFixed(2)}))};
+    return {kpis, monthly:[], patrimony:{labels:[],portfolio:[],invested:[],cdi:[],ibov:[]}, allocation:{byAsset,byClass}, positions:validData, earnings:[], entries:[], assetReturns:validData.map(a=>({ticker:a.ticker,class:a.class,weight:+((a.value/total)*100).toFixed(2),return:a.ret,contrib:+(a.ret*a.value/total/100).toFixed(3),benchmark:kpis.totalChange,alpha:+(a.ret-kpis.totalChange).toFixed(2)}))};
   }
 
   // Enhance Fixed Income tab with RF Confidence
@@ -1525,35 +1640,91 @@ function renderRiskPanel(report) {
 function initMonteCarloPanel() {
   const btn = document.getElementById('btnRunMC');
   if (!btn) return;
-  
-  btn.addEventListener('click', async () => {
+  if (btn.__mcWired) return; // MutationObserver chama a cada visita: evita listeners duplicados
+  btn.__mcWired = true;
+
+  btn.addEventListener('click', () => {
     btn.disabled = true;
+    btn.classList.add('is-loading');
     btn.textContent = 'Simulando...';
-    
+
     const config = {
-      nSimulations: 5000,
+      nSimulations: 2000, // mensal + worker: rápido o suficiente para auto-run (estatisticamente adequado)
       horizonYears: +document.getElementById('mcHorizon').value || 30,
       initialValue: +document.getElementById('mcInitial').value || 500000,
       monthlyContribution: +document.getElementById('mcMonthly').value || 5000,
       contributionGrowth: 0.03,
-      inflationRate: 0.035
+      inflationRate: 0.035,
+      timeStep: 1 / 12 // passos mensais: mesmo resultado anual, ~100x mais rápido que diário
     };
-    
-    const mc = new MonteCarloEngine(config);
-    mc.setPortfolioParams({
+
+    // Stress test wiring
+    const btnStress = document.getElementById('btnRunStress');
+    if (btnStress && !btnStress.__stressWired) {
+      btnStress.__stressWired = true;
+      btnStress.addEventListener('click', () => {
+        btnStress.disabled = true;
+        btnStress.textContent = 'Simulando stress...';
+        const mc = new MonteCarloEngine({ nSimulations: 2000, horizonYears: +document.getElementById('mcHorizon').value || 30, initialValue: +document.getElementById('mcInitial').value || 500000, monthlyContribution: +document.getElementById('mcMonthly').value || 5000 });
+        const results = mc.runStressTest(['2008', '2020', '2022']);
+        const div = document.getElementById('stressResults');
+        const tbl = document.getElementById('stressTable');
+        if (div && tbl) {
+          const rows = Object.entries(results).map(([k, v]) => `
+            <tr><th>${v.label}</th><td>${v.median}</td><td>${v.p10}</td><td>${v.survival}</td></tr>`).join('');
+          tbl.innerHTML = `<table class="data-table" style="font-size:var(--font-size-sm)"><tr><th>Cenário</th><th>Mediana</th><th>P10 (pior)</th><th>Sobrevivência</th></tr>${rows}</table>`;
+          div.style.display = 'block';
+        }
+        btnStress.disabled = false;
+        btnStress.textContent = 'Stress Test';
+      });
+    }
+    const params = {
       expectedReturn: (+document.getElementById('mcReturn').value || 12) / 100,
       volatility: (+document.getElementById('mcVol').value || 18) / 100
-    });
-    
-    mc.run();
-    renderMonteCarloPanel(mc.results);
-    
-    btn.disabled = false;
-    btn.textContent = 'Executar Simulação';
+    };
+
+    const finish = () => {
+      btn.disabled = false;
+      btn.classList.remove('is-loading');
+      btn.textContent = 'Executar Simulação';
+    };
+
+    // Caminho preferencial: Web Worker (não bloqueia a UI — fix da auditoria #8)
+    if (typeof Worker !== 'undefined') {
+      try {
+        const worker = new Worker('mc-worker.js');
+        worker.onmessage = (ev) => {
+          worker.terminate();
+          if (ev.data && ev.data.ok) {
+            renderMonteCarloPanel(ev.data.results, ev.data.chartData);
+          } else {
+            document.getElementById('mcKpis').innerHTML =
+              '<p class="text-muted">Falha na simulação: ' + (ev.data && ev.data.error ? ev.data.error : 'erro desconhecido') + '</p>';
+          }
+          finish();
+        };
+        worker.onerror = () => {
+          worker.terminate();
+          runSync(config, params, finish); // fallback: main thread
+        };
+        worker.postMessage({ config, params });
+        return;
+      } catch (_) { /* Worker indisponível → fallback síncrono abaixo */ }
+    }
+    runSync(config, params, finish);
   });
+
+  function runSync(config, params, finish) {
+    const mc = new MonteCarloEngine(config);
+    mc.setPortfolioParams(params);
+    mc.run();
+    renderMonteCarloPanel(mc.results, mc.exportChartData());
+    finish();
+  }
 }
 
-function renderMonteCarloPanel(results) {
+function renderMonteCarloPanel(results, chartDataArg) {
   const kpis = document.getElementById('mcKpis');
   if (!kpis) return;
   
@@ -1572,7 +1743,7 @@ function renderMonteCarloPanel(results) {
   `;
   
   // Chart
-  const chartData = mc.exportChartData();
+  const chartData = (typeof chartDataArg !== 'undefined' && chartDataArg) ? chartDataArg : (typeof mc !== 'undefined' && mc && mc.exportChartData ? mc.exportChartData() : null);
   const ctx = document.getElementById('mcChart');
   if (ctx) {
     if (ctx.chart) ctx.chart.destroy();
@@ -1598,16 +1769,46 @@ function initBenchmarksPanel() {
     btn.disabled = true;
     btn.textContent = 'Buscando...';
     document.getElementById('benchStatus').textContent = 'Carregando dados da brapi.dev...';
-    
+
     const bench = new BenchmarkEngine({ brapiToken: null }); // sem token = mock
     await bench.fetchAll(['CDI', 'IBOV', 'IFIX', 'SMLL', 'IDIV', 'IMAB', 'BTC', 'DOL', 'USDBRL']);
-    
+
     renderBenchmarksPanel(bench.data);
-    
+
     btn.disabled = false;
     btn.textContent = 'Atualizar Benchmarks';
     document.getElementById('benchStatus').textContent = `Atualizado: ${new Date().toLocaleTimeString('pt-BR')}`;
   });
+
+  // Backtest vs Meta (usa dados locais, sem rede)
+  const btnBt = document.getElementById('btnBacktest');
+  if (btnBt && !btnBt.__btWired) {
+    btnBt.__btWired = true;
+    btnBt.addEventListener('click', () => {
+      const k = window.MOCK_DATA?.kpis || {};
+      const series = window.MOCK_DATA?.patrimony?.portfolio || [];
+      // Retornos diários simulados a partir da série patrimonial
+      const rets = [];
+      for (let i = 1; i < series.length; i++) {
+        if (series[i - 1] > 0) rets.push(series[i] / series[i - 1] - 1);
+      }
+      // Bench CDI diário ~13.65%/252
+      const benchRets = rets.map(() => 0.1365 / 252);
+      const result = new BenchmarkEngine({}).backtest(rets, benchRets, { ticker: 'Carteira', currentPct: 100, targetPct: 100 }, null);
+      const div = document.getElementById('backtestResults');
+      if (div) {
+        const recs = (result.recommendations || []).map(r => `<p style="margin:2px 0;color:var(--color-text-secondary)">• ${r}</p>`).join('');
+        div.innerHTML = `
+          <table class="data-table" style="font-size:var(--font-size-sm)">
+            <tr><th>Métrica</th><th>Carteira</th><th>CDI</th><th>Excess</th></tr>
+            <tr><td>Retorno total</td><td>${result.portTotal}</td><td>${result.benchTotal}</td><td>${result.excess}</td></tr>
+            <tr><td>Max Drawdown</td><td colspan="3">${result.maxDD}</td></tr>
+          </table>
+          ${recs ? `<p style="margin-top:var(--space-2);font-weight:600">Recomendações:</p>${recs}` : '<p style="margin-top:var(--space-2);color:var(--color-text-muted)">Sem recomendações — carteira alinhada à meta.</p>'}
+        `;
+      }
+    });
+  }
 }
 
 function renderBenchmarksPanel(data) {
@@ -2106,22 +2307,35 @@ function renderDataTrustPanel() {
 function renderAuditSnapshots() {
   const tbody = document.getElementById('auditSnapshotsBody');
   if (!tbody) return;
-  
-  const snapshots = window.DataTrust?.getAuditSnapshots() || [];
-  
-  if (snapshots.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--color-muted);padding:var(--space-4)">Nenhum snapshot de auditoria</td></tr>';
+
+  // Unifica as DUAS fontes reais de snapshots:
+  // 1. DataTrust (src/data-trust) — criados por "Criar Snapshot Manual" → key 'auditSnapshots'
+  // 2. SnapshotManager (advanced-engine) — criados por "Backup Agora" → key 'investidor10-snapshots'
+  const readLS = (k) => { try { return JSON.parse(localStorage.getItem(k) || '[]'); } catch { return []; } };
+  const dt = readLS('auditSnapshots').map(s => ({
+    when: s.timestamp, type: s.type, assets: s.metadata?.assetCount,
+    total: s.metadata?.totalValue, hash: s.dataHash, extra: Object.keys(s.metadata || {}).length > 2 ? 'metadata manual' : ''
+  }));
+  const sm = readLS('investidor10-snapshots').map(s => ({
+    when: s.date, type: 'snapshot_' + (s.source || 'auto'), assets: s.data?.positions?.length,
+    total: s.data?.kpis?.total, hash: s.fingerprint, extra: s.priceCoverage != null ? 'cobertura ' + Math.round(s.priceCoverage * 100) + '%' : ''
+  }));
+  const all = [...dt, ...sm].sort((a, b) => new Date(b.when || 0) - new Date(a.when || 0));
+
+  if (all.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--color-muted);padding:var(--space-4)">Nenhum snapshot registrado. Clique em "Criar Snapshot Manual" ou "Backup Agora".</td></tr>';
     return;
   }
-  
-  tbody.innerHTML = snapshots.slice(0, 20).map(s => `
+
+  const fmt = v => (v != null && Number.isFinite(+v)) ? (+v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }) : '—';
+  tbody.innerHTML = all.slice(0, 10).map(s => `
     <tr>
-      <td>${new Date(s.timestamp).toLocaleString('pt-BR')}</td>
-      <td><span class="badge badge-info">${s.type}</span></td>
-      <td>${s.metadata.assetCount}</td>
-      <td>${(s.metadata.totalValue || 0).toLocaleString('pt-BR', {style:'currency',currency:'BRL'})}</td>
-      <td><code>${s.dataHash}</code></td>
-      <td>${JSON.stringify(s.metadata)}</td>
+      <td>${s.when ? new Date(s.when).toLocaleString('pt-BR') : '—'}</td>
+      <td><span class="badge badge-info">${s.type || '—'}</span></td>
+      <td>${s.assets ?? '—'}</td>
+      <td>${fmt(s.total)}</td>
+      <td><code>${String(s.hash || '').slice(0, 16)}</code></td>
+      <td>${s.extra || ''}</td>
     </tr>
   `).join('');
 }

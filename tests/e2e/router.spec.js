@@ -2,6 +2,11 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Hash Routing', () => {
+  test.beforeEach(async ({ page }) => {
+    // Flag para router fazer scroll imediato em testes
+    await page.addInitScript(() => { window.__TESTING__ = true; });
+  });
+
   test('navegação via hash muda aba ativa', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');

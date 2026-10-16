@@ -1,9 +1,9 @@
 // sw.js - Service Worker for Investidor10 Dashboard PWA
 // Cache-first strategy for static assets, network-first for API/data
 
-const CACHE_NAME = 'investidor10-dashboard-v15.0.0';
-const STATIC_CACHE = 'investidor10-static-v15.0.0';
-const DYNAMIC_CACHE = 'investidor10-dynamic-v15.0.0';
+const CACHE_NAME = 'investidor10-dashboard-v25.0.0';
+const STATIC_CACHE = 'investidor10-static-v25.0.0';
+const DYNAMIC_CACHE = 'investidor10-dynamic-v25.0.0';
 
 // Assets to cache on install
 const STATIC_ASSETS = [
@@ -14,6 +14,8 @@ const STATIC_ASSETS = [
   '/rebalance-engine.js',
   '/carteira-data.js',
   '/panels.js',
+  '/mc-worker.js',
+  '/monte-carlo-engine.js',
   '/styles.css',
   '/manifest.json',
   '/vendor/chart.umd.min.js',

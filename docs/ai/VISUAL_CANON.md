@@ -6,44 +6,66 @@
 
 ## THEME TOKENS
 
-### Colors (Dark Mode — WCAG AA)
+> **RECONCILIAÇÃO 2026-10-16 (código é a verdade):** o namespace real é `--color-*`
+> (não `--primary`/`--bg-*`/`--text-*`). Tema default = **light (Material)**;
+> dark via `@media (prefers-color-scheme: dark)` + override manual
+> `html[data-theme="dark"|"light"]` (styles.css:107-184). Texto semântico usa
+> tokens `-text`/`-ink` com contraste AA documentado no próprio CSS.
+
+### Colors (namespace real `--color-*` — styles.css:5-38)
 
 ```css
 /* Primary — IDENTIDADE CORPORATIVA (NÃO MUDAR) */
---primary: #1A73E8;
---primary-hover: #1557B0;
---primary-light: rgba(26, 115, 232, 0.1);
---focus-ring: #1A73E8;
+--color-primary: #1A73E8;
+--color-primary-dark: #1557B0;
+--color-primary-light: #E8F0FE;   /* light | #1E3A5F no dark */
+--color-border-focus: #1A73E8;
 
 /* Semantic */
---success: #10B981;
---success-light: rgba(16, 185, 129, 0.15);
---warning: #F59E0B;
---warning-light: rgba(245, 158, 11, 0.15);
---danger: #EF4444;
---danger-light: rgba(239, 68, 68, 0.15);
---info: #06B6D4;
+--color-secondary: #34A853;         /* verde financeiro */
+--color-secondary-dark: #2D924A;
+--color-secondary-light: #E6F4EA;  /* light | #14532D no dark */
+--color-accent: #F9AB00;
+--color-accent-light: #FEF3C7;     /* light | #3D3400 no dark */
+--color-error: #EA4335;
+--color-error-light: #FCE8E6;      /* light | #450A0A no dark */
 
-/* Surfaces */
---bg-primary: #020617;      /* page background */
---bg-secondary: #0F172A;    /* sidebar, cards */
---bg-card: #1A2234;         /* card background */
---bg-card-hover: #1F2A40;   /* hover state */
---border: #2A3550;          /* borders */
---border-hover: #3A4560;    /* hover borders */
+/* Surfaces — LIGHT (default) */
+--color-bg: #F8F9FA;               /* page background */
+--color-bg-white: #FFFFFF;         /* header, dropdowns */
+--color-bg-card: #FFFFFF;          /* cards */
+--color-border: #DADCE0;
+--color-border-light: #E8EAED;
 
-/* Text */
---text-primary: #F8FAFC;    /* headings, primary text */
---text-secondary: #CBD5E1;  /* secondary text */
---text-muted: #94A3B8;      /* muted, helpers */
---text-disabled: #64748B;   /* disabled */
+/* Surfaces — DARK (prefers-color-scheme / data-theme="dark") */
+--color-bg: #020617;
+--color-bg-white: #0F172A;
+--color-bg-card: #0F172A;
+--color-border: #334155;
+--color-border-light: #1E293B;
 
-/* Category Colors (consistentes em todo app) */
---cat-acao: #3B82F6;        /* Blue */
---cat-fii: #8B5CF6;         /* Purple */
---cat-etf: #F5C542;         /* Gold */
---cat-rf: #10B981;          /* Green */
---cat-cripto: #F59E0B;      /* Orange */
+/* Text — LIGHT */
+--color-text: #202124;             /* headings, primary text */
+--color-text-secondary: #5F6368;
+--color-text-muted: #5F6368;
+
+/* Text — DARK */
+--color-text: #F8FAFC;
+--color-text-secondary: #CBD5E1;
+--color-text-muted: #94A3B8;
+
+/* Texto semântico AA (usar estes, nunca a cor pura sobre fundo claro) */
+--color-success-text: #14672F;     /* 6.97:1 branco | dark: #4CBF6E */
+--color-danger-text: #C5221F;      /* 5.80:1 branco | dark: #F28B82 */
+--color-primary-ink: #1557B0;      /* 6.95:1 branco | dark: #8AB4F8 */
+
+/* Tags por classe de ativo (bg + texto, AA nos dois temas) */
+--tag-stocks-bg/text: #E8F0FE / #1557B0;  /* Ações */
+--tag-fiis-bg/text: #E6F4EA / #14672F;    /* FIIs */
+--tag-etfs-bg/text: #FEF3C7 / #7A5A00;    /* ETFs */
+--tag-fixed-bg/text: #E0E7FF / #3730A3;   /* Renda fixa */
+--tag-crypto-bg/text: #F3E8FF / #6D28D9;  /* Cripto */
+--tag-bdr-bg/text: #FFE0E0 / #9B2C2C;     /* BDRs */
 ```
 
 ### Typography
@@ -52,16 +74,16 @@
 --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
-/* Scale */
---text-xs: 10px;   /* labels, badges */
---text-sm: 11px;   /* subtitles, meta */
---text-base: 12px; /* body */
---text-md: 13px;   /* inputs */
---text-lg: 14px;   /* section titles */
---text-xl: 16px;   /* card titles */
---text-2xl: 20px;  /* metric values */
---text-3xl: 24px;  /* hero metrics */
---text-4xl: 32px;  /* page titles */
+/* Scale real (styles.css:56-64) — namespace --font-size-* */
+--font-size-xs: 0.7rem;      /* 11px — labels, badges */
+--font-size-sm: 0.8125rem;   /* 13px — subtitles, meta */
+--font-size-base: 0.875rem;  /* 14px — body */
+--font-size-md: 0.9375rem;   /* 15px — inputs */
+--font-size-lg: 1rem;        /* 16px — section titles */
+--font-size-xl: 1.125rem;    /* 18px — card titles */
+--font-size-2xl: 1.25rem;    /* 20px — metric values */
+--font-size-3xl: 1.5rem;     /* 24px — hero metrics */
+--font-size-4xl: 1.875rem;   /* 30px — page titles */
 
 /* Weights */
 --font-normal: 400;

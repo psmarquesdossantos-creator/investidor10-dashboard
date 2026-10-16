@@ -49,15 +49,19 @@ test.describe('Acessibilidade (axe-core)', () => {
 
       const results = await new AxeBuilder({ page }).analyze();
 
-      // Apenas critical deve ser 0; serious (color-contrast) é conhecido e aceito para Fase 6
       const criticalViolations = results.violations.filter(v => v.impact === 'critical');
       expect(criticalViolations).toHaveLength(0);
 
-      // Log serious violations para rastreamento futuro
+      // Serious (ex.: color-contrast) também falha, salvo allowlist explícita e datada.
+      // Allowlist vazia em 2026-10-16: tokens -text/-ink AA foram aplicados no CSS;
+      // se este teste quebrar, corrija o contraste ou registre aqui regra+prazo.
+      const SERIOUS_ALLOWLIST = [];
       const seriousViolations = results.violations.filter(v => v.impact === 'serious');
+      const unlisted = seriousViolations.filter(v => !SERIOUS_ALLOWLIST.includes(v.id));
       if (seriousViolations.length > 0) {
         console.log(`Serious violations in ${tab.label}:`, seriousViolations.map(v => v.id).join(', '));
       }
+      expect(unlisted).toHaveLength(0);
     });
   }
 
@@ -74,7 +78,7 @@ test.describe('Acessibilidade (axe-core)', () => {
     }
 
     // Botões primários visíveis
-    const primaryButtons = page.locator('button.primary, button[aria-label*="importar" i], button[aria-label*="exportar" i]');
+    const primaryButtons = page.locator('button.btn-primary, button[aria-label*="importar" i], button[aria-label*="exportar" i]');
     const btnCount = await primaryButtons.count();
     for (let i = 0; i < btnCount; i++) {
       const box = await primaryButtons.nth(i).boundingBox();
@@ -142,20 +146,23 @@ test.describe('Acessibilidade (axe-core)', () => {
   });
 
   test('respecta prefers-reduced-motion', async ({ page }) => {
-    // Simula prefers-reduced-motion
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.reload();
     await page.waitForLoadState('networkidle');
 
-    // Verifica que animações CSS são desabilitadas
-    const hasTransition = await page.evaluate(() => {
-      const styles = getComputedStyle(document.body);
-      return styles.transitionDuration !== '0s' && styles.transitionDuration !== '0ms';
+    const result = await page.evaluate(() => {
+      const body = getComputedStyle(document.body);
+      const anim = body.animationDuration;
+      const trans = body.transitionDuration;
+      const mq = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      return { anim, trans, mq };
     });
 
-    // Com prefers-reduced-motion, transições devem ser 0 ou muito rápidas
-    // (implementação depende do CSS do projeto)
-    // Apenas registra para rastreamento
-    console.log('hasTransition with reduced motion:', hasTransition);
+    expect(result.mq).toBe(true);
+    // Chromium normaliza 0.01ms como 1e-05s no getComputedStyle
+    const transVal = parseFloat(result.trans);
+    const animVal = parseFloat(result.anim);
+    expect(transVal <= 0.01).toBe(true);
+    expect(animVal <= 0.01).toBe(true);
   });
 });

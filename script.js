@@ -2,9 +2,64 @@
    Investidor10 Dashboard - Script
    ======================================== */
 
-// ========================================
+/* ========================================
+   Utility Functions
+   ======================================== */
+// Date utility functions
+function pad2(value) {
+    return String(value).padStart(2, '0');
+}
+
+function isValidISODate(value) {
+    const s = String(value || '').trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+    const d = new Date(s + 'T00:00:00Z');
+    return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
+}
+
+function localDateISO(date = new Date()) {
+    const d = date instanceof Date ? new Date(date.getTime()) : new Date(date);
+    if (Number.isNaN(d.getTime())) return '';
+    return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+}
+
+function localMonthKey(date = new Date()) {
+    const iso = localDateISO(date);
+    return iso ? iso.slice(0, 7) : '';
+}
+
+function normalizeMonthKey(monthKey, fallbackDate = new Date()) {
+    const fallback = localMonthKey(fallbackDate);
+    if (typeof monthKey !== 'string') return fallback;
+    const s = monthKey.trim().slice(0, 7);
+    return /^\d{4}-\d{2}$/.test(s) ? s : fallback;
+}
+
+// Money utility functions
+function parseMoney(value) {
+    if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+    if (typeof value !== 'string') return 0;
+    const cleaned = value.trim().replace(/[^\\d,.-]/g, '');
+    if (!cleaned) return 0;
+    const negative = cleaned.startsWith('-');
+    let number = cleaned.replace(/^-/, '');
+    if (number.includes(',')) number = number.replace(/\\./g, '').replace(',', '.');
+    else if ((number.match(/\\./g) || []).length > 1) number = number.replace(/\\./g, '');
+    const parsed = Number(number);
+    return Number.isFinite(parsed) ? (negative ? -parsed : parsed) : 0;
+}
+
+function moneyToCents(value) {
+    return Math.round(parseMoney(value) * 100);
+}
+
+function centsToMoney(cents) {
+    return Number((Number(cents) || 0) / 100).toFixed(2) * 1;
+}
+
+/* ======================================== */
 // Mock Data
-// ========================================
+/* ======================================== */
 
 const MOCK_DATA = {
   // KPIs
@@ -165,7 +220,16 @@ const CHART_COLORS = {
   ibov: '#34A853',
   ifix: '#F9AB00',
   smll: '#7C3AED',
-  allocation: ['#1A73E8', '#34A853', '#F9AB00', '#3730A3', '#EA4335', '#7C3AED', '#00B8D4', '#FF5722']
+  // Semantic class colors (per VISUAL_CANON)
+  classAcao: '#1A73E8',
+  classFiis: '#8B5CF6',
+  classEtfs: '#F5C542',
+  classRf: '#10B981',
+  classCripto: '#F59E0B',
+  classBdr: '#EC4899',
+  classOther: '#64748B',
+  // Legacy allocation (deprecated - use semantic class colors above)
+  allocation: ['#1A73E8', '#8B5CF6', '#F5C542', '#10B981', '#F59E0B', '#EC4899', '#00B8D4', '#FF5722']
 };
 
 function createChart(ctx, config) {
@@ -349,7 +413,10 @@ function initDOM() {
   els.kpiProfit = document.getElementById('kpiProfit');
   els.kpiCapitalGain = document.getElementById('kpiCapitalGain');
   els.kpiDividends = document.getElementById('kpiDividends');
+  els.kpiDividendsChange = document.getElementById('kpiDividendsChange');
   els.kpiEarnings12m = document.getElementById('kpiEarnings12m');
+  els.kpiProfitChange = document.getElementById('kpiProfitChange');
+  els.kpiYield12m = document.getElementById('kpiYield12m');
   els.return12m = document.getElementById('return12m');
   els.returnTotal = document.getElementById('returnTotal');
   els.yield12m = document.getElementById('yield12m');
@@ -455,15 +522,22 @@ function switchTab(tabName, focusTab = false) {
   if (tabName === 'patrimony' && !state.charts.patrimonyDetail) initPatrimonyDetailChart();
   if (tabName === 'returns' && !state.charts.returns) initReturnsChart();
 
-  // Render tables
+  // Render tables for non-lazy tabs only (lazy tabs are rendered via maybeRenderLazy in panels.js)
   if (tabName === 'positions') renderPositions();
   if (tabName === 'earnings') renderEarnings();
   if (tabName === 'entries') renderEntries();
   if (tabName === 'returns') renderAssetReturns();
+  // 'fixed' and other lazy tabs are rendered by maybeRenderLazy in panels.js
 }
 
 // Expor switchTab globalmente para testes e integração
 window.switchTab = switchTab;
+// Expor funções de renderização globalmente para acesso por outros módulos
+window.renderPositions = renderPositions;
+window.renderEarnings = renderEarnings;
+window.renderEntries = renderEntries;
+window.renderAssetReturns = renderAssetReturns;
+// renderFixedIncome é exposto por panels.js
 
 function initTabs() {
   // Use event delegation on the container for better reliability
@@ -659,17 +733,57 @@ function updateThemeIcons(theme) {
 
 function renderKPIs() {
   const k = MOCK_DATA.kpis;
+
+  // ===== Modelo Investidor10 (alinhado à carteira pública do usuário) =====
+  // Ganho de Capital = Patrimônio − Valor investido (não realizado)
+  // Dividendos Recebidos = soma lifetime dos proventos brutos
+  // Lucro total = Ganho de Capital + Dividendos Recebidos
+  const dividendsLifetime = (MOCK_DATA.earnings || []).reduce((s, e) => s + (Number(e.gross ?? e.grossValue) || 0), 0);
+  const ganhoCapital = k.total - k.invested;
+  const lucroTotal = ganhoCapital + dividendsLifetime;
+  const rentTotalPct = k.invested > 0 ? (lucroTotal / k.invested) * 100 : 0;
+
   els.kpiTotal.textContent = fmt.currency(k.total);
-  els.kpiTotalChange.innerHTML = `${fmt.percent(k.totalChange)} <span class="kpi-period">(12M)</span>`;
+  els.kpiTotalChange.innerHTML = `${fmt.percent(k.totalChange)} <span class="kpi-period">(Total)</span>`;
+  els.kpiTotalChange.classList.toggle('positive', k.totalChange > 0);
+  els.kpiTotalChange.classList.toggle('negative', k.totalChange < 0);
   els.kpiInvested.textContent = fmt.currency(k.invested);
-  els.kpiProfit.textContent = fmt.currency(k.profit);
-  els.kpiProfit.classList.toggle('positive', k.profit >= 0);
-  els.kpiCapitalGain.textContent = fmt.currency(k.capitalGain);
-  els.kpiDividends.textContent = fmt.currency(k.dividends);
+
+  // Data de última atualização (freshness real)
+  const lastEarn = (MOCK_DATA.earnings || []).map(e => e.date).filter(Boolean).sort().pop();
+  const lastPatrimony = (MOCK_DATA.patrimony?.portfolio || []).length;
+  const lastUpdate = lastEarn || (lastPatrimony ? MOCK_DATA.patrimony.dates?.[MOCK_DATA.patrimony.dates.length - 1] : null);
+  if (els.dataFreshnessLabel) {
+    if (lastUpdate) {
+      const d = new Date(lastUpdate + 'T12:00:00');
+      const days = Math.floor((Date.now() - d) / 86400000);
+      els.dataFreshnessLabel.textContent = days === 0 ? 'Hoje' : days === 1 ? 'Ontem' : `${days} dias atrás`;
+    } else {
+      els.dataFreshnessLabel.textContent = '—';
+    }
+  }
+
+  // Resultado não realizado (ganho de capital) — não mais "Lucro total"
+  els.kpiCapitalGain.textContent = fmt.currency(ganhoCapital);
+  els.kpiCapitalGain.classList.toggle('positive', ganhoCapital > 0);
+  els.kpiCapitalGain.classList.toggle('negative', ganhoCapital < 0);
+  els.kpiDividends.textContent = fmt.currency(k.dividends / 12);
+  if (els.kpiDividendsChange) {
+    const meta = (window.CARTEIRA_META && (window.CARTEIRA_META.divGoal || (window.CARTEIRA_META.goals && window.CARTEIRA_META.goals.proventosMonthly))) || null;
+    const divTotalTxt = dividendsLifetime > 0 ? `Recebidos: ${fmt.currency(dividendsLifetime)}${meta ? ' • ' : ''}` : '';
+    els.kpiDividendsChange.textContent = meta ? `${divTotalTxt}Meta: ${fmt.currency(meta)}/mês` : (dividendsLifetime > 0 ? divTotalTxt + 'Média 12M' : 'Média dos últimos 12 meses');
+  }
   els.kpiEarnings12m.textContent = fmt.currency(k.earnings12m);
-  els.return12m.textContent = fmt.percent(k.return12m);
+  if (els.kpiYield12m) els.kpiYield12m.textContent = `Yield 12M: ${fmt.percent(k.yield12m)}`;
+  els.return12m.textContent = k.return12m == null ? '—' : fmt.percent(k.return12m);
+  els.return12m.classList.toggle('positive', k.return12m != null && k.return12m > 0);
+  els.return12m.classList.toggle('negative', k.return12m != null && k.return12m < 0);
   els.returnTotal.textContent = fmt.percent(k.returnTotal);
+  els.returnTotal.classList.toggle('positive', k.returnTotal > 0);
+  els.returnTotal.classList.toggle('negative', k.returnTotal < 0);
   els.yield12m.textContent = fmt.percent(k.yield12m);
+  els.yield12m.classList.toggle('positive', k.yield12m > 0);
+  els.yield12m.classList.toggle('negative', k.yield12m < 0);
 }
 
 // ========================================
@@ -691,8 +805,101 @@ function renderMonthlyTable() {
 }
 
 // ========================================
-// Patrimony Chart (Summary)
+// A11y Helpers: Chart Summary & Empty States
 // ========================================
+
+function generateChartSummary(chartId, data, type = 'line') {
+  if (!data || !data.labels || !data.labels.length) return '';
+  
+  const firstLabel = data.labels[0];
+  const lastLabel = data.labels[data.labels.length - 1];
+  
+  if (type === 'line' && data.datasets) {
+    const mainDataset = data.datasets[0];
+    if (!mainDataset || !mainDataset.data || !mainDataset.data.length) return '';
+    
+    const firstValue = mainDataset.data[0];
+    const lastValue = mainDataset.data[mainDataset.data.length - 1];
+    const change = firstValue ? ((lastValue - firstValue) / firstValue * 100) : 0;
+    const changeStr = change >= 0 ? `alta de ${fmt.percent(change, 1)}` : `queda de ${fmt.percent(Math.abs(change), 1)}`;
+    
+    const min = Math.min(...mainDataset.data.filter(v => v != null));
+    const max = Math.max(...mainDataset.data.filter(v => v != null));
+    
+    return `${mainDataset.label || 'Série'}: ${changeStr} (${firstLabel} → ${lastLabel}). Mín: ${fmt.currency(min)}. Máx: ${fmt.currency(max)}.`;
+  }
+  
+  if (type === 'doughnut' && data.datasets) {
+    const dataset = data.datasets[0];
+    if (!dataset || !dataset.data || !data.labels) return '';
+    
+    const total = dataset.data.reduce((a, b) => a + b, 0);
+    const parts = data.labels.map((label, i) => `${label}: ${fmt.percent((dataset.data[i] / total) * 100, 1)}`).join(', ');
+    return `Distribuição: ${parts}. Total: ${fmt.currency(total)}.`;
+  }
+  
+  return '';
+}
+
+function renderChartSummary(chartId, summary) {
+  const container = document.getElementById(chartId);
+  if (!container) return;
+  
+  let summaryEl = container.querySelector('.chart-summary');
+  if (!summaryEl) {
+    summaryEl = document.createElement('p');
+    summaryEl.className = 'chart-summary';
+    summaryEl.setAttribute('aria-live', 'polite');
+    container.parentNode.insertBefore(summaryEl, container.nextSibling);
+  }
+  summaryEl.textContent = summary;
+}
+
+// Audit 2026-10-16: regiões roláveis acessíveis por teclado
+// (axe scrollable-region-focusable, WCAG 2.1.1/2.1.3)
+function enhanceScrollableRegions() {
+  document.querySelectorAll('.table-wrapper').forEach((w) => {
+    if (w.hasAttribute('tabindex')) return;
+    const title = w.closest('article, section, .card')?.querySelector('h2, h3, .table-title')?.textContent.trim();
+    w.setAttribute('tabindex', '0');
+    w.setAttribute('role', 'region');
+    w.setAttribute('aria-label', title ? `Tabela rolável: ${title}` : 'Tabela rolável');
+  });
+}
+
+function renderEmptyState(tableBodyId, message, icon = '📭') {
+  const tbody = document.getElementById(tableBodyId);
+  if (!tbody) return;
+  
+  if (tbody.children.length === 0) {
+    const colCount = tbody.closest('table')?.querySelector('thead th') ? 
+      tbody.closest('table').querySelectorAll('thead th').length : 5;
+    tbody.innerHTML = `<tr><td colspan="${colCount}" class="empty-cell">
+      <div class="empty-state">
+        <span class="empty-state-icon" aria-hidden="true">${icon}</span>
+        <p class="empty-state-title">Sem dados</p>
+        <p class="empty-state-desc">${message}</p>
+      </div>
+    </td></tr>`;
+  }
+}
+
+function renderSkeleton(tableBodyId, rowCount = 3, colCount = 5) {
+  const tbody = document.getElementById(tableBodyId);
+  if (!tbody) return;
+  
+  tbody.innerHTML = Array(rowCount).fill(0).map(() =>
+    `<tr>${Array(colCount).fill(0).map(() => '<td><div class="skeleton skeleton-line"></div></td>').join('')}</tr>`
+  ).join('');
+  
+  // Add shimmer animation if not exists
+  if (!document.getElementById('skeleton-style')) {
+    const style = document.createElement('style');
+    style.id = 'skeleton-style';
+    style.textContent = '@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }';
+    document.head.appendChild(style);
+  }
+}
 
 function initPatrimonyChart() {
   const ctx = els.patrimonyChart.getContext('2d');
@@ -710,11 +917,52 @@ function initPatrimonyChart() {
     }
   });
 
+  // A11y: Chart summary for screen readers
+  const summary = generateChartSummary('patrimonyChart', { labels: data.labels, datasets: [{ label: 'Patrimônio', data: data.portfolio }] }, 'line');
+  renderChartSummary('patrimonyChart', summary);
+
   renderLegend(els.patrimonyLegend, [
     { label: 'Patrimônio', color: CHART_COLORS.portfolio },
     { label: 'Valor Investido', color: CHART_COLORS.invested, dash: [6, 4] },
     { label: 'CDI', color: CHART_COLORS.cdi, dash: [4, 4] }
   ]);
+
+  // Filtro de período funcional (fix da auditoria: select era decorativo)
+  if (els.patrimonyPeriod) {
+    els.patrimonyPeriod.addEventListener('change', () => {
+      const chart = state.charts.patrimony;
+      if (!chart) return;
+      const periodMap = { '1m': 2, '3m': 4, '6m': 7, '12m': 13, 'all': data.labels.length };
+      const take = Math.min(periodMap[els.patrimonyPeriod.value] || data.labels.length, data.labels.length);
+      const start = data.labels.length - take;
+      chart.data.labels = data.labels.slice(start);
+      chart.data.datasets[0].data = data.portfolio.slice(start);
+      chart.data.datasets[1].data = data.invested.slice(start);
+      chart.data.datasets[2].data = data.cdi.slice(start);
+      chart.update();
+
+      // Fase C: atualiza resumo textual e legenda quando filtro muda
+      const visible = data.portfolio.slice(start);
+      const first = visible[0] || 0;
+      const last = visible[visible.length - 1] || 0;
+      const pct = first > 0 ? ((last / first - 1) * 100).toFixed(2) : '0.00';
+      const periodLabel = els.patrimonyPeriod.options[els.patrimonyPeriod.selectedIndex]?.text || '';
+      renderChartSummary('patrimonyChart', `Evolução do patrimônio (${periodLabel}): ${fmt.currency(first)} → ${fmt.currency(last)} (${pct >= 0 ? '+' : ''}${pct}%). Dados até ${data.labels[data.labels.length - 1]}.`);
+    });
+  }
+
+  // Fase C: marca tabelas com colunas escondidas no mobile
+  function markHiddenCols() {
+    if (window.innerWidth > 639) {
+      document.querySelectorAll('.table-wrapper').forEach(w => w.classList.remove('has-hidden-cols'));
+      return;
+    }
+    document.querySelectorAll('.table-wrapper').forEach(w => {
+      const hidden = [...w.querySelectorAll('th')].filter(th => getComputedStyle(th).display === 'none');
+      w.classList.toggle('has-hidden-cols', hidden.length > 0);
+    });
+  }
+  window.addEventListener('resize', markHiddenCols);
 }
 
 // ========================================
@@ -725,6 +973,15 @@ function initAllocationChart() {
   const ctx = els.allocationChart.getContext('2d');
   const data = MOCK_DATA.allocation.byClass;
 
+  // Map class to semantic color
+  const classColorMap = {
+    'Ações': CHART_COLORS.classAcao,
+    'FIIs': CHART_COLORS.classFiis,
+    'ETFs': CHART_COLORS.classEtfs,
+    'Renda Fixa': CHART_COLORS.classRf,
+    'Outros': CHART_COLORS.classOther
+  };
+
   state.charts.allocation = createChart(ctx, {
     ...getChartDefaults(),
     type: 'doughnut',
@@ -732,7 +989,7 @@ function initAllocationChart() {
       labels: data.map(d => d.name),
       datasets: [{
         data: data.map(d => d.value),
-        backgroundColor: data.map(d => d.color),
+        backgroundColor: data.map(d => classColorMap[d.name] || CHART_COLORS.classOther),
         borderWidth: 0,
         cutout: '65%'
       }]
@@ -752,6 +1009,11 @@ function initAllocationChart() {
   });
 
   renderAllocationLegend();
+  
+  // A11y: Chart summary for screen readers
+  const allocData = { labels: data.map(d => d.name), datasets: [{ data: data.map(d => d.value) }] };
+  const summary = generateChartSummary('allocationChart', allocData, 'doughnut');
+  renderChartSummary('allocationChart', summary);
 }
 
 function renderAllocationLegend() {
@@ -901,6 +1163,11 @@ function initPatrimonyDetailChart() {
     cb.addEventListener('change', () => updatePatrimonyDetailChart());
   });
   els.patrimonyDetailPeriod.addEventListener('change', () => updatePatrimonyDetailChart());
+  
+  // A11y: Initial chart summary
+  const detailData = { labels: data.labels, datasets: [{ label: 'Carteira', data: data.portfolio }] };
+  const summary = generateChartSummary('patrimonyDetailChart', detailData, 'line');
+  renderChartSummary('patrimonyDetailChart', summary);
 }
 
 function updatePatrimonyDetailChart() {
@@ -958,6 +1225,11 @@ function initReturnsChart() {
   renderReturnsLegend();
   els.returnPeriod.addEventListener('change', () => updateReturnsChart());
   els.returnBenchmark.addEventListener('change', () => updateReturnsChart());
+  
+  // A11y: Chart summary for screen readers
+  const returnsData = { labels: data.labels, datasets: [{ label: 'Carteira', data: portfolioReturns }] };
+  const summary = generateChartSummary('returnChart', returnsData, 'line');
+  renderChartSummary('returnChart', summary);
 }
 
 function updateReturnsChart() {
@@ -967,7 +1239,7 @@ function updateReturnsChart() {
 
 function renderReturnsLegend() {
   els.returnLegend.innerHTML = `
-    <div class="legend-item"><span class="legend-color" style="background:${CHART_COLORS.portfolio}"></span> Carteira (TWRR: ${fmt.percent(MOCK_DATA.kpis.return12m)})</div>
+    <div class="legend-item"><span class="legend-color" style="background:${CHART_COLORS.portfolio}"></span> Carteira (Retorno Total: ${fmt.percent(MOCK_DATA.kpis.returnTotal)})</div>
     <div class="legend-item"><span class="legend-color" style="background:${CHART_COLORS.cdi}"></span> CDI</div>
     <div class="legend-item"><span class="legend-color" style="background:${CHART_COLORS.ibov}"></span> IBOV</div>
   `;
@@ -984,36 +1256,141 @@ function renderReturnsLegend() {
 let filteredPositions = [...MOCK_DATA.positions];
 
 function renderPositions() {
+  // Sync filteredPositions with current MOCK_DATA.positions
+  filteredPositions = [...MOCK_DATA.positions];
   const start = (state.currentPositionsPage - 1) * state.positionsPerPage;
   const end = start + state.positionsPerPage;
   const pageData = filteredPositions.slice(start, end);
 
-  els.positionsBody.innerHTML = pageData.map((p, index) => {
-    const globalIndex = start + index;
-    return `
-    <tr>
-      <td>
-        <div class="asset-cell">
-          <span class="asset-ticker">${p.ticker}</span>
-          <span class="asset-name">${p.name}</span>
-        </div>
-      </td>
-      <td><span class="asset-class ${p.class}">${getClassLabel(p.class)}</span></td>
-      <td class="text-right">${fmt.number(p.qty, 4)}</td>
-      <td class="text-right">${fmt.currency(p.avgPrice)}</td>
-      <td class="text-right">${fmt.currency(p.currentPrice)}</td>
-      <td class="text-right" style="font-weight:600">${fmt.currency(p.value)}</td>
-      <td class="text-right pl-cell ${p.pl >= 0 ? 'positive' : 'negative'}">${fmt.currency(p.pl)}</td>
-      <td class="text-right pct-cell ${p.return >= 0 ? 'positive' : 'negative'}">${fmt.percent(p.return)}</td>
-      <td class="text-right">${fmt.percent(p.weight)}</td>
-      <td>
-        <button class="action-btn edit-position-btn" data-index="${globalIndex}" aria-label="Editar ${p.ticker}">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        </button>
-      </td>
-    </tr>
-    `;
-  }).join('');
+  // % Ideal por ativo (modelo Investidor10): meta da classe (arredondada a 5%) dividida
+  // igualmente entre os ativos da classe; Comprar? = peso atual < ideal
+  const allPos = MOCK_DATA.positions;
+  const totalValue = allPos.reduce((s, p) => s + (p.value || 0), 0) || 1;
+
+  // Div./mês e DY por ativo: soma dos proventos dos últimos 12 meses por ticker (dados reais)
+  const yearAgo = new Date(Date.now() - 365 * 86400000).toISOString().slice(0, 10);
+  const div12mByTicker = {};
+  (MOCK_DATA.earnings || []).forEach(e => {
+    if ((e.date || '') >= yearAgo) {
+      div12mByTicker[e.ticker] = (div12mByTicker[e.ticker] || 0) + (Number(e.gross ?? e.grossValue) || 0);
+    }
+  });
+
+  // KPI strip acima da tabela (modelo tela "Aportes e Ativos")
+  const strip = document.getElementById('positionsKpiStrip');
+  if (strip) {
+    const totalInvested = MOCK_DATA.kpis.invested || 0;
+    const lucro = totalValue - totalInvested;
+    const valorizacao = totalInvested > 0 ? lucro / totalInvested * 100 : 0;
+    const kpi = (label, value, sub, cls = '') => `<div style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-3);background:var(--color-bg-white)">
+      <div style="font-size:11px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em">${label}</div>
+      <div style="font-size:var(--font-size-lg);font-weight:700;margin:4px 0 2px" class="${cls}">${value}</div>
+      ${sub ? `<div style="font-size:11px;color:var(--color-text-muted)">${sub}</div>` : ''}
+    </div>`;
+    strip.innerHTML =
+      kpi('Total investido', fmt.currency(totalInvested), `${allPos.length} ativos`) +
+      kpi('Valor de mercado', fmt.currency(totalValue), 'Cotações atuais') +
+      kpi('Lucro / Prejuízo', fmt.currency(lucro), '', lucro >= 0 ? 'text-success' : 'text-error') +
+      kpi('Valorização', fmt.percent(valorizacao), 'Mercado vs. custo', valorizacao >= 0 ? 'text-success' : 'text-error');
+  }
+  const classTotals = {}, classCounts = {};
+  allPos.forEach(p => {
+    const c = p.class || 'other';
+    classTotals[c] = (classTotals[c] || 0) + (p.value || 0);
+    classCounts[c] = (classCounts[c] || 0) + 1;
+  });
+  const classIdeal = {};
+  let idealSum = 0;
+  Object.keys(classTotals).forEach(c => {
+    const pct = classTotals[c] / totalValue * 100;
+    const ideal = Math.round(pct / 5) * 5;
+    classIdeal[c] = ideal;
+    idealSum += ideal;
+  });
+  // fecha em 100% ajustando a maior classe
+  if (idealSum !== 100) {
+    const biggest = Object.keys(classTotals).reduce((a, b) => classTotals[b] > classTotals[a] ? b : a);
+    classIdeal[biggest] += (100 - idealSum);
+  }
+
+  // ===== GROUPING BY CATEGORY =====
+  // Define category groups in display order
+  const categoryGroups = [
+    { key: 'acoes', label: 'Ações', classes: ['stocks'], icon: '📈' },
+    { key: 'fundos', label: 'Fundos', classes: ['fiis', 'funds'], icon: '🏢' },
+    { key: 'renda-fixa', label: 'Renda Fixa', classes: ['fixed'], icon: '📊' },
+    { key: 'etfs', label: 'ETFs', classes: ['etfs'], icon: '📦' },
+    { key: 'outros', label: 'Outros', classes: ['crypto', 'bdr', 'other'], icon: '📌' }
+  ];
+
+  // Build rows with group headers
+  const allRows = [];
+  let globalRowIndex = 0;
+
+  categoryGroups.forEach(group => {
+    // Filter positions belonging to this group
+    const groupPositions = filteredPositions.filter(p => group.classes.includes(p.class || 'other'));
+    if (groupPositions.length === 0) return;
+
+    // Add group header row
+    const groupValue = groupPositions.reduce((s, p) => s + (p.value || 0), 0);
+    const groupPct = totalValue > 0 ? (groupValue / totalValue * 100) : 0;
+    allRows.push(`
+      <tr class="group-header" data-group="${group.key}">
+        <td colspan="14">
+          <div class="group-header-content">
+            <span class="group-icon">${group.icon}</span>
+            <span class="group-label">${group.label}</span>
+            <span class="group-count">${groupPositions.length} ativo${groupPositions.length !== 1 ? 's' : ''}</span>
+            <span class="group-value">${fmt.currency(groupValue)}</span>
+            <span class="group-pct">${fmt.percent(groupPct)}</span>
+          </div>
+        </td>
+      </tr>
+    `);
+
+    // Add position rows for this group (paginated)
+    const groupStart = allRows.length === 1 ? 0 : allRows.filter(r => r.includes('group-header')).length; // simplified
+    groupPositions.forEach((p, idx) => {
+      const globalIndex = start + globalRowIndex++;
+      const cls = p.class || 'other';
+      const idealAssetPct = classCounts[cls] > 0 ? (classIdeal[cls] || 0) / classCounts[cls] : 0;
+      const currentPct = p.weight != null ? p.weight : (p.value / totalValue * 100);
+      const shouldBuy = currentPct < idealAssetPct * 0.9; // 10% de tolerância
+      allRows.push(`
+        <tr data-group="${group.key}">
+          <td>
+            <div class="asset-cell">
+              <span class="asset-ticker">${p.ticker}</span>
+              <span class="asset-name">${p.name}</span>
+            </div>
+          </td>
+          <td><span class="asset-class ${p.class}">${getClassLabel(p.class)}</span></td>
+          <td class="text-right">${fmt.number(p.qty, 4)}</td>
+          <td class="text-right">${fmt.currency(p.avgPrice)}</td>
+          <td class="text-right">${fmt.currency(p.currentPrice)}</td>
+          <td class="text-right" style="font-weight:600">${fmt.currency(p.value)}</td>
+          <td class="text-right pl-cell ${p.pl >= 0 ? 'positive' : 'negative'}">${fmt.currency(p.pl)}</td>
+          <td class="text-right pct-cell ${p.return >= 0 ? 'positive' : 'negative'}">${fmt.percent(p.return)}</td>
+          <td class="text-right">${fmt.percent(p.weight)}</td>
+          <td class="text-right" style="color:var(--color-primary-ink)">${idealAssetPct > 0 ? fmt.percent(idealAssetPct) : '—'}</td>
+          <td class="text-right">${idealAssetPct > 0 ? `<span class="asset-class ${shouldBuy ? 'fiis' : 'bdr'}">${shouldBuy ? 'Sim' : '—'}</span>` : '—'}</td>
+          <td class="text-right">${div12mByTicker[p.ticker] > 0 ? fmt.currency(div12mByTicker[p.ticker] / 12) : '—'}</td>
+           <td class="text-right">${div12mByTicker[p.ticker] > 0 && p.value > 0 ? fmt.percent(div12mByTicker[p.ticker] / p.value * 100) : '—'}</td>
+           <td>${getConfidenceBadge(p)}</td>
+           <td>
+             <button class="action-btn edit-position-btn" data-index="${globalIndex}" aria-label="Editar ${p.ticker}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+          </td>
+        </tr>
+      `);
+    });
+  });
+
+  // Apply pagination to the combined rows (headers + positions)
+  const paginatedRows = allRows.slice(start, end);
+  els.positionsBody.innerHTML = paginatedRows.join('');
 
   els.positionsSummary.textContent = `Mostrando ${filteredPositions.length} ativos • Valor total: ${fmt.currency(MOCK_DATA.kpis.invested)}`;
 
@@ -1033,6 +1410,19 @@ function renderPositions() {
 function getClassLabel(cls) {
   const labels = { stocks: 'Ações', fiis: 'FIIs', etfs: 'ETFs', fixed: 'Renda Fixa', crypto: 'Cripto', bdr: 'BDRs', other: 'Outros' };
   return labels[cls] || cls;
+}
+
+function getConfidenceBadge(p) {
+  if (!p.ticker) return '<span class="badge badge-neutral" title="Sem dados">—</span>';
+  const src = p.source || p.dataSource || 'unknown';
+  const age = p.lastUpdate ? (Date.now() - new Date(p.lastUpdate).getTime()) / 86400000 : 999;
+  const isStale = age > 30;
+  const isManual = src === 'manual' || src === 'MANUAL';
+  const isB3 = src === 'b3' || src === 'B3';
+  if (isStale) return '<span class="badge badge-error" title={`Desatualizado: ${Math.round(age)}d`}>⏳ STALE</span>';
+  if (isB3) return '<span class="badge badge-success" title="Fonte B3 (confiável)">✓ B3</span>';
+  if (isManual) return '<span class="badge badge-info" title="Entrada manual">✏️ Manual</span>';
+  return '<span class="badge badge-neutral" title="Fonte: ' + src + '">' + src + '</span>';
 }
 
 function filterPositions() {
@@ -1096,23 +1486,40 @@ function renderEarnings() {
   const pageData = filteredEarnings.slice(start, end);
 
   if (els.earningsBody) {
-    els.earningsBody.innerHTML = pageData.map(e => `
-      <tr>
-        <td>${fmt.date(e.date)}</td>
-        <td><div class="asset-cell"><span class="asset-ticker">${e.ticker}</span><span class="asset-name">${e.name}</span></div></td>
-        <td><span class="asset-class ${e.type}">${getEarningsTypeLabel(e.type)}</span></td>
-        <td class="text-right">${fmt.currency(e.perShare)}</td>
-        <td class="text-right">${fmt.number(e.qty)}</td>
-        <td class="text-right">${fmt.currency(e.gross)}</td>
-        <td class="text-right ${e.tax > 0 ? 'negative' : ''}">${e.tax > 0 ? '-' + fmt.currency(e.tax) : '-'}</td>
-        <td class="text-right" style="font-weight:600">${fmt.currency(e.net)}</td>
-      </tr>
-    `).join('');
+    if (filteredEarnings.length === 0) {
+      // Empty state
+      els.earningsBody.innerHTML = `<tr><td colspan="8" class="empty-cell">
+        <div class="empty-state" style="display:flex;flex-direction:column;align-items:center;padding:var(--space-6);">
+          <span class="empty-state-icon" aria-hidden="true">📭</span>
+          <p class="empty-state-title">Sem proventos</p>
+          <p class="empty-state-desc">Nenhum provento encontrado para os filtros atuais.</p>
+        </div>
+      </td></tr>`;
+    } else {
+      els.earningsBody.innerHTML = pageData.map(e => `
+        <tr>
+          <td>${fmt.date(e.date)}</td>
+          <td><div class="asset-cell"><span class="asset-ticker">${e.ticker}</span><span class="asset-name">${e.name}</span></div></td>
+          <td><span class="asset-class ${e.type}">${getEarningsTypeLabel(e.type)}</span></td>
+          <td class="text-right">${fmt.currency(e.perShare)}</td>
+          <td class="text-right">${fmt.number(e.qty)}</td>
+          <td class="text-right">${fmt.currency(e.gross)}</td>
+          <td class="text-right ${e.tax > 0 ? 'negative' : ''}">${e.tax > 0 ? '-' + fmt.currency(e.tax) : '-'}</td>
+          <td class="text-right" style="font-weight:600">${fmt.currency(e.net)}</td>
+        </tr>
+      `).join('');
+    }
   }
 
   const totalNet = filteredEarnings.reduce((sum, e) => sum + e.net, 0);
   if (els.earningsSummary) {
-    els.earningsSummary.textContent = `Mostrando ${filteredEarnings.length} proventos • Total líquido: ${fmt.currency(totalNet)}`;
+    const earningsLen = filteredEarnings.length;
+    const kpisTotal = MOCK_DATA.kpis?.earnings12M;
+    const isPartial = kpisTotal && earningsLen < kpisTotal.count;
+    const partialBadge = isPartial
+      ? ` <span class="badge badge-warning" title="Dados parciais: ${earningsLen} de ${kpisTotal.count} proventos">⚠️ Parcial</span>`
+      : '';
+    els.earningsSummary.innerHTML = `Mostrando ${earningsLen} proventos • Total líquido: ${fmt.currency(totalNet)}${partialBadge}`;
   }
 
   // Update pagination
@@ -1186,7 +1593,17 @@ function renderEntries() {
   const end = start + state.entriesPerPage;
   const pageData = filteredEntries.slice(start, end);
 
-  els.entriesBody.innerHTML = pageData.map((e, index) => {
+  if (filteredEntries.length === 0) {
+    // Empty state
+    els.entriesBody.innerHTML = `<tr><td colspan="10" class="empty-cell">
+      <div class="empty-state" style="display:flex;flex-direction:column;align-items:center;padding:var(--space-6);">
+        <span class="empty-state-icon" aria-hidden="true">📝</span>
+        <p class="empty-state-title">Sem lançamentos</p>
+        <p class="empty-state-desc">Nenhum lançamento encontrado para os filtros atuais.</p>
+      </div>
+    </td></tr>`;
+  } else {
+    els.entriesBody.innerHTML = pageData.map((e, index) => {
     const globalIndex = start + index;
     return `
     <tr>
@@ -1209,6 +1626,7 @@ function renderEntries() {
     </tr>
     `;
   }).join('');
+  }
 
   els.entriesSummary.textContent = `Mostrando ${filteredEntries.length} lançamentos`;
 
@@ -1294,7 +1712,9 @@ function getSourceColor(source) {
 }
 
 function getSourceTextColor(source) {
-  const colors = { manual: '#1A73E8', b3: '#34A853', cei: '#B8860B' };
+  // Pares AA ≥4.5:1 com getSourceColor (ver --tag-*-bg/text no canon):
+  // manual 6.06:1, b3 6.15:1, cei 5.72:1
+  const colors = { manual: '#1557B0', b3: '#14672F', cei: '#7A5A00' };
   return colors[source] || '#5F6368';
 }
 
@@ -1885,6 +2305,18 @@ const COMMANDS = [
   { id: 'tab-patrimony', title: 'Ir para Patrimônio', desc: 'Evolução histórica', shortcut: '4', icon: '📈', action: () => switchTab('patrimony') },
   { id: 'tab-returns', title: 'Ir para Rentabilidade', desc: 'Métricas de performance', shortcut: '5', icon: '📉', action: () => switchTab('returns') },
   { id: 'tab-entries', title: 'Ir para Lançamentos', desc: 'Histórico de operações', shortcut: '6', icon: '📝', action: () => switchTab('entries') },
+  { id: 'tab-fixed', title: 'Ir para Renda Fixa', desc: 'Títulos e indexadores', icon: '🏦', action: () => switchTab('fixed') },
+  { id: 'tab-rebalance', title: 'Ir para Rebalancear', desc: 'Metas de alocação', icon: '⚖️', action: () => switchTab('rebalance') },
+  { id: 'tab-risk', title: 'Ir para Risco', desc: 'VaR, Sharpe, drawdown', icon: '⚠️', action: () => switchTab('risk') },
+  { id: 'tab-montecarlo', title: 'Ir para Monte Carlo', desc: 'Projeção estocástica', icon: '🎲', action: () => switchTab('montecarlo') },
+  { id: 'tab-benchmarks', title: 'Ir para Benchmarks', desc: 'Comparação de mercado', icon: '🎯', action: () => switchTab('benchmarks') },
+  { id: 'tab-tax', title: 'Ir para Impostos', desc: 'DARF, GCAP, IRPF', icon: '🧾', action: () => switchTab('tax') },
+  { id: 'tab-import', title: 'Ir para Importar', desc: 'Centro de importação', icon: '📥', action: () => switchTab('import') },
+  { id: 'tab-backup', title: 'Ir para Backup', desc: 'Exportar/importar dados', icon: '💾', action: () => switchTab('backup') },
+  { id: 'tab-corporate-events', title: 'Ir para Eventos Corp.', desc: 'Splits, JCP, dividendas', icon: '📅', action: () => switchTab('corporate-events') },
+  { id: 'tab-data-trust', title: 'Ir para Data Trust', desc: 'Auditoria e confiança', icon: '🔍', action: () => switchTab('data-trust') },
+  { id: 'tab-goals', title: 'Ir para Metas', desc: 'Objetivos financeiros', icon: '🎯', action: () => switchTab('goals') },
+  { id: 'tab-backup-portability', title: 'Ir para Backup Port.', desc: 'Portabilidade avançada', icon: '📦', action: () => switchTab('backup-portability') },
   { id: 'new-entry', title: 'Novo lançamento', desc: 'Adicionar compra/venda', shortcut: 'N', icon: '➕', action: () => { currentEditEntry = null; els.entryModal.showModal(); resetModalForm(); } },
   { id: 'toggle-theme', title: 'Alternar tema', desc: 'Dark/Light mode', shortcut: 'T', icon: '🌓', action: () => document.getElementById('themeToggle').click() },
   { id: 'toggle-live', title: 'Alternar preços tempo real', desc: 'Simular variação de preços', shortcut: 'L', icon: '⚡', action: () => document.getElementById('livePricesToggle').click() },
@@ -2322,23 +2754,36 @@ function init() {
   initPositionsPagination();
   initEarningsFilters();
   initEntriesFilters();
+  enhanceScrollableRegions();
 
   // Initial render of tables
-  renderPositions();
-  renderEarnings();
-  renderEntries();
+    renderPositions();
+    renderEarnings();
+    renderEntries();
 
-  // Setup allocation chart click and export
-  if (state.charts.allocation) {
-    setupAllocationChartClick();
-  }
-  const exportBtn = document.getElementById('exportAllocationBtn');
-  if (exportBtn) {
-    exportBtn.addEventListener('click', exportAllocationCSV);
-  }
-  
-  // Setup table export buttons
-  setupExportButtons();
+    // Setup allocation chart click and export
+    if (state.charts.allocation) {
+      setupAllocationChartClick();
+    }
+    const exportBtn = document.getElementById('exportAllocationBtn');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', exportAllocationCSV);
+    }
+
+    // Expose data globally for panels.js and other modules (UNKNOWN≠ZERO: data must be accessible)
+    window.CARTEIRA_DATA = {
+      kpis: MOCK_DATA.kpis,
+      monthly: MOCK_DATA.monthly,
+      patrimony: MOCK_DATA.patrimony,
+      allocation: MOCK_DATA.allocation,
+      positions: MOCK_DATA.positions,
+      earnings: MOCK_DATA.earnings,
+      entries: MOCK_DATA.entries,
+      assetReturns: MOCK_DATA.assetReturns
+    };
+
+    // Setup table export buttons
+    setupExportButtons();
 
   // Show welcome toast
   setTimeout(() => showToast('Dashboard carregado com dados de demonstração', 'info'), 500);
@@ -2353,6 +2798,9 @@ if (document.readyState === 'loading') {
 
 // Expor switchTab globalmente (para testes e integração) - DEVE SER NO FINAL
 window.switchTab = switchTab;
+
+// Ponte para scripts clássicos (real-mode.js) acessarem os dados do módulo
+window.MOCK_DATA = MOCK_DATA;
 
 // Função global para re-renderizar tudo após importação
 window.renderAll = function() {
