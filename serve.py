@@ -31,7 +31,7 @@ class SecureHandler(http.server.SimpleHTTPRequestHandler):
             "style-src 'self' https://fonts.googleapis.com; "
             "font-src 'self' https://fonts.gstatic.com; "
             "img-src 'self' data: https:; "
-            "connect-src 'self' https://brapi.dev; "
+            "connect-src 'self' https://brapi.dev https://*.googleapis.com https://*.firebaseio.com https://securetoken.googleapis.com; "
             "frame-ancestors 'none'; "
             "base-uri 'self'; "
             "form-action 'self'")

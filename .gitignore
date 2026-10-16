@@ -2,6 +2,12 @@
 carteira-data.js
 data.js
 
+# ---- Firebase (config real + emulator logs — nunca commitar) ----
+firebase-config.js
+firebase-debug.log
+firebase-debug.*.log
+.firebaserc
+
 # ---- Logs & runtime artifacts ----
 *.log
 serve.log
