@@ -1405,6 +1405,37 @@ function renderPositions() {
 
   // Update pagination
   updatePositionsPagination();
+
+  // Fase G: cards mobile simplificados (visíveis apenas <640px via CSS)
+  renderMobilePositionCards(filteredPositions);
+}
+
+function renderMobilePositionCards(positions) {
+  const container = document.getElementById('positionsCardsMobile');
+  if (!container) return;
+  const totalValue = positions.reduce((s, p) => s + (p.value || 0), 0) || 1;
+  container.innerHTML = positions.map(p => {
+    const ret = p.return || 0;
+    const weight = p.value / totalValue * 100;
+    return `<div class="pos-card">
+      <div class="pos-card-header">
+        <span class="pos-card-ticker">${p.ticker || '—'}</span>
+        <span class="pos-card-return ${ret >= 0 ? 'positive' : 'negative'}">${fmt.percent(ret)}</span>
+      </div>
+      <div class="pos-card-row">
+        <span class="label">Valor</span>
+        <span class="value">${fmt.currency(p.value)}</span>
+      </div>
+      <div class="pos-card-row">
+        <span class="label">Peso</span>
+        <span class="value">${fmt.percent(weight)}</span>
+      </div>
+      <div class="pos-card-row">
+        <span class="label">P&L</span>
+        <span class="value ${p.pl >= 0 ? 'text-success' : 'text-error'}">${fmt.currency(p.pl)}</span>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function getClassLabel(cls) {

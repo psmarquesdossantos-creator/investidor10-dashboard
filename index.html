@@ -339,6 +339,8 @@
             <tbody id="positionsBody"></tbody>
           </table>
         </div>
+        <!-- Cards mobile simplificados (Fase G) -->
+        <div id="positionsCardsMobile" class="position-cards-mobile" aria-label="Posições em modo cartão"></div>
         <div class="table-footer">
           <div class="table-actions">
             <button class="btn btn-ghost btn-sm" id="exportPositionsBtn" aria-label="Exportar posições CSV">
@@ -1502,5 +1504,34 @@
         <script src="panels.js"></script>
     <script src="router.js"></script>
     <script src="data-trust-engine.js"></script>
+
+    <!-- Bottom Nav Bar — mobile only (Fase G) -->
+    <nav class="bottom-nav" role="navigation" aria-label="Navegação principal mobile">
+      <button class="bottom-nav-item active" data-tab="summary" aria-label="Resumo">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span>Resumo</span>
+      </button>
+      <button class="bottom-nav-item" data-tab="positions" aria-label="Posições">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        <span>Posições</span>
+      </button>
+      <button class="bottom-nav-item" data-tab="earnings" aria-label="Proventos">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <span>Proventos</span>
+      </button>
+      <button class="bottom-nav-item" data-tab="patrimony" aria-label="Patrimônio">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        <span>Gráficos</span>
+      </button>
+      <button class="bottom-nav-item" data-tab="rebalance" aria-label="Rebalancear">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        <span>Rebalancear</span>
+      </button>
+    </nav>
+
+    <!-- Pull-to-refresh indicator -->
+    <div class="ptr-indicator" id="ptrIndicator" aria-hidden="true">
+      <div class="ptr-spinner"></div>
+    </div>
   </body>
   </html>

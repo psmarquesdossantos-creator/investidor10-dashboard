@@ -55,6 +55,55 @@
     __dataAttrObserver.observe(document.body, { childList: true, subtree: true });
   });
 
+  // ---- Fase G: Bottom Nav Bar (mobile) ----
+  document.addEventListener('DOMContentLoaded', () => {
+    const nav = document.querySelector('.bottom-nav');
+    if (!nav) return;
+    nav.querySelectorAll('.bottom-nav-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.dataset.tab;
+        if (!tab) return;
+        nav.querySelectorAll('.bottom-nav-item').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        if (typeof window.switchTab === 'function') window.switchTab(tab);
+      });
+    });
+    // Sincroniza bottom-nav com tab ativa (quando muda via header-tabs)
+    const observer = new MutationObserver(() => {
+      const activeTab = document.querySelector('.tab-btn.active')?.dataset.tab;
+      if (!activeTab) return;
+      nav.querySelectorAll('.bottom-nav-item').forEach(b => {
+        b.classList.toggle('active', b.dataset.tab === activeTab);
+      });
+    });
+    const tablist = document.querySelector('.header-tabs');
+    if (tablist) observer.observe(tablist, { attributes: true, subtree: true, attributeFilter: ['class'] });
+  });
+
+  // ---- Fase G: Pull-to-Refresh (mobile) ----
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!matchMedia('(max-width: 639px)').matches) return;
+    const indicator = document.getElementById('ptrIndicator');
+    if (!indicator) return;
+    let startY = 0, pulling = false;
+    document.addEventListener('touchstart', e => {
+      if (window.scrollY <= 0) { startY = e.touches[0].clientY; pulling = true; }
+    }, { passive: true });
+    document.addEventListener('touchmove', e => {
+      if (!pulling) return;
+      const dy = e.touches[0].clientY - startY;
+      if (dy > 60) indicator.classList.add('visible');
+    }, { passive: true });
+    document.addEventListener('touchend', () => {
+      if (indicator.classList.contains('visible')) {
+        setTimeout(() => indicator.classList.remove('visible'), 800);
+        // Recarrega dados (refresh leve)
+        if (typeof window.renderAll === 'function') window.renderAll();
+      }
+      pulling = false;
+    });
+  });
+
   // ---- Helpers ----
   const fmt = {
     cur: v => new Intl.NumberFormat('pt-BR', {style:'currency',currency:'BRL'}).format(v),

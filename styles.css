@@ -1142,3 +1142,136 @@ html[data-theme="dark"] {
 [data-bg] { background-color: var(--dyn-bg, transparent); }
 [data-color] { color: var(--dyn-color, inherit); }
 [data-border] { border-color: var(--sev-border, var(--color-border)); }
+
+/* ========================================
+   Fase G — Bottom Nav Bar (mobile) + Pull-to-Refresh
+   ======================================== */
+.bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: var(--color-bg-white);
+  border-top: 1px solid var(--color-border);
+  padding: 4px 0 calc(4px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -2px 8px rgba(0,0,0,.08);
+}
+
+.bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 2px;
+  min-height: 52px;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color .15s;
+}
+
+.bottom-nav-item.active {
+  color: var(--color-primary);
+}
+
+.bottom-nav-item svg {
+  width: 22px;
+  height: 22px;
+}
+
+@media (max-width: 639px) {
+  .bottom-nav { display: flex; }
+  .main { padding-bottom: 68px; }
+}
+
+/* Pull-to-refresh */
+.ptr-indicator {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(-60px);
+  z-index: 1100;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-bg-white);
+  box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  align-items: center;
+  justify-content: center;
+  transition: transform .2s;
+}
+
+.ptr-indicator.visible {
+  display: flex;
+  transform: translateX(-50%) translateY(12px);
+}
+
+.ptr-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+
+@media (max-width: 639px) {
+  .ptr-indicator { display: none; }
+  .ptr-indicator.visible { display: flex; }
+}
+
+/* ========================================
+   Fase G — Cards de posição simplificados (mobile)
+   ======================================== */
+@media (max-width: 639px) {
+  .positions-table, .data-table {
+    display: none;
+  }
+  .position-cards-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  .pos-card {
+    background: var(--color-bg-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-3);
+  }
+  .pos-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-2);
+  }
+  .pos-card-ticker {
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .pos-card-return {
+    font-weight: 600;
+    font-size: 13px;
+  }
+  .pos-card-return.positive { color: var(--color-success-text); }
+  .pos-card-return.negative { color: var(--color-danger-text); }
+  .pos-card-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    padding: 2px 0;
+  }
+  .pos-card-row .label { color: var(--color-text-muted); }
+  .pos-card-row .value { font-weight: 500; }
+}
+
+.position-cards-mobile { display: none; }
