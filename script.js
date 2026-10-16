@@ -425,6 +425,7 @@ function initDOM() {
   els.allocationChart = document.getElementById('allocationChart');
   els.patrimonyLegend = document.getElementById('patrimonyLegend');
   els.allocationLegend = document.getElementById('allocationLegend');
+  els.heroFreshnessLabel = document.getElementById('heroFreshnessLabel');
   els.patrimonyPeriod = document.getElementById('patrimonyPeriod');
   els.allocationView = document.getElementById('allocationView');
   // Positions
@@ -753,13 +754,13 @@ function renderKPIs() {
   const lastEarn = (MOCK_DATA.earnings || []).map(e => e.date).filter(Boolean).sort().pop();
   const lastPatrimony = (MOCK_DATA.patrimony?.portfolio || []).length;
   const lastUpdate = lastEarn || (lastPatrimony ? MOCK_DATA.patrimony.dates?.[MOCK_DATA.patrimony.dates.length - 1] : null);
-  if (els.dataFreshnessLabel) {
+  if (els.heroFreshnessLabel) {
     if (lastUpdate) {
       const d = new Date(lastUpdate + 'T12:00:00');
       const days = Math.floor((Date.now() - d) / 86400000);
-      els.dataFreshnessLabel.textContent = days === 0 ? 'Hoje' : days === 1 ? 'Ontem' : `${days} dias atrás`;
+      els.heroFreshnessLabel.textContent = days === 0 ? 'Hoje' : days === 1 ? 'Ontem' : `${days} dias atrás`;
     } else {
-      els.dataFreshnessLabel.textContent = '—';
+      els.heroFreshnessLabel.textContent = '—';
     }
   }
 
