@@ -1490,6 +1490,8 @@
 
     <!-- Auth (Phase 1): gate de acesso + fixture demo sintética (P12/P26) -->
     <script src="src/auth/demo-fixture.js"></script>
+    <script src="src/auth/sync/data-source.js"></script>
+    <script src="src/auth/sync/local-demo-source.js"></script>
     <script src="script.js"></script>
     <script src="carteira-data.js?v=20261012"></script>
     <!-- Import Center -->
@@ -1519,14 +1521,12 @@
     <script src="benchmark-engine.js"></script>
         <script src="monte-carlo-engine.js"></script>
         <script src="tax-engine.js"></script>
-        <script src="init-carteira.js"></script>
-        <script src="src/rebalance/rebalance-engine.js"></script>
-        <script src="src/montecarlo/montecarlo-worker.js"></script>
-        <script src="src/montecarlo/montecarlo.js"></script>
-        <script src="src/import-center/orchestrator.js"></script>
-        <script src="src/import-center/parsers/corporate-events.js"></script>
-        <script src="src/backup-portability/backup-portability.js"></script>
-        <script src="panels.js"></script>
+            <script src="init-carteira.js"></script>
+            <!-- NOTA: módulos src/rebalance, src/montecarlo, orchestrator e corporate-events
+                 foram removidos do load por conflitar com as engines raiz (RebalanceEngine
+                 classe vs objeto, MonteCarloEngine, parser b3-events). Mantidos no repo
+                 como referência para wiring futuro. -->
+            <script src="panels.js"></script>
     <script src="router.js"></script>
     <script src="data-trust-engine.js"></script>
 
