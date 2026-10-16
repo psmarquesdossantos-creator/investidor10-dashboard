@@ -2758,13 +2758,14 @@ function init() {
   // Apply real wallet override if provided by carteira-data.js
   if (window.__CARTEIRA_OVERRIDE) {
     const C = window.__CARTEIRA_OVERRIDE;
-    Object.assign(MOCK_DATA.kpis, C.kpis);
-    MOCK_DATA.monthly = C.monthly;
-    MOCK_DATA.patrimony = C.patrimony;
-    MOCK_DATA.allocation = C.allocation;
-    MOCK_DATA.positions = C.positions;
-    MOCK_DATA.earnings = C.earnings;
-    MOCK_DATA.entries = C.entries;
+    // Guards: backup/sample parcial pode não ter todas as seções
+    Object.assign(MOCK_DATA.kpis, C.kpis || {});
+    if (C.monthly) MOCK_DATA.monthly = C.monthly;
+    if (C.patrimony) MOCK_DATA.patrimony = C.patrimony;
+    if (C.allocation) MOCK_DATA.allocation = C.allocation;
+    if (C.positions) MOCK_DATA.positions = C.positions;
+    if (C.earnings) MOCK_DATA.earnings = C.earnings;
+    if (C.entries) MOCK_DATA.entries = C.entries;
     if (C.assetReturns) MOCK_DATA.assetReturns = C.assetReturns;
   } else {
     // Load persisted data only when not overriding
@@ -2803,7 +2804,8 @@ function init() {
     }
 
     // Expose data globally for panels.js and other modules (UNKNOWN≠ZERO: data must be accessible)
-    window.CARTEIRA_DATA = {
+    // Object.assign preserva chaves extras (meta, assets, fixedIncome, goals...) da fonte real
+    window.CARTEIRA_DATA = Object.assign({}, window.CARTEIRA_DATA, {
       kpis: MOCK_DATA.kpis,
       monthly: MOCK_DATA.monthly,
       patrimony: MOCK_DATA.patrimony,
@@ -2812,7 +2814,7 @@ function init() {
       earnings: MOCK_DATA.earnings,
       entries: MOCK_DATA.entries,
       assetReturns: MOCK_DATA.assetReturns
-    };
+    });
 
     // Setup table export buttons
     setupExportButtons();

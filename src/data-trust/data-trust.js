@@ -166,8 +166,8 @@
   // Generate confidence badge HTML
   function renderConfidenceBadge(confidence, size = 'normal') {
     const sizeClass = size === 'small' ? 'badge-sm' : '';
-    return `<span class="confidence-badge badge badge-${confidence.level} ${sizeClass}" 
-      style="background: ${confidence.color}20; color: ${confidence.color}; border: 1px solid ${confidence.color}40;"
+    return `<span class="confidence-badge badge badge-${confidence.level} ${sizeClass}"
+      data-color="${confidence.color}"
       title="Confiança: ${confidence.label} (${(confidence.score * 100).toFixed(0)}%)">
       ${confidence.label}
     </span>`;
@@ -178,7 +178,7 @@
     const barWidth = Math.round(confidence.score * 100);
     return `
       <div class="confidence-indicator" title="Confiança: ${confidence.label} (${barWidth}%)">
-        <div class="confidence-bar" style="width: ${barWidth}%; background: ${confidence.color};"></div>
+        <div class="confidence-bar" data-w="${barWidth}" data-bg="${confidence.color}"></div>
         <span class="confidence-text">${barWidth}%</span>
       </div>
     `;

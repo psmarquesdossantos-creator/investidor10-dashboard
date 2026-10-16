@@ -1091,29 +1091,10 @@
   // 7. ACCESSIBILITY HELPERS
   // ========================================
   const A11y = {
-    // Ensure focus visible
-    initFocusVisible: function() {
-      const style = document.createElement('style');
-      style.textContent = `
-        :focus:not(:focus-visible) { outline: none; }
-        :focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
-        .btn:focus-visible, .tab-btn:focus-visible, .filter-select:focus-visible { outline-offset: 2px; }
-      `;
-      document.head.appendChild(style);
-    },
-
-    // Touch targets >= 44px
-    ensureTouchTargets: function() {
-      const style = document.createElement('style');
-      style.textContent = `
-        .btn, .tab-btn, .filter-select, .dropdown-item, [role="menuitem"], [role="tab"] {
-          min-height: 44px;
-          min-width: 44px;
-        }
-        .btn-sm, .btn-ghost { padding: 10px 16px; }
-      `;
-      document.head.appendChild(style);
-    },
+    // CSP sem unsafe-inline bloqueia injeção de <style> via JS.
+    // Regras migradas para styles.css (fim do arquivo) — no-ops mantêm a API.
+    initFocusVisible: function() {},
+    ensureTouchTargets: function() {},
 
     // Semantic headings
     fixHeadings: function(container) {

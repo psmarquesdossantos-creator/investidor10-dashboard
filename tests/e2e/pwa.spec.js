@@ -25,8 +25,21 @@ test.describe('PWA Offline (Service Worker)', () => {
   test('cache estático contém assets essenciais', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
-    // Aguarda SW instalar e cachear
-    await page.waitForTimeout(2000);
+
+    const essential = ['/index.html', '/styles.css', '/script.js', '/manifest.json'];
+
+    // addAll é atômico e inclui fonte externa (fonts.googleapis.com) —
+    // pode demorar em runners lentos; aguarda polling em vez de timeout fixo.
+    await page.waitForFunction((assets) => {
+      return caches.keys().then(async keys => {
+        const staticKey = keys.find(k => k.includes('static'));
+        if (!staticKey) return false;
+        const cache = await caches.open(staticKey);
+        const requests = await cache.keys();
+        const paths = requests.map(r => new URL(r.url).pathname);
+        return assets.every(a => paths.includes(a));
+      });
+    }, essential, { timeout: 15000 });
 
     const cached = await page.evaluate(async () => {
       const keys = await caches.keys();
@@ -43,7 +56,6 @@ test.describe('PWA Offline (Service Worker)', () => {
 
     expect(cached.cacheCount, 'deve haver pelo menos 1 cache').toBeGreaterThan(0);
     // Verifica assets essenciais
-    const essential = ['/index.html', '/styles.css', '/script.js', '/manifest.json'];
     for (const asset of essential) {
       expect(cached.assets, `cache deve conter ${asset}`).toContain(asset);
     }

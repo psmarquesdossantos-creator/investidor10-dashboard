@@ -235,17 +235,30 @@
         backupMockData();
         if (!window.CARTEIRA_DATA) return;
         const C = window.CARTEIRA_DATA;
-        Object.assign(MOCK_DATA.kpis, C.kpis);
-        MOCK_DATA.monthly = C.monthly;
-        MOCK_DATA.patrimony = C.patrimony;
-        MOCK_DATA.allocation = C.allocation;
-        MOCK_DATA.positions = C.positions;
-        MOCK_DATA.earnings = C.earnings;
-        MOCK_DATA.entries = C.entries;
+        // Guards: sample/backup parcial pode não ter todas as seções (não quebrar boot)
+        if (C.kpis) Object.assign(MOCK_DATA.kpis, C.kpis);
+        else if (Array.isArray(C.positions) && C.positions.length) {
+          const inv = C.positions.reduce((s,p) => s + (p.invested || ((p.qty||0)*(p.avgPrice||0))), 0);
+          const tot = C.positions.reduce((s,p) => s + (p.current || ((p.qty||0)*(p.currentPrice||0))), 0);
+          MOCK_DATA.kpis.invested = +inv.toFixed(2);
+          MOCK_DATA.kpis.total = +tot.toFixed(2);
+          MOCK_DATA.kpis.profit = +(tot - inv).toFixed(2);
+          MOCK_DATA.kpis.totalChange = inv ? +((tot/inv-1)*100).toFixed(2) : 0;
+        }
+        if (C.monthly) MOCK_DATA.monthly = C.monthly;
+        if (C.patrimony) MOCK_DATA.patrimony = C.patrimony;
+        if (C.allocation) MOCK_DATA.allocation = C.allocation;
+        if (C.positions) MOCK_DATA.positions = C.positions;
+        if (C.earnings) MOCK_DATA.earnings = C.earnings;
+        if (C.entries) MOCK_DATA.entries = C.entries;
         if (C.assetReturns) MOCK_DATA.assetReturns = C.assetReturns;
         // Preserve reference return12m (TWR) and returnTotal; only compute capitalGain
-        const derived = computeDerivedKpis(C.entries, C.kpis.invested, C.kpis.total, C.patrimony);
-        MOCK_DATA.kpis.capitalGain = derived.capitalGain;
+        if (C.kpis && C.patrimony) {
+          try {
+            const derived = computeDerivedKpis(C.entries || [], C.kpis.invested, C.kpis.total, C.patrimony);
+            MOCK_DATA.kpis.capitalGain = derived.capitalGain;
+          } catch (e) { console.warn('[RealMode] capitalGain skipped:', e && e.message); }
+        }
         // Keep C.kpis.return12m (TWR) and C.kpis.returnTotal as authoritative
         
         // Setup default CARTEIRA_META for rebalanceador if not already set from backup

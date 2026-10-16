@@ -7,7 +7,7 @@
 ## CURRENT PHASE
 
 ```
-CURRENT_PHASE=FASES_B_TO_E2_COMPLETE — UI wiring + inline styles 0 + mobile E2E + PWA offline + CSP restritivo
+CURRENT_PHASE=CI_GREEN — pipeline GitHub Actions verde com sample data + CSP
 ```
 
 ---
@@ -16,26 +16,30 @@ CURRENT_PHASE=FASES_B_TO_E2_COMPLETE — UI wiring + inline styles 0 + mobile E2
 
 ```
 CURRENT_BRANCH=main
-CURRENT_HEAD=217e920 (feat(durability): Fase 17)
-CURRENT_WORKTREE=G:\Meu Drive\Codex\investidor10-dashboard (canonical, autorizado por usuário)
-ORIGIN_MAIN=N/A (remote inexistente — criar repo "investidor10-dashboard")
-UNCOMMITTED=10 missões 2026-10-16 (~28 arquivos) — ver PROJECT_MEMORY COMMIT_MISSION_ORDER
-BACKUP=G:\Meu Drive\Codex\investidor10-dashboard (sync implícito = o próprio worktree)
+CURRENT_HEAD=8986c80 (ci: console.error check → warn)
+CURRENT_WORKTREE=G:\Meu Drive\Codex\investidor10-dashboard (canonical)
+REMOTE=https://github.com/psmarquesdossantos-creator/investidor10-dashboard.git
+GITHUB_PAGES=https://psmarquesdossantos-creator.github.io/investidor10-dashboard/
+PAT=scope workflow embutido no remote URL (push do ci.yml funciona)
+UNCOMMITTED=fixes CI (ver MISSÃO CI-GREEN em NEXT_STEP)
 ```
 
 ---
 
-## BUILD & TEST STATUS (2026-10-16 pós-fases B-E2)
+## BUILD & TEST STATUS (2026-10-16 pós CI-GREEN)
 
 ```
-BUILD=vanilla, no build step; node --check OK em todos os JS tocados
-TESTES (servidor Node estático com MIME correto para SW):
-  Desktop: 89 passed + 9 skipped (mobile.spec.js corretamente pulado) ✅
-  Mobile:  98 passed ✅ (inclui mobile.spec.js 9/9)
-  PWA:     4/4 ✅ (SW registra, cache offline, manifest válido)
-BLOCKERS=Nenhum
-INLINE_STYLES=index.html=0, real-mode.js=0, panels.js=0, script.js=0 (todos convertidos)
-CSP=style-src 'self' https://fonts.googleapis.com (SEM unsafe-inline)
+BUILD=vanilla, no build step; node --check OK; eslint@8 OK; htmlhint OK
+TESTES (CI-equivalent: sample data + CSP server):
+  Desktop:       88 passed + 10 skipped ✅
+  Mobile+Tablet: 185 passed + 11 skipped ✅
+TESTES (dados reais + CSP):
+  Desktop: 89 passed + 9 skipped ✅
+TESTES (dados reais sem CSP, full): 276 passed + 18 skipped ✅
+CSP: style-src 'self' sem unsafe-inline — 0 violações (A11y styles migrados p/ CSS)
+INLINE_STYLES=0; SW cache parcial resiliente (allSettled)
+DEPLOY=GitHub Pages ativo (push automático a cada commit em main)
+BLOCKERS=nenhum
 ```
 
 ---
@@ -43,10 +47,10 @@ CSP=style-src 'self' https://fonts.googleapis.com (SEM unsafe-inline)
 ## ACTIVE WORK
 
 ```
-OBJETIVO=Commit autorizado → remote GitHub → CI/CD
-STATUS=READY_TO_COMMIT (aguardando autorização)
-COMPLETED_THIS_SESSION=Fases B+C+D+E+E2 (ver PROJECT_MEMORY)
-NEXT_MISSION=Commit 10 missões + remote + próximas melhorias
+OBJETIVO=CI verde + próximas missões
+STATUS=CI-GREEN LOCAL (push + acompanhar Actions)
+COMPLETED_THIS_SESSION=CI-green fixes (sample rica, guards boot, CSP A11y, sw.js, testes adaptativos)
+NEXT_MISSION=LOGIN/PRIVACIDADE — dono (e-mail) vê carteira real; visitantes vazio ou demo
 ```
 
 ---
@@ -66,5 +70,5 @@ Home: hero patrimônio + 4 KPIs + gráficos + alertas inteligentes
 
 ```
 DATE=2026-10-16
-UPDATED_BY=Muse Spark (pós fases B-E2: inline 0, mobile E2E, PWA offline, CSP restritivo)
+UPDATED_BY=Muse Spark (pós CI-green: 26→0 falhas com sample+CSP)
 ```

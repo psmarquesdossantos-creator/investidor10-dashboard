@@ -1,26 +1,35 @@
 # NEXT STEP — Investidor10 Dashboard
 
-**Próxima missão e passos para continuar.**
+**Arquivo vivo. Atualizar a cada missão concluída.**
 
 ---
 
-## WHAT WAS JUST COMPLETED (2026-10-16, 10 missões, sem commit)
+## WHAT WAS JUST COMPLETED (2026-10-16, MISSÃO CI-GREEN)
 
 ```
-MISSÕES ANTERIORES (6):
-  ✅ Higiene raiz + Canon regen + REA skill + melhorias 1-6 + P0 boot fix + home review 1-4 + Tier 1
+FASE F — DEPLOY: GitHub Pages ativo (push automático em main)
+FASE G — MOBILE UX: bottom nav, position cards, pull-to-refresh
+FASE H — CALENDÁRIO + EXPORT PDF
 
-MISSÕES DESTA SESSÃO (4):
-  ✅ FASE B — UI WIRING: botões #btnRunStress + #btnBacktest + handlers em real-mode.js
-  ✅ FASE C — HOME REVIEW 5-7: scroll-snap, chart summaries, hidden-cols
-  ✅ FASE D — 6 FALHAS PRÉ-EXISTENTES CORRIGIDAS: import-xlsx path, panels fixed, test-isolated
-  ✅ FASE E/E2 — INLINE STYLES 0 + CSP RESTRITIVO:
-     index.html 209→0, real-mode.js 55→0, panels.js 70→0, script.js 21→0
-     132 estáticos → classes CSS + 22 dinâmicos → data-attrs + CSSOM helper
-     CSP: style-src 'self' (SEM unsafe-inline) ✅
-  ✅ MOBILE E2E: tests/e2e/mobile.spec.js 9/9 (scroll-snap, touch targets, hidden-cols, overflow)
-  ✅ PWA OFFLINE: tests/e2e/pwa.spec.js 4/4 (SW registra, cache offline, manifest válido)
-  ✅ VALIDAÇÃO: desktop 89+9skipped, mobile 98/98, node --check OK
+MISSÃO CI-GREEN (26 falhas → 0):
+  ✅ carteira-data.sample.js enriquecida: kpis, patrimony (12m), monthly,
+     allocation.byClass/byAsset, 20 posições × 6 classes (class/value/return),
+     earnings com gross/tax/net, entries com class, fixedIncome, reconciliation
+  ✅ script.js: guards no branch __CARTEIRA_OVERRIDE (backup parcial não zera
+     allocation); Object.assign preserva meta/assets/goals em CARTEIRA_DATA
+  ✅ real-mode.js: guards em applyRealData (kpis/patrimony/monthly deriváveis)
+  ✅ CSP: A11y.initFocusVisible/ensureTouchTargets viraram no-ops — regras
+     migradas para styles.css (style-src-elem inline era violado: 2 hashes CI)
+  ✅ data-trust.js: badge/indicator via data-attrs + CSSOM (0 style= inline)
+  ✅ styles.css: .data-table display:none mobile escopado a #panel-positions
+     (Fase G escondia TODAS as tabelas no mobile — bug)
+  ✅ sw.js: cache parcial com allSettled (URL externa fonts não anula cache)
+  ✅ Testes adaptativos: real-data.spec pula com meta.source==='sample';
+     import-xlsx.spec pula sem XLSX local; pwa cache com polling 15s
+VALIDAÇÃO:
+  Sample+CSP (CI-equivalent): desktop 88p/10s, mobile+tablet 185p/11s, 0 failed
+  Real+CSP desktop: 89p/9s ✅ | Real full: 276p/18s ✅
+  eslint@8/htmlhint/node --check: OK
 ```
 
 ---
@@ -28,15 +37,15 @@ MISSÕES DESTA SESSÃO (4):
 ## NEXT MISSÃO (ordem recomendada)
 
 ```
-FASE A — GOVERNANÇA (bloqueador de tudo o mais):
-  1. COMMIT autorizado — 10 commits ordenados (ver COMMIT_MISSION_ORDER em PROJECT_MEMORY)
-  2. REMOTE GITHUB + PUSH — repo "investidor10-dashboard"; validar CI
-
-PRÓXIMAS MELHORIAS (após commit):
-  3. Tablet E2E (768x900) — validar layout intermediário
-  4. Performance audit — Lighthouse, bundle size
-  5. Accessibility audit expandido — axe-core em todas as abas
-  6. Test coverage — unit tests para engines (ReturnEngine, RiskEngine)
+1. COMMIT + PUSH desta missão → acompanhar GitHub Actions até verde
+2. LOGIN/PRIVACIDADE (pedido do usuário):
+   - Apenas o dono (login por e-mail) vê a carteira real
+   - Visitantes veem site vazio ou com conta demo
+   - carteira-data.js continua local/gitignored; dados nunca no repo público
+3. FEATURES futuras:
+   - Comparativo vs benchmarks detalhado
+   - Alertas de preço push notification
+   - Multi-carteira (perfis)
 ```
 
 ---
@@ -45,25 +54,16 @@ PRÓXIMAS MELHORIAS (após commit):
 
 ```
 PARE SE:
-- Commit/push sem autorização explícita do usuário
+- Dados reais da carteira forem para o repo público (violação de privacidade)
 - Segredos no push (.gitignore: carteira-data, .env, backups reais)
 - 3+ fixes falhando no mesmo sintoma → parar e questionar arquitetura
 ```
 
 ---
 
-## NEXT SINGLE BEST ACTION
-
-```
-1. Pedir autorização para COMMIT (10 commits ordenados, arquivos seletivos, Conventional Commits)
-   → depois criar remote GitHub + push → validar CI
-```
-
----
-
-## LAST UPDATED
+## META
 
 ```
 DATE=2026-10-16
-UPDATED_BY=Muse Spark (pós fases B-E2: inline 0, mobile E2E, PWA offline, CSP restritivo)
+UPDATED_BY=Muse Spark (pós CI-green: 26→0 falhas sample+CSP)
 ```

@@ -1,10 +1,15 @@
 // E2E: upload dos XLSX reais B3/Inter no Import Center (Fase 16)
 // tests/e2e/import-xlsx.spec.js
 import { test, expect } from '@playwright/test';
+import { existsSync } from 'node:fs';
 
 const ATT = 'G:/Meu Drive/Codex/investidor10-dashboard';
+const XLSX_FIXTURE = `${ATT}/movimentacao-2026-10-05-18-01-15.xlsx`;
 
+// XLSX reais são locais apenas (gitignored) — CI não os possui.
 test.describe('Import Center — XLSX B3/Inter (Fase 16)', () => {
+  test.skip(!existsSync(XLSX_FIXTURE), 'XLSX real ausente (fixture local apenas)');
+
 
   test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:8765/#import');

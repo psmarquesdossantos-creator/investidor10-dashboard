@@ -24,15 +24,22 @@ const STATIC_ASSETS = [
 ];
 
 // Install event - cache static assets
+// allSettled por asset (não atômico): falha de URL externa (fonts) não
+// invalida o cache estático inteiro — addAll rejeitava tudo de uma vez.
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(STATIC_CACHE)
       .then(cache => {
         console.log('[SW] Caching static assets');
-        return cache.addAll(STATIC_ASSETS.map(url => {
-          return new Request(url, { credentials: 'same-origin' });
-        })).catch(err => {
-          console.warn('[SW] Some assets failed to cache:', err);
+        return Promise.allSettled(STATIC_ASSETS.map(url => {
+          return fetch(new Request(url, { credentials: 'same-origin' }))
+            .then(response => {
+              if (!response.ok) throw new Error(`HTTP ${response.status} for ${url}`);
+              return cache.put(url, response);
+            });
+        })).then(results => {
+          const failed = results.filter(r => r.status === 'rejected');
+          if (failed.length) console.warn(`[SW] ${failed.length} assets failed to cache (partial cache kept)`);
         });
       })
       .then(() => self.skipWaiting())

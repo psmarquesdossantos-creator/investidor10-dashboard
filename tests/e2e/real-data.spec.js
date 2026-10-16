@@ -7,6 +7,11 @@ test('Site renderiza com dados reais 10/10/2026', async ({ page }) => {
   // Aguarda dados carregarem
   await page.waitForFunction(() => window.CARTEIRA_DATA && window.CARTEIRA_DATA.kpis && window.CARTEIRA_DATA.kpis.total > 0, { timeout: 15000 });
   
+  // CI roda com carteira-data.sample.js (source: 'sample') — validações de
+  // valores reais só aplicam quando os dados locais reais estão presentes.
+  const isSample = await page.evaluate(() => window.CARTEIRA_DATA.meta && window.CARTEIRA_DATA.meta.source === 'sample');
+  test.skip(isSample, 'Dados sintéticos (sample) — valores reais só em ambiente local');
+  
   const total = await page.evaluate(() => window.CARTEIRA_DATA.kpis.total);
   console.log('TOTAL no browser:', total);
   expect(Math.abs(total - 702175.65)).toBeLessThan(0.02);

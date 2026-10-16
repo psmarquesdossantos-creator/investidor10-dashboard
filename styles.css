@@ -1233,7 +1233,7 @@ html[data-theme="dark"] {
    Fase G — Cards de posição simplificados (mobile)
    ======================================== */
 @media (max-width: 639px) {
-  .positions-table, .data-table {
+  #panel-positions .data-table, .positions-table {
     display: none;
   }
   .position-cards-mobile {
@@ -1337,3 +1337,20 @@ html[data-theme="dark"] {
   .div-calendar .cal-day { min-height: 40px; padding: 2px; }
   .div-calendar .cal-event { font-size: 8px; }
 }
+/* ========================================
+   Data Trust � confidence (CSP-safe: data-attrs -> CSS vars)
+   ======================================== */
+.confidence-badge { --dyn-color: var(--color-muted); background: color-mix(in srgb, var(--dyn-color) 12%, transparent); color: var(--dyn-color); border: 1px solid color-mix(in srgb, var(--dyn-color) 25%, transparent); }
+.confidence-indicator { display: flex; align-items: center; gap: var(--space-2); min-width: 90px; }
+.confidence-bar { flex: 1; height: 6px; border-radius: var(--radius-full); background: var(--color-border-light); overflow: hidden; }
+.confidence-bar::after { content: ''; display: block; height: 100%; width: var(--w, 0%); background: var(--dyn-bg, var(--color-primary)); border-radius: var(--radius-full); transition: width var(--transition-fast); }
+.confidence-text { font-size: var(--font-size-xs); color: var(--color-text-muted); min-width: 32px; text-align: right; }
+
+/* ========================================
+   A11y helpers (migrados de advanced-engine.js — CSP sem unsafe-inline
+   bloqueia injeção de <style> via JS; manter em cascata final)
+   ======================================== */
+:focus:not(:focus-visible) { outline: none; }
+.btn:focus-visible, .tab-btn:focus-visible, .filter-select:focus-visible { outline-offset: 2px; }
+.tab-btn, .filter-select, .dropdown-item, [role="menuitem"], [role="tab"] { min-height: 44px; min-width: 44px; }
+.btn-sm, .btn-ghost { padding: 10px 16px; }
