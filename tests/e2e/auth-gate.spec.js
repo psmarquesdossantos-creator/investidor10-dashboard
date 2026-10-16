@@ -63,9 +63,17 @@ test.describe('Auth Gate — modos forçados (sem Firebase, sem rede)', () => {
     await expect(page.locator('#kpiTotal')).toBeHidden();
     await expect(page.locator('body')).toHaveClass(/auth-locked/);
 
-    // submit vazio → erro inline (validação sem rede)
+    // e-mail inválido → erro inline específico
+    await page.fill('#authEmail', 'nao-e-mail');
+    await page.fill('#authPassword', 'senha123');
     await page.click('#authSubmit');
-    await expect(page.locator('#authError')).toBeVisible();
+    await expect(page.locator('#authError')).toContainText('e-mail válido');
+
+    // senha curta → erro inline específico
+    await page.fill('#authEmail', 'dono@exemplo.com');
+    await page.fill('#authPassword', '123');
+    await page.click('#authSubmit');
+    await expect(page.locator('#authError')).toContainText('6 caracteres');
   });
 
   test("force DEMO: badge + fixture aplicada + copy P9, app visível", async ({ page }) => {
@@ -140,5 +148,31 @@ test.describe('Auth Gate — SyncHub e isolamento de storage (P8/P10)', () => {
     const realParsed = keys.real ? JSON.parse(keys.real) : {};
     expect(realParsed.positions).toBeUndefined();
     expect(realParsed.entries).toBeUndefined();
+  });
+
+  test('DEMO: botão Restaurar reseta para os defaults do demo (P11)', async ({ page }) => {
+    await page.addInitScript(() => { window.__AUTH_GATE_FORCE__ = 'demo'; });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    await page.evaluate(() => localStorage.removeItem('investidor10-demo'));
+
+    // muta + persiste
+    await page.evaluate(() => {
+      window.MOCK_DATA.entries.push({ date: '2026-10-16', type: 'compra', ticker: 'ALFA11', asset: 'ALFA11', qty: 1, price: 10, total: 10, class: 'fiis' });
+      window.MOCK_DATA.kpis.total = 555;
+      window.saveToStorage();
+    });
+    let entries = await page.evaluate(() => window.MOCK_DATA.entries.length);
+    expect(entries).toBeGreaterThan(6); // mutação aplicada
+
+    // P11: restaura defaults via botão do badge
+    await page.click('#btnDemoReset');
+
+    entries = await page.evaluate(() => window.MOCK_DATA.entries.length);
+    const total = await page.evaluate(() => window.MOCK_DATA.kpis.total);
+    const keyGone = await page.evaluate(() => localStorage.getItem('investidor10-demo') === null);
+    expect(entries).toBe(6);            // fixture default restaurada
+    expect(total).toBe(123456.78);
+    expect(keyGone).toBe(true);          // edits do demo descartados
   });
 });
