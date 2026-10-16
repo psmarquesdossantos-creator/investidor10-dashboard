@@ -7,7 +7,7 @@
 ## CURRENT PHASE
 
 ```
-CURRENT_PHASE=CI_GREEN — pipeline GitHub Actions verde com sample data + CSP
+CURRENT_PHASE=AUTH_PHASE_1_COMPLETE — multiuser auth + realtime sync + demo (código local, PUSH=0)
 ```
 
 ---
@@ -16,31 +16,35 @@ CURRENT_PHASE=CI_GREEN — pipeline GitHub Actions verde com sample data + CSP
 
 ```
 CURRENT_BRANCH=main
-CURRENT_HEAD=8986c80 (ci: console.error check → warn)
+CURRENT_HEAD=9600d13 (docs+scripts: migration plan + dry-run)
 CURRENT_WORKTREE=G:\Meu Drive\Codex\investidor10-dashboard (canonical)
 REMOTE=https://github.com/psmarquesdossantos-creator/investidor10-dashboard.git
 GITHUB_PAGES=https://psmarquesdossantos-creator.github.io/investidor10-dashboard/
-PAT=scope workflow embutido no remote URL (push do ci.yml funciona)
-UNCOMMITTED=fixes CI (ver MISSÃO CI-GREEN em NEXT_STEP)
+LOCAL_COMMITS_NOT_PUSHED=auth phase 1 (153c5ad..9600d13, ~10 commits) — PUSH=0 por diretiva P34
 ```
 
 ---
 
-## BUILD & TEST STATUS (2026-10-16 pós CI-GREEN)
+## BUILD & TEST STATUS (2026-10-16 pós AUTH PHASE 1)
 
 ```
-BUILD=vanilla, no build step; node --check OK; eslint@8 OK; htmlhint OK
-TESTES (CI-equivalent: sample data + CSP server):
-  Desktop:       88 passed + 10 skipped ✅
-  Mobile+Tablet: 185 passed + 11 skipped ✅
-TESTES (dados reais + CSP):
-  Desktop: 89 passed + 9 skipped ✅
-TESTES (dados reais sem CSP, full): 276 passed + 18 skipped ✅
-CSP: style-src 'self' sem unsafe-inline — 0 violações (A11y styles migrados p/ CSS)
-INLINE_STYLES=0; SW cache parcial resiliente (allSettled)
-DEPLOY=GitHub Pages ativo (push automático a cada commit em main)
-CI=VERDE — run 38944485486 (b2db200): Lint ✅ Desktop ✅ Mobile ✅ Tablet ✅ A11y ✅ Security ✅ Build ✅
-BLOCKERS=nenhum
+BUILD=vanilla; node --check OK (todos auth/sync/scripts); eslint OK; htmlhint OK
+TESTES (dados reais + CSP server):
+  Desktop: 105 passed + 9 skipped ✅ (89 base + 16 auth/demo/sync)
+  Mobile:  108 passed ✅ (98 base + 10 auth)
+  Tablet:  111 passed ✅
+  Flake: 1 a11y mobile no run paralelo cheio (re-run isolado 14/14 ✅)
+AUTH_PHASE1:
+  Gate INACTIVE/LOGIN/DEMO/REAL/BLOCKED ✅ (force-testável, sem Firebase no CI)
+  Fixture demo sintética (123456.78, 13 ativos fictícios) ✅
+  LocalDemoDataSource (investidor10-demo, reset) ✅
+  FirestoreRealDataSource (sections, realtime, fail-closed) — código pronto, sem produção ✅
+  SyncHub no-op por padrão + hooks writer/processBackupFile/saveToStorage ✅
+  firestore.rules (UID-isolated + allowlist) ✅ commitado
+  tests/rules P14 matrix (10 casos) — escrito, BLOCKED local: Java 8 (emulator exige 11+)
+  migration dry-run sintético: READBACK OK + IDEMPOTENTE OK + Package2 OK ✅
+HOSTED_FINANCIAL_WRITES=0 · PRODUCTION_MIGRATION=0 · DEPLOY=0 · PUSH=0
+BLOCKERS=JDK 11+ local p/ emulator; npm EBADF no workspace (Drive sync) p/ devDeps
 ```
 
 ---
@@ -48,10 +52,9 @@ BLOCKERS=nenhum
 ## ACTIVE WORK
 
 ```
-OBJETIVO=CI verde + próximas missões
-STATUS=CI-GREEN LOCAL (push + acompanhar Actions)
-COMPLETED_THIS_SESSION=CI-green fixes (sample rica, guards boot, CSP A11y, sw.js, testes adaptativos)
-NEXT_MISSION=LOGIN/PRIVACIDADE — dono (e-mail) vê carteira real; visitantes vazio ou demo
+OBJETIVO=AUTH_PHASE_1 (P1-P35) — concluída em código local
+STATUS=PHASE_1_CODE_COMPLETE (aguardando revisão do usuário; push é Fase 2)
+NEXT_MISSION=PHASE_2: revisão → autorizar push → Firebase console (setup runbook) → rules deploy → certificação manual
 ```
 
 ---

@@ -4,48 +4,50 @@
 
 ---
 
-## WHAT WAS JUST COMPLETED (2026-10-16, MISSÃO CI-GREEN)
+## WHAT WAS JUST COMPLETED (2026-10-16, AUTH PHASE 1 — P1–P35)
 
 ```
-FASE F — DEPLOY: GitHub Pages ativo (push automático em main)
-FASE G — MOBILE UX: bottom nav, position cards, pull-to-refresh
-FASE H — CALENDÁRIO + EXPORT PDF
+SPEC: docs/superpowers/specs/2026-10-16-multiuser-auth-realtime-sync-design.md (7111af4)
+PLAN: docs/superpowers/plans/2026-10-16-multiuser-auth-phase1.md
 
-MISSÃO CI-GREEN (26 falhas → 0):
-  ✅ carteira-data.sample.js enriquecida: kpis, patrimony (12m), monthly,
-     allocation.byClass/byAsset, 20 posições × 6 classes (class/value/return),
-     earnings com gross/tax/net, entries com class, fixedIncome, reconciliation
-  ✅ script.js: guards no branch __CARTEIRA_OVERRIDE (backup parcial não zera
-     allocation); Object.assign preserva meta/assets/goals em CARTEIRA_DATA
-  ✅ real-mode.js: guards em applyRealData (kpis/patrimony/monthly deriváveis)
-  ✅ CSP: A11y.initFocusVisible/ensureTouchTargets viraram no-ops — regras
-     migradas para styles.css (style-src-elem inline era violado: 2 hashes CI)
-  ✅ data-trust.js: badge/indicator via data-attrs + CSSOM (0 style= inline)
-  ✅ styles.css: .data-table display:none mobile escopado a #panel-positions
-     (Fase G escondia TODAS as tabelas no mobile — bug)
-  ✅ sw.js: cache parcial com allSettled (URL externa fonts não anula cache)
-  ✅ Testes adaptativos: real-data.spec pula com meta.source==='sample';
-     import-xlsx.spec pula sem XLSX local; pwa cache com polling 15s
+ENTREGA (código local, ~10 commits 153c5ad..9600d13, PUSH=0 por P34):
+  ✅ auth-gate.js — INACTIVE/LOGIN/DEMO/REAL/BLOCKED; fail-closed; force-testável
+  ✅ Login overlay (Google + e-mail/senha, erros pt-BR, focus trap, P22 sem
+     render antes da decisão; localhost bypass; sem config = site intacto)
+  ✅ Demo: fixture sintética (13 ativos fictícios, total 123456.78, zero dados
+     reais), badge "MODO DEMONSTRAÇÃO" + copy P9, reset via botão (P11),
+     storage próprio investidor10-demo (P10), saveToStorage roteado (P26)
+  ✅ PortfolioDataSource (P23): LocalDemoDataSource (P25) +
+     FirestoreRealDataSource (P24: sections users/{uid}/portfolio/{section},
+     realtime onSnapshot, batch field-scoped P8, eco suprimido, timeout boot P20)
+  ✅ SyncHub: no-op por padrão; hooks em writer.js (seções-alvo), processBackupFile
+     (saveAll), saveToStorage (saveAll em REAL / demo source em DEMO)
+  ✅ firestore.rules: allowlist authorization/{uid} (leitura só do dono, escrita
+     deny p/ client P16) + users/{uid}/{doc=**} com get() server-side (P5/P6/P15)
+  ✅ tests/rules/rules.test.cjs — matriz P14 (10 casos) — BLOCKER local: Java 8
+     (emulator exige 11+); roda em CI/ubuntu quando push autorizado
+  ✅ scripts/migration-dry-run.js — P33: readback counts+sha256 OK, idempotente OK
+  ✅ docs/ai/FIREBASE_MIGRATION_PLAN.md (P17/P18) + FIREBASE_SETUP.md (runbook)
 VALIDAÇÃO:
-  Sample+CSP (CI-equivalent): desktop 88p/10s, mobile+tablet 185p/11s, 0 failed
-  Real+CSP desktop: 89p/9s ✅ | Real full: 276p/18s ✅
-  eslint@8/htmlhint/node --check: OK
+  Desktop 105p/9s · Mobile 108p · Tablet 111p · 0 failed (1 flake a11y mobile
+  em run paralelo, isolado 14/14 ✅) · node --check/eslint/htmlhint OK
+  Demo nunca vê real: badge test, storage isolado, fixture ≠ 702175.64/628267
+HISTÓRICO DESTA SESSÃO: CI-GREEN antes desta (26→0 falhas, runs 38944485486+84ac8d7)
 ```
 
 ---
 
-## NEXT MISSÃO (ordem recomendada)
+## NEXT MISSION (Fase 2 — requer autorização explícita do usuário)
 
 ```
-1. COMMIT + PUSH desta missão → acompanhar GitHub Actions até verde
-2. LOGIN/PRIVACIDADE (pedido do usuário):
-   - Apenas o dono (login por e-mail) vê a carteira real
-   - Visitantes veem site vazio ou com conta demo
-   - carteira-data.js continua local/gitignored; dados nunca no repo público
-3. FEATURES futuras:
-   - Comparativo vs benchmarks detalhado
-   - Alertas de preço push notification
-   - Multi-carteira (perfis)
+1. Revisão humana do código Phase 1 (specs/plans/docs acima)
+2. Autorizar PUSH (revogar PUSH=0) → push dos ~10 commits → CI verde no GitHub
+3. Dono: seguir docs/ai/FIREBASE_SETUP.md (projeto, Auth Google+e-mail, rules,
+   allowlist authorization/{uid}, firebase-config.js local)
+4. Rules deploy + signup → resolver DEMO/REAL em produção
+5. Rodar tests/rules no CI (ubuntu Java 17) — 10/10 obrigatório
+6. Depois: FASE 3 migração owner (FIREBASE_MIGRATION_PLAN.md) → FASE 4
+   certificação cross-device → FASE 5 release DEMO → FASE 6 produção
 ```
 
 ---
@@ -55,7 +57,8 @@ VALIDAÇÃO:
 ```
 PARE SE:
 - Dados reais da carteira forem para o repo público (violação de privacidade)
-- Segredos no push (.gitignore: carteira-data, .env, backups reais)
+- Push sem autorização explícita (diretiva P34 PUSH=0 ativa)
+- serviceAccount/firebase-config reais forem commitados
 - 3+ fixes falhando no mesmo sintoma → parar e questionar arquitetura
 ```
 
@@ -65,5 +68,5 @@ PARE SE:
 
 ```
 DATE=2026-10-16
-UPDATED_BY=Muse Spark (pós CI-green: 26→0 falhas sample+CSP)
+UPDATED_BY=Muse Spark (pós AUTH PHASE 1: gate+demo+sync+rules+dry-run, tudo local)
 ```
