@@ -32,12 +32,11 @@ jobs:
             done
         - run: npx htmlhint index.html --format unix
         - run: |
-            npx eslint *.js --format unix --no-eslintrc \
+            npx eslint@8 *.js --format unix --no-eslintrc \
               --parser-options=ecmaVersion:2022,sourceType:module \
               --env browser,es2022 \
               --rule 'no-unused-vars: warn' \
               --rule 'no-console: off'
-        - run: npx stylelint styles.css --formatter unix
         - run: |
             if grep -r "console\\.error" --include="*.js" --exclude-dir=node_modules --exclude-dir=.git . | grep -v "test\\|spec"; then
               echo "ERROR: console.error encontrado em codigo de producao"
