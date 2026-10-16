@@ -50,8 +50,38 @@
   function showLoginOverlay(opts) {
     hide(document.getElementById('authBlocked'));
     hide(document.getElementById('authLoading'));
-    show(document.getElementById('authGate'));
+    const gate = document.getElementById('authGate');
+    if (gate) gate.removeAttribute('data-authmode'); // modo login (form completo)
+    show(gate);
     bindAuthEvents(opts && opts.validateOnly);
+  }
+
+  // Produção sem Firebase configurado (Fase 2 pendente): lock + CTA demo.
+  // Dados reais NUNCA existem no servidor estático — aqui só há demo sintético (P26).
+  function showPreviewOverlay() {
+    hide(document.getElementById('authBlocked'));
+    hide(document.getElementById('authLoading'));
+    const gate = document.getElementById('authGate');
+    if (gate) gate.setAttribute('data-authmode', 'preview');
+    show(gate);
+    const btn = document.getElementById('authDemoEntry');
+    if (btn && !btn.__previewBound) {
+      btn.__previewBound = true;
+      btn.addEventListener('click', enterDemoFromPreview);
+    }
+  }
+
+  function enterDemoFromPreview() {
+    return activateDemo().then(() => {
+      mode = 'DEMO';
+      const gate = document.getElementById('authGate');
+      if (gate) { gate.removeAttribute('data-authmode'); gate.classList.add('hidden'); }
+      unlockUI();
+      showDemoBadge();
+      try { if (typeof window.applyRealData === 'function') window.applyRealData(); } catch (e) { console.warn('[authz] applyRealData falhou (demo):', e && e.message); }
+      try { if (typeof window.renderAll === 'function') window.renderAll(); } catch (e) { console.warn('[authz] renderAll falhou (demo):', e && e.message); }
+      document.dispatchEvent(new CustomEvent('authz:ready', { detail: { mode } }));
+    });
   }
 
   function showBlocked() {
@@ -279,7 +309,7 @@
   // ---------- Boot ----------
   async function start() {
     // 1. Force (testes) — sobrepõe config/localhost (spec §2.1)
-    if (FORCE === 'demo' || FORCE === 'blocked' || FORCE === true) {
+    if (FORCE === 'demo' || FORCE === 'blocked' || FORCE === true || FORCE === 'preview') {
       if (FORCE === 'demo') {
         await activateDemo();
         resolve('DEMO');
@@ -287,6 +317,10 @@
         lockUI();
         showBlocked();
         resolve('BLOCKED');
+      } else if (FORCE === 'preview') {
+        lockUI();
+        showPreviewOverlay();
+        resolve('LOGIN');
       } else {
         lockUI();
         showLoginOverlay({ validateOnly: true });
@@ -296,8 +330,17 @@
       return mode;
     }
 
-    // 2. Sem config → INACTIVE (CI/contribuidores): site como hoje
-    if (!configPresent()) { resolve('INACTIVE'); finishUI(); return mode; }
+    // 2. Sem config: localhost = INACTIVE (CI/dev, fluxo atual);
+    //    produção = lock screen + demo sintético (nenhum dado real existe no host)
+    if (!configPresent()) {
+      if (localBypass()) { resolve('INACTIVE'); finishUI(); return mode; }
+      console.info('[authz] produção sem Firebase config → preview lock (demo apenas)');
+      lockUI();
+      showPreviewOverlay();
+      resolve('LOGIN');
+      finishUI();
+      return mode;
+    }
 
     // 3. Localhost → bypass (máquina do dono; login/sync em fases futuras)
     if (localBypass()) { resolve('INACTIVE'); finishUI(); return mode; }

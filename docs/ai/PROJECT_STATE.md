@@ -62,8 +62,8 @@ NEXT_MISSION=PHASE_2: revisão → autorizar push → Firebase console (setup ru
 ## METRICS SNAPSHOT (B3 26/09)
 
 ```
-Patrimônio:  R$ 610.219,89 | Investido: R$ 630.889,63 | P&L: -3,28% | Yield 12m: 5,73%
-Ativos: 40 | Transações: 72 | Proventos: 435 (earnings[] parcial: 120)
+Patrimônio:  [REDACTED — ver arquivo local (regra 7)]
+Ativos: [REDACTED] | Transações: [REDACTED] | Proventos: [REDACTED] (ver arquivo local, regra 7)
 Alocação: FIIs 43,8% · RF 32,1% · ETFs 21,5% · Ações 2,6%
 Home: hero patrimônio + 4 KPIs + gráficos + alertas inteligentes
 ```

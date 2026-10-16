@@ -1,6 +1,15 @@
 // tests/e2e/auth-gate.spec.js
-// E2E: auth-gate, modos INACTIVE/LOGIN/DEMO/BLOCKED, fixture demo sintética
+// E2E: auth-gate, modos INACTIVE/LOGIN/DEMO/BLOCKED/PREVIEW, fixture demo sintética
 import { test, expect } from '@playwright/test';
+import { existsSync, readFileSync } from 'node:fs';
+
+// Valores reais (p/ assert de não-vazamento) vêm do arquivo local GITIGNORED.
+const VALUES_FILE = 'tests/e2e/real-data.values.local.json';
+const hasLocalValues = existsSync(VALUES_FILE);
+const realTotals = hasLocalValues
+  ? [JSON.parse(readFileSync(VALUES_FILE, 'utf8')).expectedTotal]
+  : [];
+const knownReal = realTotals.map(t => String(t).split('.')[0]); // parte inteira como marcador
 
 test.describe('Auth Gate — fixture demo sintética', () => {
   test('demo fixture carrega e é 100% sintético', async ({ page }) => {
@@ -12,10 +21,14 @@ test.describe('Auth Gate — fixture demo sintética', () => {
     expect(fixture.meta.source).toBe('demo');
     expect(fixture.kpis.total).toBe(123456.78);
     expect(fixture.positions.length).toBeGreaterThanOrEqual(12);
-    // P26: zero dados reais no fixture
+    // P26: zero dados reais no fixture (marcadores só se valores locais presentes)
     const json = JSON.stringify(fixture);
-    expect(json).not.toContain('702175');
-    expect(json).not.toContain('628267');
+    for (const marker of knownReal) {
+      expect(json).not.toContain(marker);
+    }
+    // tickers do fixture são todos fictícios (nunca equal a tickers do dataset legado)
+    const tickers = fixture.positions.map(p => p.ticker).join(',');
+    expect(tickers).toContain('ALFA11');
   });
 
   test('LocalDemoDataSource: persiste seção, getPortfolio, reset restaura defaults', async ({ page }) => {
@@ -103,6 +116,26 @@ test.describe('Auth Gate — modos forçados (sem Firebase, sem rede)', () => {
 
     await expect(page.locator('#authBlocked')).toBeVisible();
     await expect(page.locator('#kpiTotal')).toBeHidden();
+  });
+
+  test('force PREVIEW (produção sem Firebase): lock + explorar demo', async ({ page }) => {
+    await page.addInitScript(() => { window.__AUTH_GATE_FORCE__ = 'preview'; });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    // Lock visível; formulário de login escondido (sem Firebase não há login real)
+    await expect(page.locator('#authGate')).toBeVisible();
+    await expect(page.locator('#authDemoEntry')).toBeVisible();
+    await expect(page.locator('#authEmail')).toBeHidden();
+    await expect(page.locator('#kpiTotal')).toBeHidden(); // P22: nada renderiza antes
+
+    // Explorar demonstração → demo sintético com badge (P27/P28)
+    await page.click('#authDemoEntry');
+    await expect(page.locator('#demoBadge')).toBeVisible();
+    await expect(page.locator('#authGate')).toBeHidden();
+    const total = await page.evaluate(() => window.MOCK_DATA.kpis.total);
+    expect(total).toBe(123456.78); // fixture sintética — nunca o dataset legado/real
+    await expect(page.locator('#kpiTotal')).toContainText('123.456');
   });
 });
 

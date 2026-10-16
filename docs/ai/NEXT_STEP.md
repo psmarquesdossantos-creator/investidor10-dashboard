@@ -31,7 +31,8 @@ ENTREGA (código local, ~10 commits 153c5ad..9600d13, PUSH=0 por P34):
 VALIDAÇÃO:
   Desktop 105p/9s · Mobile 108p · Tablet 111p · 0 failed (1 flake a11y mobile
   em run paralelo, isolado 14/14 ✅) · node --check/eslint/htmlhint OK
-  Demo nunca vê real: badge test, storage isolado, fixture ≠ 702175.64/628267
+  Demo nunca vê real: badge test, storage isolado, fixture sintética (asserts de
+  não-vazamento via tests/e2e/real-data.values.local.json, gitignored)
 HISTÓRICO DESTA SESSÃO: CI-GREEN antes desta (26→0 falhas, runs 38944485486+84ac8d7)
 ```
 

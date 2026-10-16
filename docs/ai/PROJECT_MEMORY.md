@@ -91,8 +91,9 @@ AUTH_PHASE1_ASSETS=
   - scripts/migration-dry-run.js (P33: readback+idempotência OK)
   - docs/ai/FIREBASE_SETUP.md + FIREBASE_MIGRATION_PLAN.md
   - vendor/firebase/*.js (compat UMD, lazy-load só com config; CSP 'self' intacto)
-DEMO_ISOLAMENTO=storage próprio; saveToStorage roteado por modo; fixture nunca
-  contém valores reais (702175.64/628267.44 pinados como ausentes nos testes)
+DEMO_ISOLAMENTO=storage próprio; saveToStorage roteado por modo; asserts de não-vazamento
+  leem marcadores de tests/e2e/real-data.values.local.json (gitignored — valores reais
+  NUNCA versionados)
 NEXT_MISSION=Ver NEXT_STEP.md (Fase 2: push → Firebase console → rules deploy → certificação)
 ```
 
@@ -122,8 +123,7 @@ Engines (JS puro, zero deps):
   - backup-portability.js: Export/import JSON/CSV/Excel, schema validation, v1→v2
 
 Dados reais consolidados (B3 26/09):
-  - 40 ativos, 72 transações, 435 proventos (12m), 4 metas
-  - Patrimônio: R$ 610.219,89 | Investido: R$ 630.889,63 | P&L: -3,28% | Yield 12m: 5,73%
+  [REDACTED — valores reais não são versionados (regra 7); ver arquivo local]
 ```
 
 ---

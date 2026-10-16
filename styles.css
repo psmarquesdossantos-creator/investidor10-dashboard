@@ -1381,6 +1381,12 @@ body.auth-locked #toastContainer { visibility: hidden; }
 .auth-link-btn { width: 100%; }
 .auth-hint { margin: 0; font-size: var(--font-size-xs); color: var(--color-text-muted); text-align: center; }
 
+/* Preview lock (produção sem Firebase): só CTA demo, sem form de login */
+.auth-preview-only { display: none; }
+.auth-gate[data-authmode="preview"] .auth-login-only { display: none; }
+.auth-gate[data-authmode="preview"] .auth-preview-only { display: block; }
+.auth-preview-text { margin: 0 0 var(--space-2); font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+
 /* Demo badge — P27: persistente, discreto, distinguível do REAL */
 /* hidden explícito (especificidade > display:flex dos componentes acima) */
 .auth-gate.hidden, .auth-loading.hidden, .demo-badge.hidden, .auth-error.hidden { display: none; }

@@ -8,6 +8,13 @@ firebase-debug.log
 firebase-debug.*.log
 .firebaserc
 
+# ---- Dados financeiros REAIS (regra 7 — NUNCA commitar) ----
+parsed_data.json
+carteira-data-real.json
+carteira-data-backup-*.js
+generate_carteira_data*.py
+tests/e2e/real-data.values.local.json
+
 # ---- Logs & runtime artifacts ----
 *.log
 serve.log

@@ -1,4 +1,4 @@
-# Multiuser Auth + Realtime Sync + Demo (Phase 1) Implementation Plan
+﻿# Multiuser Auth + Realtime Sync + Demo (Phase 1) Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -22,7 +22,7 @@
 
 ## Review Focus
 
-- **Leakage demo→real**: demo fixture/load nunca lê `CARTEIRA_DATA` real → teste: badge demo + total ≠ 702175.64 (Task 2/7)
+- **Leakage demo→real**: demo fixture/load nunca lê `CARTEIRA_DATA` real → teste: badge demo + total sintético ≠ dataset real (Task 2/7)
 - **CI/regressão**: gate sem config não altera boot → teste: suíte desktop completa verde após Task 4 (Task 7)
 - **Rules fail-closed**: allowlist get() inexistente/erro nega → teste rules #1/#5/#8 (Task 6)
 - **Overlay sem vazamento de KPI**: overlay opaco cobre app → teste: forçar `demo` sem fixture behind overlay e checar que `#kpiTotal` não está visível quando overlay aberto (Task 7)
@@ -54,9 +54,9 @@
 
 **Interfaces:**
 - Produces: `window.DEMO_FIXTURE` — objeto shape CARTEIRA_DATA completo: `{ meta:{source:'demo'}, kpis:{total:123456.78, ...}, patrimony:12 labels, monthly, allocation:{byClass,byAsset}, positions:[12 assets fictícios], earnings:[6], entries:[6], assetReturns, fixedIncome:[2], goals }`
-- Regras: tickers fictícios (`ALFA11`, `BETA4`, ...), nomes "AlfaCorp"/"BetaSA", total **123456.78** (nunca 702175.64/628267.44), classes ≥4
+- Regras: tickers fictícios (`ALFA11`, `BETA4`, ...), nomes "AlfaCorp"/"BetaSA", total **123456.78** (nunca valores do dataset real), classes ≥4
 
-- [ ] **Step 1:** Escrever teste em `tests/e2e/auth-gate.spec.js`: `test('demo fixture é sintético', ...)` — via `page.goto`, `addInitScript` `__AUTH_GATE_FORCE__='demo'`, espera `#demoBadge` visível, evaluate `MOCK_DATA.kpis.total === 123456.78` e `JSON.stringify(MOCK_DATA).includes('702175') === false`
+- [ ] **Step 1:** Escrever teste em `tests/e2e/auth-gate.spec.js`: `test('demo fixture é sintético', ...)` — via `page.goto`, `addInitScript` `__AUTH_GATE_FORCE__='demo'`, espera `#demoBadge` visível, evaluate `MOCK_DATA.kpis.total === 123456.78` e `JSON.stringify(MOCK_DATA).não contém marcadores do dataset real`
 - [ ] **Step 2:** Rodar → FAIL (fixture/gate inexistentes)
 - [ ] **Step 3:** Implementar `src/auth/demo-fixture.js` (IIFE, `window.DEMO_FIXTURE = {...}`)
 - [ ] **Step 4:** (gate ainda não existe — teste seguirá FAIL até Task 4; apenas `node --check`)

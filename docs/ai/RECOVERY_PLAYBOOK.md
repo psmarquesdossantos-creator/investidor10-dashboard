@@ -205,8 +205,8 @@ cp "G:\Meu Drive\Codex\investidor10-dashboard\carteira-data.js" .
 
 ```bash
 # Verificar métricas-chave
-# Patrimônio: R$ 610.219,89
-# Investido: R$ 630.889,63
+# Patrimônio: [REDACTED — ver arquivo local]
+# Investido: [REDACTED — ver arquivo local]
 # P&L: -3,28%
 # Yield 12m: 5,73%
 # Ativos: 40
