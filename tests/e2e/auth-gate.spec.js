@@ -97,3 +97,48 @@ test.describe('Auth Gate — modos forçados (sem Firebase, sem rede)', () => {
     await expect(page.locator('#kpiTotal')).toBeHidden();
   });
 });
+
+test.describe('Auth Gate — SyncHub e isolamento de storage (P8/P10)', () => {
+  test('SyncHub é no-op em INACTIVE: inactive, markDirty não lança, sem writes', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    const state = await page.evaluate(() => ({
+      active: !!(window.SyncHub && window.SyncHub.active),
+      exists: !!window.SyncHub
+    }));
+    expect(state.exists).toBe(true);        // SyncHub definido
+    expect(state.active).toBe(false);       // inativo sem modo REAL
+
+    // markDirty no-op: não lança, não agenda writes
+    const result = await page.evaluate(() => {
+      try { window.SyncHub.markDirty('positions'); window.SyncHub.flush(); return { threw: false }; }
+      catch (e) { return { threw: true, msg: e.message }; }
+    });
+    expect(result.threw).toBe(false);
+  });
+
+  test('DEMO: saveToStorage persiste na chave demo, nunca na chave real (P10)', async ({ page }) => {
+    await page.addInitScript(() => { window.__AUTH_GATE_FORCE__ = 'demo'; });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    await page.evaluate(() => { localStorage.removeItem('investidor10-demo'); localStorage.removeItem('investidor10'); });
+
+    await page.evaluate(() => {
+      window.MOCK_DATA.entries.push({ date: '2026-10-16', type: 'compra', ticker: 'ALFA11', asset: 'ALFA11', qty: 1, price: 10, total: 10, class: 'fiis' });
+      window.saveToStorage();
+    });
+
+    const keys = await page.evaluate(() => ({
+      demo: localStorage.getItem('investidor10-demo'),
+      real: localStorage.getItem('investidor10')
+    }));
+    expect(keys.demo).toBeTruthy(); // edit do demo foi persistido na chave demo
+    const demoParsed = JSON.parse(keys.demo);
+    expect(demoParsed.portfolio.entries.length).toBeGreaterThan(6); // fixture 6 + 1 edit
+    // chave real nunca recebe dados financeiros do demo
+    const realParsed = keys.real ? JSON.parse(keys.real) : {};
+    expect(realParsed.positions).toBeUndefined();
+    expect(realParsed.entries).toBeUndefined();
+  });
+});

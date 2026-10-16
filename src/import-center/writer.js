@@ -30,6 +30,17 @@
         console.log('[ImportCenter.writer] calling renderAll');
         renderAll();
       }
+
+      // Auth (P8): import de posição B3 altera só as seções que ele possui —
+      // push field-scoped; NUNCA sobe monthly/patrimony/earnings (history) do import
+      if (window.SyncHub && window.SyncHub.active) {
+        window.SyncHub.source.saveSections({
+          positions: converted.positions,
+          allocation: converted.allocation,
+          assetReturns: converted.assetReturns,
+          kpis: converted.kpis
+        });
+      }
       
       // Atualiza estado de dados - FORÇA chamada global
       console.log('[ImportCenter.writer] calling window.updateDataState with fresh');

@@ -46,6 +46,13 @@
       });
     }
 
+    // Múltiplas seções + persistência única (usado por saveToStorage no modo DEMO)
+    saveSections(map) {
+      if (!this.portfolio || !map) return;
+      Object.keys(map).forEach(k => { this.portfolio[k] = map[k]; });
+      this._persist();
+    }
+
     onUpdate(cb) {
       if (typeof cb === 'function') this.listeners.push(cb);
     }

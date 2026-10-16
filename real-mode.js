@@ -353,6 +353,8 @@
       applyRealData();
       state.isReal = true;
       updateModeToggle(true);
+      // Auth (P8): backup substitui carteira inteira → push de todas as seções (se REAL ativo)
+      if (window.SyncHub && window.SyncHub.active) window.SyncHub.saveAll();
       toast(`Backup importado: ${converted.positions.length} ativos, ${converted.earnings.length} proventos`, 'success');
       if (typeof renderAll === 'function') renderAll();
       else location.reload();
@@ -2551,6 +2553,8 @@ window.initDataTrustPanel = initDataTrustPanel;
 
   const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
   const DOW = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  // fmt local do calendário (o fmt global do script.js não tem .cur — bug "fmt.cur is not a function")
+  const fmtCur = v => (v != null && !isNaN(v)) ? v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '—';
 
   function getEarningsByDate() {
     const earnings = window.CARTEIRA_DATA?.earnings || window.MOCK_DATA?.earnings || [];

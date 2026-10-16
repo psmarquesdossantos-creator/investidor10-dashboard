@@ -651,6 +651,34 @@ function initUserMenu() {
 const STORAGE_KEY = 'investidor10-dashboard-data';
 
 function saveToStorage() {
+  const gateMode = window.AuthGate && window.AuthGate.mode;
+
+  // DEMO (P10): dados financeiros do demo NUNCA tocam a chave real — vão para a
+  // fonte demo (investidor10-demo). Tema (preferência do dispositivo — P19) continua na chave real.
+  if (gateMode === 'DEMO' && window.__DEMO_SOURCE__) {
+    try {
+      window.__DEMO_SOURCE__.saveSections({
+        kpis: MOCK_DATA.kpis,
+        positions: MOCK_DATA.positions,
+        entries: MOCK_DATA.entries,
+        earnings: MOCK_DATA.earnings,
+        monthly: MOCK_DATA.monthly
+      });
+    } catch (e) { console.warn('saveToStorage (demo) falhou:', e); }
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const prev = raw ? JSON.parse(raw) : {};
+      prev.theme = document.documentElement.getAttribute('data-theme') || 'light';
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(prev));
+    } catch (e) { console.warn('saveToStorage (theme) falhou:', e); }
+    return;
+  }
+
+  // REAL: sync contínuo via SyncHub (field-scoped, P8) + cache local como hoje
+  if (window.SyncHub && window.SyncHub.active) {
+    window.SyncHub.saveAll();
+  }
+
   const data = {
     positions: MOCK_DATA.positions,
     entries: MOCK_DATA.entries,
@@ -2846,6 +2874,9 @@ window.switchTab = switchTab;
 
 // Ponte para scripts clássicos (real-mode.js) acessarem os dados do módulo
 window.MOCK_DATA = MOCK_DATA;
+
+// Persistência exposta p/ integração e testes (mesmo padrão de renderAll/switchTab)
+window.saveToStorage = saveToStorage;
 
 // Função global para re-renderizar tudo após importação
 window.renderAll = function() {
