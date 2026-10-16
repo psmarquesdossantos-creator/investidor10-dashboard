@@ -96,6 +96,12 @@
     .map(([name, v]) => ({ name, value: +v.toFixed(2), pct: +(v / total * 100).toFixed(1), color: classColorMap[name] }))
     .sort((a, b) => b.value - a.value);
   const byAsset = positions.map(p => ({ name: p.ticker, class: p.class, value: p.value, pct: p.weight, return: p.return }));
+  const portfolioReturn = +((total / invested - 1) * 100).toFixed(2);
+  const assetReturns = positions.map(p => ({
+    ticker: p.ticker, class: p.class, weight: p.weight, return: p.return,
+    contrib: +(p.return * p.value / total / 100).toFixed(3),
+    benchmark: portfolioReturn, alpha: +(p.return - portfolioReturn).toFixed(2)
+  }));
 
   const dividends = +earnings.reduce((s, e) => s + e.total, 0).toFixed(2);
 
@@ -120,6 +126,7 @@
       gain: +(portfolio[i] - (portfolio[i - 1] || 0)).toFixed(2)
     })),
     allocation: { byClass, byAsset },
+    assetReturns,
     assets: positions.map(p => ({
       id: p.id, ticker: p.ticker, name: p.name, category: p.category, class: p.class,
       sector: p.sector, qty: p.qty, avgPrice: p.avgPrice, currentPrice: p.currentPrice,
