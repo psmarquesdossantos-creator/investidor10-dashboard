@@ -10,7 +10,7 @@
     timestamp: { type: 'string', required: true },
     kpis: { type: 'object', required: true },
     monthly: { type: 'array', required: true },
-    patrimony: { type: 'array', required: true },
+    patrimony: { type: 'object', required: true },
     allocation: { type: 'object', required: true },
     positions: { type: 'array', required: true },
     earnings: { type: 'array', required: true },
@@ -463,8 +463,8 @@
     if (btnDurabilityBackupNow) {
       btnDurabilityBackupNow.addEventListener('click', () => {
         const r = window.Durability?.downloadBackup('manual');
-        if (r?.success) toast('Backup completo exportado (dados + snapshots)', 'success');
-        else toast('Falha no backup: ' + (r?.error || 'desconhecido'), 'error');
+        if (r?.success) showToast('Backup completo exportado (dados + snapshots)', 'success');
+        else showToast('Falha no backup: ' + (r?.error || 'desconhecido'), 'error');
       });
     }
     if (durabilityStatus) {
@@ -481,19 +481,19 @@
     if (btnExportJSON) {
       btnExportJSON.addEventListener('click', () => {
         if (!window.CARTEIRA_DATA) {
-          toast('Carteira não carregada', 'error');
+          showToast('Carteira não carregada', 'error');
           return;
         }
         const json = exportJSON(window.CARTEIRA_DATA);
         downloadFile(json, `backup-investidor10-${new Date().toISOString().split('T')[0]}.json`, 'application/json');
-        toast('Backup JSON exportado', 'success');
+        showToast('Backup JSON exportado', 'success');
       });
     }
     
     if (btnExportCSV) {
       btnExportCSV.addEventListener('click', () => {
         if (!window.CARTEIRA_DATA) {
-          toast('Carteira não carregada', 'error');
+          showToast('Carteira não carregada', 'error');
           return;
         }
         const data = window.CARTEIRA_DATA;
@@ -519,14 +519,14 @@
           downloadFile(exportCSV(data, 'allocation'), `alocacao-${timestamp}.csv`, 'text/csv');
         }
         
-        toast('CSVs exportados (verifique downloads)', 'success');
+        showToast('CSVs exportados (verifique downloads)', 'success');
       });
     }
     
     if (btnExportExcel) {
       btnExportExcel.addEventListener('click', async () => {
         if (!window.CARTEIRA_DATA) {
-          toast('Carteira não carregada', 'error');
+          showToast('Carteira não carregada', 'error');
           return;
         }
         
@@ -540,7 +540,7 @@
           if (result instanceof ArrayBuffer) {
             // SheetJS available - download xlsx
             downloadFile(result, `backup-investidor10-${timestamp}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            toast('Excel exportado', 'success');
+            showToast('Excel exportado', 'success');
           } else {
             // Fallback - download zip of CSVs
             // For simplicity, just download first CSV
@@ -548,10 +548,10 @@
             if (firstKey) {
               downloadFile(result[firstKey], firstKey, 'text/csv');
             }
-            toast('CSVs exportados (SheetJS não disponível para .xlsx)', 'warning');
+            showToast('CSVs exportados (SheetJS não disponível para .xlsx)', 'warning');
           }
         } catch (e) {
-          toast('Erro ao exportar Excel: ' + e.message, 'error');
+          showToast('Erro ao exportar Excel: ' + e.message, 'error');
         } finally {
           btnExportExcel.disabled = false;
           btnExportExcel.textContent = 'Excel (multi-aba)';
@@ -565,12 +565,12 @@
         
         const file = backupFile.files[0];
         if (!file) {
-          toast('Selecione um arquivo', 'error');
+          showToast('Selecione um arquivo', 'error');
           return;
         }
         
         if (!file.name.endsWith('.json')) {
-          toast('Apenas arquivos .json são suportados para importação completa', 'error');
+          showToast('Apenas arquivos .json são suportados para importação completa', 'error');
           return;
         }
         
@@ -586,11 +586,29 @@
             throw new Error('Dados de posições inválidos');
           }
           
-          // Apply to CARTEIRA_DATA
+          // Apply to CARTEIRA_DATA + override + MOCK_DATA (renders lêem MOCK_DATA)
           window.CARTEIRA_DATA = importedData;
-          
-          // Save to localStorage
-          localStorage.setItem('carteiraData', JSON.stringify(importedData));
+          window.__CARTEIRA_OVERRIDE = importedData;
+          if (window.MOCK_DATA) {
+            Object.assign(window.MOCK_DATA.kpis, importedData.kpis || {});
+            ['monthly', 'patrimony', 'allocation', 'positions', 'earnings', 'entries', 'assetReturns', 'monthlyData']
+              .forEach(k => { if (importedData[k]) window.MOCK_DATA[k] = importedData[k]; });
+          }
+
+          // Persiste na chave que loadFromStorage() lê (investidor10-dashboard-data)
+          localStorage.setItem('investidor10-dashboard-data', JSON.stringify({
+            positions: importedData.positions,
+            entries: importedData.entries,
+            earnings: importedData.earnings,
+            kpis: importedData.kpis,
+            monthly: importedData.monthly,
+            monthlyData: importedData.monthlyData,
+            patrimony: importedData.patrimony,
+            allocation: importedData.allocation,
+            assetReturns: importedData.assetReturns,
+            theme: document.documentElement.getAttribute('data-theme') || 'light',
+            timestamp: Date.now()
+          }));
           
           // Re-render
           if (typeof renderAll === 'function') {
@@ -609,12 +627,12 @@
           
           backupImportResult.innerHTML = `<span class="text-success">✅ Backup importado com sucesso! ${importedData.positions.length} posições, ${importedData.earnings?.length || 0} proventos, ${importedData.entries?.length || 0} lançamentos.</span>`;
           backupImportResult.style.color = 'var(--color-success)';
-          toast('Backup importado com sucesso', 'success');
+          showToast('Backup importado com sucesso', 'success');
           
         } catch (err) {
           backupImportResult.innerHTML = `<span class="text-error">❌ Erro: ${err.message}</span>`;
           backupImportResult.style.color = 'var(--color-error)';
-          toast('Erro ao importar backup: ' + err.message, 'error');
+          showToast('Erro ao importar backup: ' + err.message, 'error');
         }
         
         // Reset form

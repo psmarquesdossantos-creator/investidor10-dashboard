@@ -32,6 +32,11 @@
   function resolve(m) { console.info('[authz] boot →', m); mode = m; resolveResolved(m); }
 
   function localBypass() {
+    // *.vercel.app: deployment atrás da Vercel Authentication (login do dono) e
+    // alias público serve apenas dados sintéticos (carteira-data.js nunca é deployado
+    // — .gitignore). Dados reais entram SOMENTE via Importar Backup → localStorage
+    // do navegador de quem importa (P26 preservado: zero dados reais no host).
+    if (location.hostname.endsWith('.vercel.app')) return true;
     return ['localhost', '127.0.0.1'].includes(location.hostname) || location.protocol === 'file:';
   }
 

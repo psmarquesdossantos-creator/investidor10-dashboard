@@ -1,0 +1,9 @@
+# Exclui do deploy Vercel (dados reais FICAM - proteção Standard cuida do acesso)
+node_modules
+test-results
+playwright-report
+tests
+.github
+.git
+*.log
+firebase-debug*

@@ -708,6 +708,11 @@ function loadFromStorage() {
       if (data.earnings) MOCK_DATA.earnings = data.earnings;
       if (data.kpis) MOCK_DATA.kpis = data.kpis;
       if (data.monthlyData) MOCK_DATA.monthlyData = data.monthlyData;
+      // Seções completas (backup importado): série de 84 meses, alocação e retornos
+      if (data.monthly) MOCK_DATA.monthly = data.monthly;
+      if (data.patrimony) MOCK_DATA.patrimony = data.patrimony;
+      if (data.allocation) MOCK_DATA.allocation = data.allocation;
+      if (data.assetReturns) MOCK_DATA.assetReturns = data.assetReturns;
       if (data.theme) {
         document.documentElement.setAttribute('data-theme', data.theme);
         updateThemeIcons(data.theme);
