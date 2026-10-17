@@ -9,8 +9,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
-    <script src="vendor/chart.umd.min.js"></script>
-    <script src="vendor/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script src="vendor/chart.umd.min.js" defer></script>
+    <script src="vendor/chartjs-adapter-date-fns.bundle.min.js" defer></script>
   </head>
 <body>
   <a href="#main" class="skip-link">Pular para conteúdo principal</a>
@@ -1560,50 +1560,50 @@
     <!-- Ordem P22: carteira-data.js (fonte local, se existir) → gate sobrescreve
          conforme modo (DEMO=fixture / REAL=cloud) → script.js aplica após resolver.
          Produção: carteira-data.js não existe (404) → sample sintético assume. -->
-    <script src="carteira-data.sample.js"></script>
-    <script src="carteira-data.js?v=20261012"></script>
+    <script src="carteira-data.sample.js" defer></script>
+    <script src="carteira-data.js?v=20261012" defer></script>
     <!-- Auth (Phase 1): fixture demo + data sources ANTES do gate (gate os usa no boot) -->
-    <script src="src/auth/demo-fixture.js"></script>
-    <script src="src/auth/sync/data-source.js"></script>
-    <script src="src/auth/sync/local-demo-source.js"></script>
-    <script src="src/auth/sync/firestore-real-source.js"></script>
-    <script src="src/auth/auth-gate.js"></script>
-    <script src="script.js"></script>
+    <script src="src/auth/demo-fixture.js" defer></script>
+    <script src="src/auth/sync/data-source.js" defer></script>
+    <script src="src/auth/sync/local-demo-source.js" defer></script>
+    <script src="src/auth/sync/firestore-real-source.js" defer></script>
+    <script src="src/auth/auth-gate.js" defer></script>
+    <script src="script.js" defer></script>
     <!-- Import Center -->
-    <script src="src/import-center/parsers/xlsx-core.js"></script>
-    <script src="src/import-center/detectors.js"></script>
-    <script src="src/import-center/parsers/b3-position.js"></script>
-    <script src="src/import-center/parsers/b3-events.js"></script>
-    <script src="src/import-center/parsers/b3-movimentacao.js"></script>
-    <script src="src/import-center/parsers/b3-posicao-xlsx.js"></script>
-    <script src="src/import-center/parsers/inter-pdf-extrato.js"></script>
-    <script src="src/import-center/parsers/broker-csv.js"></script>
-    <script src="src/import-center/parsers/brapi-enricher.js"></script>
-    <script src="src/import-center/parsers/generic-csv.js"></script>
-    <script src="src/import-center/normalizer.js"></script>
-    <script src="src/import-center/validator.js"></script>
-    <script src="src/import-center/deduper.js"></script>
-    <script src="src/import-center/writer.js"></script>
+    <script src="src/import-center/parsers/xlsx-core.js" defer></script>
+    <script src="src/import-center/detectors.js" defer></script>
+    <script src="src/import-center/parsers/b3-position.js" defer></script>
+    <script src="src/import-center/parsers/b3-events.js" defer></script>
+    <script src="src/import-center/parsers/b3-movimentacao.js" defer></script>
+    <script src="src/import-center/parsers/b3-posicao-xlsx.js" defer></script>
+    <script src="src/import-center/parsers/inter-pdf-extrato.js" defer></script>
+    <script src="src/import-center/parsers/broker-csv.js" defer></script>
+    <script src="src/import-center/parsers/brapi-enricher.js" defer></script>
+    <script src="src/import-center/parsers/generic-csv.js" defer></script>
+    <script src="src/import-center/normalizer.js" defer></script>
+    <script src="src/import-center/validator.js" defer></script>
+    <script src="src/import-center/deduper.js" defer></script>
+    <script src="src/import-center/writer.js" defer></script>
     <!-- Corporate Events -->
-    <script src="src/corporate-events/corporate-events.js"></script>
-    <script src="src/data-trust/data-trust.js"></script>
-    <script src="src/backup-portability/backup-portability.js"></script>
-    <script src="src/backup-portability/durability.js"></script>
-    <script src="real-mode.js?v=20261012"></script>
-    <script src="advanced-engine.js"></script>
-    <script src="rebalance-engine.js"></script>
-    <script src="risk-engine.js"></script>
-    <script src="benchmark-engine.js"></script>
-        <script src="monte-carlo-engine.js"></script>
-        <script src="tax-engine.js"></script>
-            <script src="init-carteira.js"></script>
+    <script src="src/corporate-events/corporate-events.js" defer></script>
+    <script src="src/data-trust/data-trust.js" defer></script>
+    <script src="src/backup-portability/backup-portability.js" defer></script>
+    <script src="src/backup-portability/durability.js" defer></script>
+    <script src="real-mode.js?v=20261012" defer></script>
+    <script src="advanced-engine.js" defer></script>
+    <script src="rebalance-engine.js" defer></script>
+    <script src="risk-engine.js" defer></script>
+    <script src="benchmark-engine.js" defer></script>
+        <script src="monte-carlo-engine.js" defer></script>
+        <script src="tax-engine.js" defer></script>
+            <script src="init-carteira.js" defer></script>
             <!-- NOTA: módulos src/rebalance, src/montecarlo, orchestrator e corporate-events
                  foram removidos do load por conflitar com as engines raiz (RebalanceEngine
                  classe vs objeto, MonteCarloEngine, parser b3-events). Mantidos no repo
                  como referência para wiring futuro. -->
-            <script src="panels.js"></script>
-    <script src="router.js"></script>
-    <script src="data-trust-engine.js"></script>
+            <script src="panels.js" defer></script>
+    <script src="router.js" defer></script>
+    <script src="data-trust-engine.js" defer></script>
 
     <!-- Bottom Nav Bar — mobile only (Fase G) -->
     <nav class="bottom-nav" role="navigation" aria-label="Navegação principal mobile">

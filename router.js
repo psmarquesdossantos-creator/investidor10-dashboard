@@ -108,9 +108,15 @@
       });
     });
 
-    // 4. Deep-link por ativo: ?ticker=PETR4#positions → scroll + highlight
+    // 4. Deep-link por ativo: ?ticker=PETR4#positions → filtra + destaca + scroll
     const { ticker } = params;
     if (ticker) {
+      // F (audit 17/10): aplica o ticker no filtro de busca → tabela isolada do ativo
+      const search = document.getElementById('positionsSearch');
+      if (search) {
+        search.value = ticker.toUpperCase();
+        search.dispatchEvent(new Event('input', { bubbles: true })); // filterPositions com debounce
+      }
       setTimeout(() => {
         const cells = document.querySelectorAll(`#panel-positions td .asset-ticker`);
         for (const cell of cells) {
@@ -133,7 +139,7 @@
   }
 
   // Auto-init
-  if (document.readyState === 'loading') {
+  if (document.readyState !== 'complete') {
     document.addEventListener('DOMContentLoaded', initRouter);
   } else {
     initRouter();

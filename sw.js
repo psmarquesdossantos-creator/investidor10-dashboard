@@ -1,7 +1,7 @@
 // sw.js - Service Worker for Investidor10 Dashboard PWA
 // Cache-first strategy for static assets, network-first for API/data
 
-const CACHE_NAME = 'investidor10-dashboard-v25.0.0';
+const CACHE_NAME = 'investidor10-dashboard-v26.0.0';
 const STATIC_CACHE = 'investidor10-static-v25.0.0';
 const DYNAMIC_CACHE = 'investidor10-dynamic-v25.0.0';
 

@@ -1316,7 +1316,7 @@ html[data-theme="dark"] {
   color: var(--color-text-secondary);
 }
 .div-calendar .cal-day.today .cal-day-num {
-  color: var(--color-primary);
+  color: var(--color-primary-ink); /* 6.06:1 sobre o chip — axe color-contrast OK */
 }
 .div-calendar .cal-event {
   display: block;
@@ -1420,3 +1420,25 @@ body.auth-locked #toastContainer { visibility: hidden; }
 .alloc-goal-bar { height: 6px; border-radius: var(--radius-full); background: var(--color-border-light); overflow: hidden; margin: var(--space-1) 0; }
 .alloc-goal-fill { height: 100%; width: var(--w, 0%); background: var(--color-primary); border-radius: var(--radius-full); transition: width var(--transition-fast); }
 .alloc-goal-card .badge { font-size: 10px; }
+
+/* ============================================================
+   Touch targets ≥44px (WCAG 2.5.8 AA) — bloco a11y dedicado
+   P1 da auditoria 17/10: nav-item 36px, btn-sm 36px, inputs
+   18–39px, checkboxes 14px. Alvo = 44px em TODOS os interativos.
+   ============================================================ */
+.nav-item { min-height: 44px; display: inline-flex; align-items: center; }
+.btn-sm { min-height: 44px; min-width: 44px; }
+input, select, textarea { min-height: 44px; }
+input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-height: 0; min-width: 0; accent-color: var(--color-primary); }
+label:has(> input[type="checkbox"]), label:has(> input[type="radio"]) {
+  min-height: 44px; display: inline-flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-2) var(--space-3); cursor: pointer; border-radius: var(--radius-sm);
+}
+label:has(> input[type="checkbox"]):hover, label:has(> input[type="radio"]):hover { background: var(--color-bg-hover, rgba(0,0,0,0.04)); }
+input[type="file"] { min-height: 44px; padding: var(--space-1) var(--space-2); }
+#positionsSearch { min-height: 44px; }
+@media (max-width: 640px) {
+  #positionsSearch, .toolbar-search { min-width: 100%; max-width: 100%; }
+}
+/* Reduz altura visual sem perder o alvo de toque: date/number internos */
+input[type="date"], input[type="number"] { padding-top: var(--space-1); padding-bottom: var(--space-1); }

@@ -1468,7 +1468,7 @@ function renderMobilePositionCards(positions) {
   container.innerHTML = positions.map(p => {
     const ret = p.return || 0;
     const weight = p.value / totalValue * 100;
-    return `<div class="pos-card">
+    return `<div class="pos-card" data-ticker="${p.ticker || ''}" tabindex="0" role="button" aria-label="Ver ${p.ticker || 'ativo'} na tabela de posições">
       <div class="pos-card-header">
         <span class="pos-card-ticker">${p.ticker || '—'}</span>
         <span class="pos-card-return ${ret >= 0 ? 'positive' : 'negative'}">${fmt.percent(ret)}</span>
@@ -1487,6 +1487,24 @@ function renderMobilePositionCards(positions) {
       </div>
     </div>`;
   }).join('');
+  // Deep-link do card (audit F): card → #/positions?ticker=X → filtra + destaca a linha
+  if (!container.__cardsBound) {
+    container.__cardsBound = true;
+    container.addEventListener('click', e => {
+      const card = e.target.closest('.pos-card[data-ticker]');
+      if (card?.dataset.ticker && window.router) {
+        window.router.navigate('positions', new URLSearchParams({ ticker: card.dataset.ticker }));
+      }
+    });
+    container.addEventListener('keydown', e => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      const card = e.target.closest('.pos-card[data-ticker]');
+      if (card?.dataset.ticker && window.router) {
+        e.preventDefault();
+        window.router.navigate('positions', new URLSearchParams({ ticker: card.dataset.ticker }));
+      }
+    });
+  }
 }
 
 function getClassLabel(cls) {
@@ -1602,6 +1620,11 @@ function filterPositions() {
   const classFilter = els.filterClass.value;
   const sortBy = els.filterSort.value;
 
+  // G (audit): persiste filtros por sessão — volta como estava ao recarregar na mesma aba
+  try {
+    sessionStorage.setItem('i10:positionsFilters', JSON.stringify({ s: els.positionsSearch.value, c: classFilter, o: sortBy }));
+  } catch (e) { /* sessionStorage cheio/indisponível: filtro segue funcionando */ }
+
   filteredPositions = MOCK_DATA.positions.filter(p => {
     const matchSearch = p.ticker.toLowerCase().includes(search) || p.name.toLowerCase().includes(search);
     const matchClass = !classFilter || p.class === classFilter;
@@ -1631,6 +1654,16 @@ function initPositionsFilters() {
   if (els.filterSort) {
     els.filterSort.addEventListener('change', filterPositions);
   }
+  // G (audit): restaura filtros da sessão anterior (mesma aba do navegador)
+  try {
+    const saved = JSON.parse(sessionStorage.getItem('i10:positionsFilters') || 'null');
+    if (saved) {
+      if (saved.s && els.positionsSearch) els.positionsSearch.value = saved.s;
+      if (saved.c && els.filterClass) els.filterClass.value = saved.c;
+      if (saved.o && els.filterSort) els.filterSort.value = saved.o;
+      filterPositions();
+    }
+  } catch (e) { /* JSON inválido: começa limpo */ }
 }
 
 // ========================================
@@ -2992,8 +3025,11 @@ async function init() {
   }
 }
 
-// Start when DOM ready
-if (document.readyState === 'loading') {
+// Start when DOM ready — com scripts defer, readyState='interactive' durante a
+// fila de deferred: init PRECISA esperar DOMContentLoaded para garantir que
+// carteira-data.js/init-carteira.js (depois de script.js na ordem defer) já
+// definiram __CARTEIRA_OVERRIDE antes da primeira renderização.
+if (document.readyState !== 'complete') {
   document.addEventListener('DOMContentLoaded', init);
 } else {
   init();

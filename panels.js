@@ -1099,7 +1099,7 @@
       if (activeTab) maybeRenderLazy(activeTab);
     }
 
-    if (document.readyState === 'loading') {
+    if (document.readyState !== 'complete') {
       document.addEventListener('DOMContentLoaded', boot);
     } else {
       setTimeout(boot, 100);

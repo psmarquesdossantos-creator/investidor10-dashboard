@@ -1189,6 +1189,7 @@
 
   async function runImportPipeline(file) {
     console.log('[ImportCenter] runImportPipeline called with file:', file.name);
+    window._pendingImportFileName = file.name;
     const dropzone = document.getElementById('importDropzone');
     const previewSection = document.getElementById('importPreviewSection');
     const detectedFormat = document.getElementById('importDetectedFormat');
@@ -1227,17 +1228,34 @@
         const opCount = movResult.events.filter(e => ['transferencia_liquidacao','aplicacao'].includes(e.type)).length;
         detectedFormat.innerHTML += `<br>📊 ${provCount} proventos + ${opCount} operações (${movResult.events.length} eventos totais, ${movResult.sheetName})`;
 
-        // Prévia de tabela (amostra de proventos)
+        // Prévia COM dedup explícito — mesmas chaves econômicas do writeMovimentacao
+        // (date|ticker|type|gross / date|ticker|type|value) para o usuário ver o que
+        // o CONFIRM vai realmente gravar ANTES de confirmar (pipeline DEDUP→PREVIEW)
         previewSection.style.display = 'block';
-        const sample = movResult.events.filter(e => e.ticker).slice(0, 50);
-        tbody.innerHTML = sample.map(e => `<tr>
-          <td>${e.ticker}</td><td>${e.productName || ''}</td><td>${e.rawMov}</td>
-          <td>${e.date}</td><td>${e.qty}</td><td>${e.unitPrice}</td>
-          <td><strong>R$ ${(e.valor ?? 0).toFixed(2)}</strong></td><td>${e.entradaSaida}</td>
-        </tr>`).join('');
-        // Ajusta headers da tabela de prévia para movimentação
+        const C = window.CARTEIRA_DATA;
+        const existingKeys = new Set(
+          (C?.earnings || []).map(e => `${e.date}|${e.ticker}|${e.type}|${e.gross}`.toLowerCase())
+          .concat((C?.entries || []).map(e => `${e.date}|${e.ticker}|${e.type}|${e.value}`.toLowerCase()))
+        );
+        const convEarnings = window.ImportCenter.toEarnings ? window.ImportCenter.toEarnings(movResult.events) : [];
+        const convEntries = window.ImportCenter.toEntries ? window.ImportCenter.toEntries(movResult.events) : [];
+        const isDupE = e => existingKeys.has(`${e.date}|${e.ticker}|${e.type}|${e.gross}`.toLowerCase());
+        const isDupN = e => existingKeys.has(`${e.date}|${e.ticker}|${e.type}|${e.value}`.toLowerCase());
+        const dupCount = convEarnings.filter(isDupE).length + convEntries.filter(isDupN).length;
+        const newCount = (convEarnings.length - convEarnings.filter(isDupE).length) + (convEntries.length - convEntries.filter(isDupN).length);
+        detectedFormat.innerHTML += `<br>🔁 Dedup: <strong>${dupCount}</strong> duplicatas já existentes, <strong>${newCount}</strong> novas`;
+
+        const fmtBRL = v => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        const previewRow = (e, dup, isEntry) => `<tr${dup ? ' class="warning"' : ''}>
+          <td><strong>${e.ticker}</strong></td><td>${e.type}</td><td>${e.qty}</td>
+          <td><strong>${fmtBRL(isEntry ? e.value : e.gross)}</strong></td><td>${e.date}</td>
+          <td><span class="badge badge-${dup ? 'muted' : 'success'}">${dup ? 'Duplicado' : 'Novo'}</span></td></tr>`;
+        tbody.innerHTML =
+          convEarnings.slice(0, 25).map(e => previewRow(e, isDupE(e), false)).join('') +
+          convEntries.slice(0, 25).map(e => previewRow(e, isDupN(e), true)).join('');
+        // Ajusta headers da tabela de prévia para o formato convertido
         const thead = document.querySelector('#importPreviewTable thead');
-        if (thead) thead.innerHTML = '<tr><th scope="col">Ticker</th><th scope="col">Produto</th><th scope="col">Movimentação</th><th scope="col">Data</th><th scope="col">Qtd</th><th scope="col">Preço unit.</th><th scope="col">Valor</th><th scope="col">Entrada/Saída</th></tr>';
+        if (thead) thead.innerHTML = '<tr><th scope="col">Ticker</th><th scope="col">Tipo</th><th scope="col">Qtd</th><th scope="col">Valor</th><th scope="col">Data</th><th scope="col">Status</th></tr>';
 
         btnConfirm.disabled = false;
         updateStepper(3);
@@ -1463,6 +1481,18 @@
     return out;
   }
 
+  // Fonte única do "Histórico de Migrações" (aba Backup Port. — leitor:
+  // renderBackupHistory em panels.js lê 'investidor10:importHistory').
+  // Antes desta função a key era órfã: o leitor nunca via registros.
+  function logImportHistory(entry) {
+    try {
+      const key = 'investidor10:importHistory';
+      const h = JSON.parse(localStorage.getItem(key) || '[]');
+      h.push(Object.assign({ timestamp: new Date().toLocaleString('pt-BR'), status: 'ok' }, entry));
+      localStorage.setItem(key, JSON.stringify(h.slice(-100))); // cap: 100 registros
+    } catch (e) { console.warn('[ImportCenter] logImportHistory falhou:', e); }
+  }
+
   async function confirmImport() {
     console.log('[ImportCenter] confirmImport called');
     const rawData = window._pendingImportData;
@@ -1479,6 +1509,7 @@
       try {
         const res = window.ImportCenter.writeMovimentacao(rawData);
         if (!res.success) throw new Error(res.error);
+        logImportHistory({ fromVersion: 'B3 Movimentação (XLSX)', toVersion: '14.0.0', details: `+${res.addedEarnings} proventos, +${res.addedEntries} operações${res.duplicates ? `, ${res.duplicates} duplicatas ignoradas` : ''} — ${window._pendingImportFileName || 'arquivo'}` });
         toast(`Importação concluída: +${res.addedEarnings} proventos, +${res.addedEntries} operações` + (res.duplicates ? `, ${res.duplicates} duplicatas ignoradas` : ''), 'success');
         document.getElementById('importPreviewSection').style.display = 'none';
         document.getElementById('importFile').value = '';
@@ -1519,6 +1550,7 @@
       if (dedupResult.duplicates.length > 0) {
         msg += `, ${dedupResult.duplicates.length} duplicatas ignoradas`;
       }
+      logImportHistory({ fromVersion: format, toVersion: '14.0.0', details: `${writeResult.count} posições${dedupResult.duplicates.length ? `, ${dedupResult.duplicates.length} duplicatas ignoradas` : ''} — ${window._pendingImportFileName || 'arquivo'}` });
       toast(msg, 'success');
       
       // Reset UI
@@ -1616,7 +1648,7 @@
     if (fixedTable) fixedTable.parentNode.appendChild(legend);
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  if (document.readyState !== 'complete') document.addEventListener('DOMContentLoaded', init);
   else init();
 
   // Fase 17 — Durabilidade: health check + migração + lembrete de backup

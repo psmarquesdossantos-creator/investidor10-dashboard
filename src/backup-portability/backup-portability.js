@@ -627,6 +627,13 @@
           
           backupImportResult.innerHTML = `<span class="text-success">✅ Backup importado com sucesso! ${importedData.positions.length} posições, ${importedData.earnings?.length || 0} proventos, ${importedData.entries?.length || 0} lançamentos.</span>`;
           backupImportResult.style.color = 'var(--color-success)';
+          // Registra no Histórico de Migrações (leitor: renderBackupHistory, panels.js)
+          try {
+            const hKey = 'investidor10:importHistory';
+            const h = JSON.parse(localStorage.getItem(hKey) || '[]');
+            h.push({ timestamp: new Date().toLocaleString('pt-BR'), fromVersion: `Backup JSON v${importedData.version || 1}`, toVersion: '14.0.0', status: 'ok', details: `${importedData.positions.length} posições, ${importedData.earnings?.length || 0} proventos, ${importedData.entries?.length || 0} lançamentos — restauração completa` });
+            localStorage.setItem(hKey, JSON.stringify(h.slice(-100)));
+          } catch (e) { console.warn('[backup] log histórico falhou:', e); }
           showToast('Backup importado com sucesso', 'success');
           
         } catch (err) {
