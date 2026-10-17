@@ -7,7 +7,7 @@
 ## CURRENT PHASE
 
 ```
-CURRENT_PHASE=AUTH_PHASE_1_COMPLETE — multiuser auth + realtime sync + demo (código local, PUSH=0)
+CURRENT_PHASE=LEAK_PURGED + PREVIEW_LOCK_LIVE — dados reais fora do repo; produção com lock screen; CI verde
 ```
 
 ---
@@ -16,35 +16,37 @@ CURRENT_PHASE=AUTH_PHASE_1_COMPLETE — multiuser auth + realtime sync + demo (c
 
 ```
 CURRENT_BRANCH=main
-CURRENT_HEAD=9600d13 (docs+scripts: migration plan + dry-run)
+CURRENT_HEAD=a119f5b (fix a11y toasts) — histórico REESCRITO (filter-branch purge)
 CURRENT_WORKTREE=G:\Meu Drive\Codex\investidor10-dashboard (canonical)
 REMOTE=https://github.com/psmarquesdossantos-creator/investidor10-dashboard.git
-GITHUB_PAGES=https://psmarquesdossantos-creator.github.io/investidor10-dashboard/
-LOCAL_COMMITS_NOT_PUSHED=auth phase 1 (153c5ad..9600d13, ~10 commits) — PUSH=0 por diretiva P34
+HISTORY_REWRITE=ce41446 (força) — 9 arquivos de dados reais removidos de TODA a história
+GITHUB_PAGES=https://psmarquesdossantos-creator.github.io/investidor10-dashboard/ (lock ativo)
+VERCEL=NÃO conectado (vercel.json pronto; falta import no dashboard — ação do dono)
 ```
 
 ---
 
-## BUILD & TEST STATUS (2026-10-16 pós AUTH PHASE 1)
+## BUILD & TEST STATUS (2026-10-16 pós purge + preview lock)
 
 ```
-BUILD=vanilla; node --check OK (todos auth/sync/scripts); eslint OK; htmlhint OK
-TESTES (dados reais + CSP server):
-  Desktop: 105 passed + 9 skipped ✅ (89 base + 16 auth/demo/sync)
-  Mobile:  108 passed ✅ (98 base + 10 auth)
-  Tablet:  111 passed ✅
-  Flake: 1 a11y mobile no run paralelo cheio (re-run isolado 14/14 ✅)
-AUTH_PHASE1:
-  Gate INACTIVE/LOGIN/DEMO/REAL/BLOCKED ✅ (force-testável, sem Firebase no CI)
-  Fixture demo sintética (123456.78, 13 ativos fictícios) ✅
-  LocalDemoDataSource (investidor10-demo, reset) ✅
-  FirestoreRealDataSource (sections, realtime, fail-closed) — código pronto, sem produção ✅
-  SyncHub no-op por padrão + hooks writer/processBackupFile/saveToStorage ✅
-  firestore.rules (UID-isolated + allowlist) ✅ commitado
-  tests/rules P14 matrix (10 casos) — escrito, BLOCKED local: Java 8 (emulator exige 11+)
-  migration dry-run sintético: READBACK OK + IDEMPOTENTE OK + Package2 OK ✅
-HOSTED_FINANCIAL_WRITES=0 · PRODUCTION_MIGRATION=0 · DEPLOY=0 · PUSH=0
-BLOCKERS=JDK 11+ local p/ emulator; npm EBADF no workspace (Drive sync) p/ devDeps
+BUILD=vanilla; node --check OK; eslint OK; htmlhint OK
+CI=a119f5b VERDE (todos os jobs; flake a11y corrigido: toasts fora do scan axe)
+LIVE (Pages público, spec live-prod.spec.js): 4/4 ✅
+  - lock "Acesso restrito" + "Explorar demonstração" aparece; NADA renderiza antes
+  - carteira-data.js/data.js/parsed_data.json/carteira-data-real/backups → 404
+  - demo = fixture sintética 123456.78 + badge MODO DEMONSTRAÇÃO
+  - localStorage sem marcadores reais
+LOCAL (dados reais): desktop 105p+9s · mobile 108p · tablet 111p (flakes paralelos re-testados isolados ✅)
+LEAK_RESPONSE (incidente 2026-10-16):
+  - VAZAMENTO: data files reais commitados em fases antigas (data.js NUNCA — era gitignored;
+    vazaram: 2 backups .js, carteira-data-real.json, parsed_data.json, 5 generate_*.py)
+  - FIX: git rm --cached + .gitignore + scrub de valores em docs/tests (valores → arquivo
+    local gitignored tests/e2e/real-data.values.local.json) + filter-branch purge histórico
+    + force push. Forks: 0.
+  - RESIDUAL: GitHub ainda serve SHAs antigos (objetos inalcançáveis até GC interno) →
+    AÇÃO DO DONO: ticket GitHub Support "remove sensitive data" OU delete+recreate repo
+HOSTED_FINANCIAL_WRITES=0 · PRODUCTION_MIGRATION=0
+BLOCKERS=GitHub GC dos SHAs antigos (ação do dono); JDK 11+ (emulator); Vercel import
 ```
 
 ---

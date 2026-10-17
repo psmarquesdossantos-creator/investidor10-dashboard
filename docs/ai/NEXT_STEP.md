@@ -38,21 +38,17 @@ HISTÓRICO DESTA SESSÃO: CI-GREEN antes desta (26→0 falhas, runs 38944485486+
 
 ---
 
-## NEXT MISSION (Fase 2 — requer autorização explícita do usuário)
+## NEXT MISSION (ordem atual)
 
 ```
-1. Revisão humana do código Phase 1 (specs/plans/docs acima)
-2. Autorizar PUSH (revogar PUSH=0) → push dos ~10 commits → CI verde no GitHub
-3. Dono: seguir docs/ai/FIREBASE_SETUP.md (projeto, Auth Google+e-mail, rules,
-   allowlist authorization/{uid}, firebase-config.js local)
-4. Rules deploy + signup → resolver DEMO/REAL em produção
-5. Rodar tests/rules no CI (ubuntu Java 17) — 10/10 obrigatório
-6. Depois: FASE 3 migração owner (FIREBASE_MIGRATION_PLAN.md) → FASE 4
-   certificação cross-device → FASE 5 release DEMO → FASE 6 produção
-VERCEL (paralelo, opcional): vercel.json commitado (headers CSP + sw/carteira cache).
-  Ativar: vercel.com → Add New Project → import GitHub psmarquesdossantos-creator/
-  investidor10-dashboard → Framework "Other" (static, sem build) → Deploy.
-  Auto-deploy a cada push em main. Sem firebase-config.js = modo INACTIVE (demo).
+1. ✅ Purge do vazamento + preview lock público (concluído 2026-10-16 — ver PROJECT_STATE)
+2. AÇÃO DO DONO (privacidade residual): GitHub ainda serve SHAs antigos por raw URL
+   → ticket support.github.com "Remove sensitive data from repository" OU
+   delete+recreate do repo (0 forks, histórico local íntegro; Pages/Actions reconfigurar)
+3. AÇÃO DO DONO: Vercel import (vercel.json pronto — 2 min)
+4. FASE 2 Firebase (FIREBASE_SETUP.md) → login REAL na produção
+5. DEMO: manter 100% fictícia (testes pinam ausência de tickers legados) —
+   próximos: audit vs investidor10.com.br/wallet/public/2206425 + roadmap melhorias
 ```
 
 ---
