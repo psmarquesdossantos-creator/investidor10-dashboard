@@ -1,4 +1,4 @@
-# NEXT STEP — Investidor10 Dashboard
+﻿# NEXT STEP — Investidor10 Dashboard
 
 **Arquivo vivo. Atualizar a cada missão concluída.**
 
@@ -14,8 +14,7 @@ ENTREGA (código local, ~10 commits 153c5ad..9600d13, PUSH=0 por P34):
   ✅ auth-gate.js — INACTIVE/LOGIN/DEMO/REAL/BLOCKED; fail-closed; force-testável
   ✅ Login overlay (Google + e-mail/senha, erros pt-BR, focus trap, P22 sem
      render antes da decisão; localhost bypass; sem config = site intacto)
-  ✅ Demo: fixture sintética (13 ativos fictícios, total 123456.78, zero dados
-     reais), badge "MODO DEMONSTRAÇÃO" + copy P9, reset via botão (P11),
+  ✅ Demo: fixture sintética espelhando o PERFIL do dono (37 ativos, 24 FIIs, proventos mensais), total fictício R$ 30.000,00, badge "MODO DEMONSTRAÇÃO" + copy P9, reset via botão (P11),
      storage próprio investidor10-demo (P10), saveToStorage roteado (P26)
   ✅ PortfolioDataSource (P23): LocalDemoDataSource (P25) +
      FirestoreRealDataSource (P24: sections users/{uid}/portfolio/{section},

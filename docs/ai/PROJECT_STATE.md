@@ -7,7 +7,7 @@
 ## CURRENT PHASE
 
 ```
-CURRENT_PHASE=P0-P4_EXECUTED — organização+fidelidade live na produção; CI verde; live 4/4
+CURRENT_PHASE=DEMO_PERFIL_DONO_LIVE — demo R$ 30.000 (37 ativos espelhando perfil) público; CI verde
 ```
 
 ---
@@ -76,6 +76,6 @@ Home: hero patrimônio + 4 KPIs + gráficos + alertas + cards Alocação vs Meta
 
 ```
 DATE=2026-10-17
-COMMIT=a86034e (feat P0-P4 — CI verde, live 4/4)
-UPDATED_BY=Muse Spark (pós P0-P4: fundos, organização, alocação vs meta, variação, independência pela renda)
+COMMIT=a82ce01 (demo R$ 30.000 perfil do dono — CI verde, live 4/4)
+UPDATED_BY=Muse Spark (demo espelha perfil: 37 ativos, 24 FIIs, proventos mensais; total fictício)
 ```

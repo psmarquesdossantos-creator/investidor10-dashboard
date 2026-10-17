@@ -1,4 +1,4 @@
-# PROJECT MEMORY — Investidor10 Dashboard
+﻿# PROJECT MEMORY — Investidor10 Dashboard
 
 **Memória persistente entre sessões, agentes, computadores, chats.**
 
@@ -84,7 +84,7 @@ BLOCKERS=JDK 11+ ausente (emulator rules tests locais); npm EBADF workspace (dev
 AUTH_PHASE1_ASSETS=
   - src/auth/auth-gate.js: INACTIVE/LOGIN/DEMO/REAL/BLOCKED, fail-closed,
     force-testável (__AUTH_GATE_FORCE__ = true|'demo'|'blocked'), localhost bypass
-  - src/auth/demo-fixture.js: 100% sintético (13 ativos fictícios, total 123456.78)
+  - src/auth/demo-fixture.js: 100% sintético — espelha o PERFIL do dono (37 ativos: 7 ações, 24 FIIs, 4 RF, 1 fundo, 1 cripto; proventos mensais), total fictício R$ 30000.00, caixa absorvedora; tickers D-prefix + gregos (P26: zero valores reais)
   - src/auth/sync/: data-source.js (interface P23), local-demo-source.js
     ('investidor10-demo', reset), firestore-real-source.js (sections + SyncHub)
   - firestore.rules + tests/rules/rules.test.cjs (matriz P14, 10 casos)
