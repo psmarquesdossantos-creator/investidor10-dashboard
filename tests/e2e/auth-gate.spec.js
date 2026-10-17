@@ -217,20 +217,18 @@ test.describe('Auth Gate — SyncHub e isolamento de storage (P8/P10)', () => {
     // Tickers do dataset LEGADO (realista — jamais podem aparecer no demo público)
     const LEGACY = ['PETR4', 'VALE3', 'ITUB4', 'BBDC4', 'ABEV3', 'WEGE3', 'HGLG11', 'MXRF11', 'IVVB11', 'BOVA11', 'BBAS3', 'RENT3', 'LREN3', 'RADL3'];
 
-    // Aba Posições
+    // Aba Posições (textContent: cobre cards mobile + tabela desktop; retry p/ renders tardios)
     await page.evaluate(() => window.switchTab('positions'));
-    await page.waitForTimeout(800);
-    const posText = await page.locator('#panel-positions').innerText();
-    expect(posText).toContain('ALFA11'); // fictício presente
+    await expect(page.locator('#panel-positions')).toContainText('ALFA11', { timeout: 10000 });
+    const posText = await page.evaluate(() => document.getElementById('panel-positions').textContent);
     for (const t of LEGACY) {
       expect(posText, `demo não deve conter ${t}`).not.toContain(t);
     }
 
     // Aba Proventos
     await page.evaluate(() => window.switchTab('earnings'));
-    await page.waitForTimeout(800);
-    const earnText = await page.locator('#panel-earnings').innerText();
-    expect(earnText).toContain('ALFA11');
+    await expect(page.locator('#panel-earnings')).toContainText('ALFA11', { timeout: 10000 });
+    const earnText = await page.evaluate(() => document.getElementById('panel-earnings').textContent);
     for (const t of LEGACY) {
       expect(earnText, `demo não deve conter ${t}`).not.toContain(t);
     }
@@ -238,7 +236,7 @@ test.describe('Auth Gate — SyncHub e isolamento de storage (P8/P10)', () => {
     // Aba Patrimônio (gráfico/labels da fixture, 12 meses)
     await page.evaluate(() => window.switchTab('patrimony'));
     await page.waitForTimeout(600);
-    const patText = await page.locator('#panel-patrimony').innerText();
+    const patText = await page.evaluate(() => document.getElementById('panel-patrimony').textContent);
     for (const t of LEGACY) {
       expect(patText, `demo não deve conter ${t}`).not.toContain(t);
     }
