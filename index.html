@@ -205,6 +205,11 @@
             </header>
             <div class="chart-container" role="img" aria-label="Gráfico de rosca mostrando alocação: Ações 45%, FIIs 25%, Renda Fixa 20%, ETFs 10%"><canvas id="allocationChart" width="400" height="300"></canvas></div>
             <div class="chart-legend" id="allocationLegend"></div>
+            <!-- P2: Alocação atual vs. meta por classe (estilo carteira pública I10) -->
+            <div id="allocGoalCards" class="alloc-goal-cards" aria-labelledby="allocGoalTitle">
+              <h3 id="allocGoalTitle" class="section-heading">Alocação vs. Meta</h3>
+              <div class="alloc-goal-grid" id="allocGoalGrid"></div>
+            </div>
             <button class="btn btn-ghost btn-sm mt-2" id="exportAllocationBtn" aria-label="Exportar alocação CSV">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               Exportar CSV
@@ -320,19 +325,21 @@
           <table class="data-table" id="positionsTable">
             <thead>
               <tr>
-                <th scope="col">Ativo</th>
+                <th scope="col" data-sort="ticker" class="sortable" aria-sort="none">Ativo</th>
                 <th scope="col">Classe</th>
-                <th scope="col">Qtd.</th>
-                <th scope="col">Preço médio</th>
-                <th scope="col">Preço atual</th>
-                <th scope="col">Valor total</th>
+                <th scope="col" data-sort="qty" class="sortable" aria-sort="none">Qtd.</th>
+                <th scope="col" data-sort="avgPrice" class="sortable" aria-sort="none">Preço médio</th>
+                <th scope="col" data-sort="currentPrice" class="sortable" aria-sort="none">Preço atual</th>
+                <th scope="col" data-sort="value" class="sortable" aria-sort="none">Valor total</th>
                 <th scope="col">P&L</th>
-                <th scope="col">Rentab.</th>
+                <th scope="col" data-sort="return" class="sortable" aria-sort="none">Rentab.</th>
                 <th scope="col">% Carteira</th>
                 <th scope="col">% Ideal</th>
                 <th scope="col">Comprar?</th>
                 <th scope="col">Div./mês (12M)</th>
                 <th scope="col">DY</th>
+                <th scope="col">Variação</th>
+                <th scope="col">Confiança</th>
                 <th scope="col"><span class="visually-hidden">Ações</span></th>
               </tr>
             </thead>
@@ -439,6 +446,26 @@
               <option value="2023">2023</option>
               <option value="all">Todo histórico</option>
             </select>
+          </div>
+        </div>
+        <!-- P1: Proventos por ativo (agregação por ticker) -->
+        <div class="by-asset-section">
+          <h3 class="section-heading">Proventos por ativo</h3>
+          <div class="table-wrapper">
+            <table class="data-table" id="earningsByAssetTable">
+              <thead>
+                <tr>
+                  <th scope="col">Ativo</th>
+                  <th scope="col">Qtd. proventos</th>
+                  <th scope="col">Total recebido</th>
+                  <th scope="col">Últimos 12M</th>
+                  <th scope="col">Yield on cost (12M)</th>
+                  <th scope="col">Frequência</th>
+                  <th scope="col">Último pagamento</th>
+                </tr>
+              </thead>
+              <tbody id="earningsByAssetBody"></tbody>
+            </table>
           </div>
         </div>
         <div class="table-wrapper">

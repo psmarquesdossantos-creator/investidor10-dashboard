@@ -796,6 +796,22 @@
       cards.push({ title: 'Renda Mensal de Proventos', tag: 'Liberdade financeira', target, current, pct, falta, unit: 'R$/mês', note: `${fmtNum(pct)}% • faltam ${fmtBRL(falta)}/mês` });
     }
 
+    // Meta 3 (P4): Independência pela renda — patrimônio necessário para a renda-alvo
+    // com o yield 12m atual (projeção honesta: yield muda com o mercado — UNKNOWN ≠ ZERO)
+    const y12 = Number(k.yield12m);
+    if (k.total && y12 > 0) {
+      const rendaAtual = (k.earnings12m || 0) / 12;
+      const rendaAlvo = (goals.proventosMonthly || meta.divGoal) || rendaAtual || k.total * y12 / 100 / 12;
+      const patrimonioNecessario = rendaAlvo / (y12 / 100);
+      const pct = patrimonioNecessario > 0 ? Math.min(100, k.total / patrimonioNecessario * 100) : 0;
+      const falta = Math.max(0, patrimonioNecessario - k.total);
+      cards.push({
+        title: 'Independência pela Renda', tag: 'Projeção com yield atual',
+        target: patrimonioNecessario, current: k.total, pct, falta, unit: 'R$',
+        note: `Rende hoje ${fmtBRL(rendaAtual)}/mês • Yield 12m ${fmtNum(y12)}% • para ${fmtBRL(rendaAlvo)}/mês, precisa de ${fmtBRL(patrimonioNecessario)}`
+      });
+    }
+
     const cardHtml = c => `
       <div class="card p-4">
         <div class="flex-between-start-mb-2">

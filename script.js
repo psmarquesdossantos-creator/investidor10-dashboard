@@ -227,6 +227,7 @@ const CHART_COLORS = {
   classRf: '#10B981',
   classCripto: '#F59E0B',
   classBdr: '#EC4899',
+  classFundos: '#00ACC1',
   classOther: '#64748B',
   // Legacy allocation (deprecated - use semantic class colors above)
   allocation: ['#1A73E8', '#8B5CF6', '#F5C542', '#10B981', '#F59E0B', '#EC4899', '#00B8D4', '#FF5722']
@@ -303,6 +304,7 @@ const state = {
   activeTab: 'summary',
   charts: {},
   currentPositionsPage: 1,
+  positionsSort: { key: null, dir: 1 },
   currentEarningsPage: 1,
   currentEntriesPage: 1,
   positionsPerPage: 15,
@@ -524,8 +526,9 @@ function switchTab(tabName, focusTab = false) {
   if (tabName === 'returns' && !state.charts.returns) initReturnsChart();
 
   // Render tables for non-lazy tabs only (lazy tabs are rendered via maybeRenderLazy in panels.js)
-  if (tabName === 'positions') renderPositions();
-  if (tabName === 'earnings') renderEarnings();
+  if (tabName === 'positions') { renderPositions(); initPositionsSorting(); }
+  if (tabName === 'earnings') { renderEarnings(); renderEarningsByAsset(); }
+  if (tabName === 'summary') renderAllocationVsGoal();
   if (tabName === 'entries') renderEntries();
   if (tabName === 'returns') renderAssetReturns();
   // 'fixed' and other lazy tabs are rendered by maybeRenderLazy in panels.js
@@ -1008,6 +1011,7 @@ function initAllocationChart() {
     'FIIs': CHART_COLORS.classFiis,
     'ETFs': CHART_COLORS.classEtfs,
     'Renda Fixa': CHART_COLORS.classRf,
+    'Fundos': CHART_COLORS.classFundos,
     'Outros': CHART_COLORS.classOther
   };
 
@@ -1361,12 +1365,24 @@ function renderPositions() {
     const groupPositions = filteredPositions.filter(p => group.classes.includes(p.class || 'other'));
     if (groupPositions.length === 0) return;
 
+    // P1: ordenação dentro do grupo (colunas clicáveis no thead)
+    const sort = state.positionsSort;
+    if (sort && sort.key) {
+      groupPositions.sort((a, b) => {
+        const av = a[sort.key], bv = b[sort.key];
+        if (typeof av === 'string' || typeof bv === 'string') {
+          return String(av || '').localeCompare(String(bv || '')) * sort.dir;
+        }
+        return ((Number(av) || 0) - (Number(bv) || 0)) * sort.dir;
+      });
+    }
+
     // Add group header row
     const groupValue = groupPositions.reduce((s, p) => s + (p.value || 0), 0);
     const groupPct = totalValue > 0 ? (groupValue / totalValue * 100) : 0;
     allRows.push(`
       <tr class="group-header" data-group="${group.key}">
-        <td colspan="14">
+        <td colspan="16">
           <div class="group-header-content">
             <span class="group-icon">${group.icon}</span>
             <span class="group-label">${group.label}</span>
@@ -1404,9 +1420,10 @@ function renderPositions() {
           <td class="text-right">${fmt.percent(p.weight)}</td>
           <td class="text-right" class="text-primary-ink">${idealAssetPct > 0 ? fmt.percent(idealAssetPct) : '—'}</td>
           <td class="text-right">${idealAssetPct > 0 ? `<span class="asset-class ${shouldBuy ? 'fiis' : 'bdr'}">${shouldBuy ? 'Sim' : '—'}</span>` : '—'}</td>
-          <td class="text-right">${div12mByTicker[p.ticker] > 0 ? fmt.currency(div12mByTicker[p.ticker] / 12) : '—'}</td>
+           <td class="text-right">${div12mByTicker[p.ticker] > 0 ? fmt.currency(div12mByTicker[p.ticker] / 12) : '—'}</td>
            <td class="text-right">${div12mByTicker[p.ticker] > 0 && p.value > 0 ? fmt.percent(div12mByTicker[p.ticker] / p.value * 100) : '—'}</td>
-           <td>${getConfidenceBadge(p)}</td>
+           <td class="text-right pct-cell ${p.dayChange == null ? '' : p.dayChange >= 0 ? 'positive' : 'negative'}" title="${p.dayChange == null ? 'Ative preços ao vivo para ver a variação diária' : ''}">${p.dayChange == null ? '—' : (p.dayChange >= 0 ? '+' : '') + fmt.percent(p.dayChange)}</td>
+            <td>${getConfidenceBadge(p)}</td>
            <td>
              <button class="action-btn edit-position-btn" data-index="${globalIndex}" aria-label="Editar ${p.ticker}">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -1468,8 +1485,98 @@ function renderMobilePositionCards(positions) {
 }
 
 function getClassLabel(cls) {
-  const labels = { stocks: 'Ações', fiis: 'FIIs', etfs: 'ETFs', fixed: 'Renda Fixa', crypto: 'Cripto', bdr: 'BDRs', other: 'Outros' };
+  const labels = { stocks: 'Ações', fiis: 'FIIs', etfs: 'ETFs', fixed: 'Renda Fixa', crypto: 'Cripto', bdr: 'BDRs', funds: 'Fundos', other: 'Outros' };
   return labels[cls] || cls;
+}
+
+// P1: colunas ordenáveis da tabela de posições (th[data-sort])
+function initPositionsSorting() {
+  const table = document.getElementById('positionsTable');
+  if (!table || table.__sortBound) return;
+  table.__sortBound = true;
+  table.querySelectorAll('th[data-sort]').forEach(th => {
+    th.setAttribute('aria-sort', 'none');
+    th.addEventListener('click', () => {
+      const key = th.dataset.sort;
+      const sort = state.positionsSort;
+      if (sort.key === key) sort.dir = sort.dir === 1 ? -1 : 1;
+      else { sort.key = key; sort.dir = 1; }
+      table.querySelectorAll('th[data-sort]').forEach(h => {
+        h.setAttribute('aria-sort', h === th ? (sort.dir === 1 ? 'ascending' : 'descending') : 'none');
+      });
+      renderPositions();
+    });
+  });
+}
+
+// P1: Proventos por ativo — agregação por ticker (total, 12M, yield on cost, frequência)
+function renderEarningsByAsset() {
+  const tbody = document.getElementById('earningsByAssetBody');
+  if (!tbody) return;
+  const earnings = MOCK_DATA.earnings || [];
+  if (!earnings.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="center-muted-p6">Sem proventos para agregar.</td></tr>';
+    return;
+  }
+  const yearAgo = new Date(Date.now() - 365 * 86400000).toISOString().slice(0, 10);
+  const byTicker = {};
+  earnings.forEach(e => {
+    const t = e.ticker || e.asset || '—';
+    if (!byTicker[t]) byTicker[t] = { ticker: t, name: e.name || t, count: 0, total: 0, last12m: 0, months: new Set(), last: '' };
+    const b = byTicker[t];
+    b.count++;
+    b.total += Number(e.net ?? e.gross ?? 0) || 0;
+    if ((e.date || '') >= yearAgo) b.last12m += Number(e.net ?? e.gross ?? 0) || 0;
+    if (e.date) { b.months.add(e.date.slice(0, 7)); if (e.date > b.last) b.last = e.date; }
+  });
+  const posByTicker = {};
+  (MOCK_DATA.positions || []).forEach(p => { posByTicker[p.ticker] = p; });
+  const rows = Object.values(byTicker).sort((a, b) => b.total - a.total);
+  tbody.innerHTML = rows.map(b => {
+    const pos = posByTicker[b.ticker];
+    const yoc = pos && pos.invested > 0 && b.last12m > 0 ? b.last12m / pos.invested * 100 : null;
+    const freq = b.months.size;
+    return `<tr>
+      <td><div class="asset-cell"><span class="asset-ticker">${b.ticker}</span><span class="asset-name">${b.name}</span></div></td>
+      <td class="text-right">${b.count}</td>
+      <td class="text-right fw-600">${fmt.currency(b.total)}</td>
+      <td class="text-right">${fmt.currency(b.last12m)}</td>
+      <td class="text-right pct-cell ${yoc == null ? '' : 'positive'}">${yoc == null ? '—' : fmt.percent(yoc)}</td>
+      <td class="text-right">${freq} ${freq === 1 ? 'mês' : 'meses'}</td>
+      <td>${b.last ? fmt.date(b.last) : '—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// P2: Alocação atual vs. meta por classe (cards estilo carteira pública I10)
+function renderAllocationVsGoal() {
+  const grid = document.getElementById('allocGoalGrid');
+  if (!grid) return;
+  const escG = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&', '<': '<', '>': '>', '"': '"', "'": '&#39;' }[c]));
+  const goals = (window.CARTEIRA_META && window.CARTEIRA_META.goals && window.CARTEIRA_META.goals.allocation) || null;
+  if (!goals) { grid.innerHTML = '<p class="text-muted fs-12">Sem metas de alocação configuradas (CARTEIRA_META.goals.allocation).</p>'; return; }
+  const ptToCls = { 'Ações': 'stocks', 'Ação': 'stocks', 'FIIs': 'fiis', 'FII': 'fiis', 'ETFs': 'etfs', 'ETF': 'etfs', 'Renda Fixa': 'fixed', 'Criptos': 'crypto', 'Cripto': 'crypto', 'Fundos': 'funds', 'Fundo': 'funds', 'Outros': 'other', 'BDRs': 'bdr' };
+  const total = (MOCK_DATA.positions || []).reduce((s, p) => s + (p.value || 0), 0) || 1;
+  const byCls = {};
+  (MOCK_DATA.positions || []).forEach(p => {
+    const c = p.class || 'other';
+    byCls[c] = (byCls[c] || 0) + (p.value || 0);
+  });
+  grid.innerHTML = Object.entries(goals).map(([ptKey, ideal]) => {
+    const cls = ptToCls[ptKey] || ptKey;
+    const atual = (byCls[cls] || 0) / total * 100;
+    const idealPct = Number(ideal) || 0;
+    const diff = atual - idealPct;
+    const badge = diff < -2 ? '<span class="badge badge-warning">Comprar</span>'
+      : diff > 2 ? '<span class="badge badge-error">Vender</span>'
+      : '<span class="badge badge-success">Meta</span>';
+    const barW = Math.min(100, atual);
+    return `<div class="alloc-goal-card">
+      <div class="flex-between"><span class="fs-12-700">${escG(ptKey)}</span><span class="fs-11-muted">${fmt.percent(atual)} / ${fmt.percent(idealPct)}</span></div>
+      <div class="alloc-goal-bar"><div class="alloc-goal-fill" data-w="${barW.toFixed(1)}" role="progressbar" aria-valuenow="${barW.toFixed(1)}" aria-valuemin="0" aria-valuemax="100" aria-label="${ptKey}: ${fmt.percent(atual)} de ${fmt.percent(idealPct)}"></div></div>
+      <div class="fs-11-muted">${badge} ${diff === 0 ? '' : (diff > 0 ? '+' : '') + fmt.percent(diff) + ' vs. meta'}</div>
+    </div>`;
+  }).join('');
 }
 
 function getConfidenceBadge(p) {
@@ -2842,6 +2949,8 @@ async function init() {
   // Initial render of tables
     renderPositions();
     renderEarnings();
+    renderEarningsByAsset();
+    renderAllocationVsGoal();
     renderEntries();
 
     // Setup allocation chart click and export
@@ -2901,6 +3010,8 @@ window.renderAll = function() {
   try { if (typeof renderAllocationLegend === 'function') renderAllocationLegend(); } catch(e) { console.warn('renderAllocationLegend failed:', e); }
   try { if (typeof renderPositions === 'function') renderPositions(); } catch(e) { console.warn('renderPositions failed:', e); }
   try { if (typeof renderEarnings === 'function') renderEarnings(); } catch(e) { console.warn('renderEarnings failed:', e); }
+  try { if (typeof renderEarningsByAsset === 'function') renderEarningsByAsset(); } catch(e) { console.warn('renderEarningsByAsset failed:', e); }
+  try { if (typeof renderAllocationVsGoal === 'function') renderAllocationVsGoal(); } catch(e) { console.warn('renderAllocationVsGoal failed:', e); }
   try { if (typeof renderEntries === 'function') renderEntries(); } catch(e) { console.warn('renderEntries failed:', e); }
   try { if (typeof renderAssetReturns === 'function') renderAssetReturns(); } catch(e) { console.warn('renderAssetReturns failed:', e); }
   try { if (typeof renderPatrimonyDetailChart === 'function') renderPatrimonyDetailChart(); } catch(e) { console.warn('renderPatrimonyDetailChart failed:', e); }

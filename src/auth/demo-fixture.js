@@ -17,7 +17,8 @@
     { ticker: 'OMGA11', name: 'Omega Índice Demo', class: 'etfs', category: 'etf', sector: 'Índice', qty: 100, avgPrice: 62.00, currentPrice: 66.45 },
     { ticker: 'SIGM4', name: 'SigmaBanc PN', class: 'stocks', category: 'acao', sector: 'Bancos', qty: 250, avgPrice: 18.75, currentPrice: 20.10 },
     { ticker: 'KAPA6', name: 'KriptoKapa Demo', class: 'crypto', category: 'cripto', sector: 'Criptoativo', qty: 40, avgPrice: 95.00, currentPrice: 102.30 },
-    { ticker: 'RHOB4', name: 'RhoBdr PN', class: 'bdr', category: 'bdr', sector: 'Internacional', qty: 80, avgPrice: 55.00, currentPrice: 57.55 }
+    { ticker: 'RHOB4', name: 'RhoBdr PN', class: 'bdr', category: 'bdr', sector: 'Internacional', qty: 80, avgPrice: 55.00, currentPrice: 57.55 },
+    { ticker: 'FUND1', name: 'Trend Demo FIC Multimercado', class: 'funds', category: 'fundos', sector: 'Fundo de Investimento', qty: 300, avgPrice: 60.00, currentPrice: 61.95, issuer: 'Gestora Demo', indexer: 'DI 90%', maturity: '' }
   ];
 
   const positions = raw.map((p, i) => {
@@ -85,8 +86,8 @@
     ibov.push(+(100 * (1 + 0.0105 * i + 0.011 * Math.sin(i))).toFixed(4));
   }
 
-  const classNameMap = { stocks: 'Ações', fiis: 'FIIs', etfs: 'ETFs', fixed: 'Renda Fixa', crypto: 'Criptos', bdr: 'Outros' };
-  const classColorMap = { 'Ações': '#1A73E8', 'FIIs': '#34A853', 'ETFs': '#F9AB00', 'Renda Fixa': '#3730A3', 'Criptos': '#9C27B0', 'Outros': '#80868B' };
+  const classNameMap = { stocks: 'Ações', fiis: 'FIIs', etfs: 'ETFs', fixed: 'Renda Fixa', crypto: 'Criptos', bdr: 'Outros', funds: 'Fundos' };
+  const classColorMap = { 'Ações': '#1A73E8', 'FIIs': '#34A853', 'ETFs': '#F9AB00', 'Renda Fixa': '#3730A3', 'Criptos': '#9C27B0', 'Fundos': '#00ACC1', 'Outros': '#80868B' };
   const byClassAgg = {};
   positions.forEach(p => {
     const name = classNameMap[p.class] || 'Outros';
@@ -148,7 +149,7 @@
       indexer: p.indexer, maturity: p.maturity
     })),
     goals: {
-      allocation: { 'Ações': 25, 'FIIs': 30, 'ETFs': 8, 'Renda Fixa': 32, 'Criptos': 3, 'Outros': 2 },
+      allocation: { 'Ações': 25, 'FIIs': 30, 'ETFs': 8, 'Renda Fixa': 31, 'Criptos': 3, 'Fundos': 3, 'Outros': 0 },
       targetValue: 150000
     },
     reconciliation: { b3Total: total, backupTotal: total, gaps: [] }

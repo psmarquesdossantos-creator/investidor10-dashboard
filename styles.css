@@ -1400,3 +1400,21 @@ body.auth-locked #toastContainer { visibility: hidden; }
 @media (max-width: 639px) {
   .demo-badge { max-width: calc(100vw - var(--space-6)); bottom: calc(var(--bottom-nav-height, 64px) + var(--space-2)); }
 }
+/* ========================================
+   P1/P2 — Organização (proventos por ativo, colunas ordenáveis, alocação vs meta)
+   ======================================== */
+.data-table th.sortable { cursor: pointer; user-select: none; }
+.data-table th.sortable:hover { color: var(--color-text); }
+.data-table th.sortable::after { content: " ?"; font-size: 9px; color: var(--color-text-muted); }
+.data-table th.sortable[aria-sort="ascending"]::after { content: " ?"; color: var(--color-primary); }
+.data-table th.sortable[aria-sort="descending"]::after { content: " ?"; color: var(--color-primary); }
+.asset-class.funds { background: color-mix(in srgb, #00ACC1 15%, transparent); color: #006064; }
+.by-asset-section { margin: var(--space-4) 0; }
+.by-asset-section .table-wrapper { max-height: 320px; overflow-y: auto; }
+
+.alloc-goal-cards { margin-top: var(--space-4); }
+.alloc-goal-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-3); }
+.alloc-goal-card { background: var(--color-bg); border: 1px solid var(--color-border-light); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); }
+.alloc-goal-bar { height: 6px; border-radius: var(--radius-full); background: var(--color-border-light); overflow: hidden; margin: var(--space-1) 0; }
+.alloc-goal-fill { height: 100%; width: var(--w, 0%); background: var(--color-primary); border-radius: var(--radius-full); transition: width var(--transition-fast); }
+.alloc-goal-card .badge { font-size: 10px; }

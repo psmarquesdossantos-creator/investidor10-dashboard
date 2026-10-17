@@ -511,13 +511,19 @@
       const data = await res.json();
       const quotes = {};
       for (const q of data.results||[]) {
-        if (q.regularMarketPrice) quotes[q.symbol.replace('.SA','')] = q.regularMarketPrice;
+        const key = q.symbol.replace('.SA','');
+        quotes[key] = {
+          price: q.regularMarketPrice,
+          changePercent: typeof q.regularMarketChangePercent === 'number' ? q.regularMarketChangePercent : null
+        };
       }
       let changed = 0;
       for (const pos of MOCK_DATA.positions) {
         const sym = pos.ticker.replace('F','').replace('.SA','');
-        if (quotes[pos.ticker] || quotes[sym]) {
-          const newPrice = quotes[pos.ticker] || quotes[sym];
+        const q = quotes[pos.ticker] || quotes[sym];
+        if (q && q.price) {
+          if (q.changePercent != null) pos.dayChange = q.changePercent; // P2: variação diária
+          const newPrice = q.price;
           if (Math.abs(newPrice - pos.currentPrice) > 0.001) {
             pos.currentPrice = newPrice;
             pos.value = +(pos.qty * newPrice).toFixed(2);
@@ -563,7 +569,7 @@
     const cls = {}; MOCK_DATA.positions.forEach(p=>cls[p.class]=(cls[p.class]||0)+p.value);
     const cn={'stocks':'Ação','fiis':'FII','etfs':'ETF','fixed':'Renda Fixa','crypto':'Cripto','bdr':'BDR','other':'Outros'};
     // metas do backup usam rótulos pt-BR; posições usam chaves de classe internas
-    const ptToCls={'Ação':'stocks','Ações':'stocks','FII':'fiis','FIIs':'fiis','ETF':'etfs','ETFs':'etfs','Renda Fixa':'fixed','Cripto':'crypto','BDR':'bdr','Outros':'other'};
+    const ptToCls={'Ação':'stocks','Ações':'stocks','FII':'fiis','FIIs':'fiis','ETF':'etfs','ETFs':'etfs','Renda Fixa':'fixed','Cripto':'crypto','BDR':'bdr','Fundo':'funds','Fundos':'funds','Outros':'other'};
     const pct1 = v => v.toLocaleString('pt-BR', {minimumFractionDigits:1, maximumFractionDigits:1});
     const rows = [];
     for (const [goalKey, targetPct] of Object.entries(meta)) {
@@ -1439,7 +1445,13 @@
     const out = [];
     for (const a of posResult.acoes) out.push(norm(a, 'stocks'));
     for (const a of posResult.etfs) out.push(norm(a, 'etfs'));
-    for (const a of posResult.fundos) out.push(norm(a, 'fiis'));
+    // B3 "Fundos" mistura FII e fundos de investimento: separa por heurística
+    // (P0 fidelidade — antes tudo virava 'fiis', fundo FIC sumia da classe certa)
+    for (const a of posResult.fundos) {
+      const nm = (a.ticker || '') + ' ' + (a.name || '');
+      const isFii = /^(.+11)$/.test(a.ticker || '') || /fii|imobili/i.test(nm);
+      out.push(norm(a, isFii ? 'fiis' : 'funds'));
+    }
     // RF: avgPrice = preço unitário atual (cenário CURVA); valor é o saldo atualizado
     for (const a of posResult.rendaFixa) out.push(norm(a, 'fixed'));
     // Empréstimos: não são posições — são direitos/obrigações; registra como classe própria

@@ -38,7 +38,9 @@
     { ticker: 'LCI001', name: 'LCI Banco Sample', class: 'fixed', category: 'rf', sector: 'LCI', qty: 1, avgPrice: 20000, currentPrice: 20800, issuer: 'Banco Sample', indexer: '95% CDI', maturity: '2027-03-15' },
     { ticker: 'CRI001', name: 'CRI Sample Infra', class: 'fixed', category: 'rf', sector: 'CRI', qty: 1, avgPrice: 15000, currentPrice: 15600, issuer: 'Sample Infra', indexer: 'IPCA+5%', maturity: '2029-01-10' },
     // bdr (1)
-    { ticker: 'TAEE11', name: 'Taesa BDR', class: 'bdr', category: 'bdr', sector: 'Energia', qty: 40, avgPrice: 36.0, currentPrice: 37.5 }
+    { ticker: 'TAEE11', name: 'Taesa BDR', class: 'bdr', category: 'bdr', sector: 'Energia', qty: 40, avgPrice: 36.0, currentPrice: 37.5 },
+    // funds (1)
+    { ticker: 'FUND1', name: 'Fundo Renda Fixa Demo', class: 'funds', category: 'fundos', sector: 'Fundo de Investimento', qty: 200, avgPrice: 75.0, currentPrice: 78.0, issuer: 'Gestora Sample', indexer: 'DI 100%', maturity: '' }
   ].map((p, i) => {
     const invested = +(p.qty * p.avgPrice).toFixed(2);
     const value = +(p.qty * p.currentPrice).toFixed(2);
@@ -104,8 +106,8 @@
   const dividends12m = +earnings.reduce((s, e) => s + e.total, 0).toFixed(2);
 
   // ---- allocation: byClass/byAsset (mesmo shape do backup real) ----
-  const classNameMap = { stocks: 'Ações', fiis: 'FIIs', etfs: 'ETFs', fixed: 'Renda Fixa', crypto: 'Outros', bdr: 'Outros', other: 'Outros' };
-  const classColorMap = { 'Ações': '#1A73E8', 'FIIs': '#34A853', 'ETFs': '#F9AB00', 'Renda Fixa': '#3730A3', 'Outros': '#80868B' };
+  const classNameMap = { stocks: 'Ações', fiis: 'FIIs', etfs: 'ETFs', fixed: 'Renda Fixa', crypto: 'Outros', bdr: 'Outros', funds: 'Fundos', other: 'Outros' };
+  const classColorMap = { 'Ações': '#1A73E8', 'FIIs': '#34A853', 'ETFs': '#F9AB00', 'Renda Fixa': '#3730A3', 'Fundos': '#00ACC1', 'Outros': '#80868B' };
   const byClassAgg = {};
   positions.forEach(p => {
     const name = classNameMap[p.class] || 'Outros';

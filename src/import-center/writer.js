@@ -74,8 +74,8 @@
     // Aggregate by class
     const classAgg = {};
     validData.forEach(a => classAgg[a.class] = (classAgg[a.class] || 0) + a.value);
-    const cn = {'stocks':'Ações','fiis':'FIIs','etfs':'ETFs','fixed':'Renda Fixa','other':'Outros'};
-    const cc = {'stocks':'#1A73E8','fiis':'#34A853','fixed':'#3730A3','etfs':'#F9AB00','other':'#80868B'};
+    const cn = {'stocks':'Ações','fiis':'FIIs','etfs':'ETFs','fixed':'Renda Fixa','funds':'Fundos','other':'Outros'};
+    const cc = {'stocks':'#1A73E8','fiis':'#34A853','fixed':'#3730A3','etfs':'#F9AB00','funds':'#00ACC1','other':'#80868B'};
     const byClass = Object.entries(classAgg).map(([k,v])=>({name:cn[k],value:+v.toFixed(2),pct:+((v/total)*100).toFixed(1),color:cc[k]})).sort((a,b)=>b.value-a.value);
     const byAsset = validData.sort((a,b)=>b.value-a.value).map(a=>({name:a.ticker,class:a.class,value:a.value,pct:+((a.value/total)*100).toFixed(2),return:a.ret}));
 
