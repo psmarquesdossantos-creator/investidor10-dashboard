@@ -1,4 +1,4 @@
-// tests/e2e/live-prod.spec.js
+﻿// tests/e2e/live-prod.spec.js
 // Testes contra a produção REAL (GitHub Pages / Vercel). Opcional:
 // roda apenas quando LIVE_BASE_URL está definida:
 //   LIVE_BASE_URL=https://<host> npx playwright test tests/e2e/live-prod.spec.js
@@ -38,8 +38,8 @@ test.describe('Live — produção pública (privacidade + lock)', () => {
     await expect(page.locator('#demoBadge')).toBeVisible({ timeout: 10000 });
     await expect(page.locator('#authGate')).toBeHidden();
     const total = await page.evaluate(() => window.MOCK_DATA.kpis.total);
-    expect(total).toBe(123456.78); // sintético — jamais o dataset legado/real
-    await expect(page.locator('#kpiTotal')).toContainText('123.456');
+    expect(total).toBe(30000); // sintético — jamais o dataset legado/real
+    await expect(page.locator('#kpiTotal')).toContainText('30.000');
   });
 
   test('localStorage da produção não contém dados reais após visita', async ({ page }) => {

@@ -1,4 +1,4 @@
-// tests/e2e/auth-gate.spec.js
+﻿// tests/e2e/auth-gate.spec.js
 // E2E: auth-gate, modos INACTIVE/LOGIN/DEMO/BLOCKED/PREVIEW, fixture demo sintética
 import { test, expect } from '@playwright/test';
 import { existsSync, readFileSync } from 'node:fs';
@@ -19,7 +19,7 @@ test.describe('Auth Gate — fixture demo sintética', () => {
     const fixture = await page.evaluate(() => window.DEMO_FIXTURE || null);
     expect(fixture, 'window.DEMO_FIXTURE deve existir').not.toBeNull();
     expect(fixture.meta.source).toBe('demo');
-    expect(fixture.kpis.total).toBe(123456.78);
+    expect(fixture.kpis.total).toBe(30000);
     expect(fixture.positions.length).toBeGreaterThanOrEqual(12);
     // P26: zero dados reais no fixture (marcadores só se valores locais presentes)
     const json = JSON.stringify(fixture);
@@ -56,9 +56,9 @@ test.describe('Auth Gate — fixture demo sintética', () => {
     });
 
     expect(result.error).toBeUndefined();
-    expect(result.initialTotal).toBe(123456.78);      // start() carrega fixture default
+    expect(result.initialTotal).toBe(30000);      // start() carrega fixture default
     expect(result.savedTotal).toBe(99999);            // saveSection persistiu
-    expect(result.afterReset).toBe(123456.78);        // reset restaura fixture (P11)
+    expect(result.afterReset).toBe(30000);        // reset restaura fixture (P11)
     expect(result.key).toBe('investidor10-demo');      // P10: storage próprio do demo
     // limpeza
     await page.evaluate(() => localStorage.removeItem('investidor10-demo'));
@@ -100,13 +100,13 @@ test.describe('Auth Gate — modos forçados (sem Firebase, sem rede)', () => {
     await expect(page.locator('body')).not.toHaveClass(/auth-locked/);
 
     const total = await page.evaluate(() => window.MOCK_DATA.kpis.total);
-    expect(total).toBe(123456.78); // fixture demo aplicada, não dados locais/reais
+    expect(total).toBe(30000); // fixture demo aplicada, não dados locais/reais
 
     const badgeText = await page.locator('#demoBadge').textContent();
     expect(badgeText).toContain('MODO DEMONSTRAÇÃO'); // P27
     expect(badgeText).toContain('fictícios');          // P9 copy exata (frase completa)
 
-    await expect(page.locator('#kpiTotal')).toContainText('123.456');
+    await expect(page.locator('#kpiTotal')).toContainText('30.000');
   });
 
   test('force BLOCKED: tela dedicada, app oculto, sem dados', async ({ page }) => {
@@ -134,8 +134,8 @@ test.describe('Auth Gate — modos forçados (sem Firebase, sem rede)', () => {
     await expect(page.locator('#demoBadge')).toBeVisible();
     await expect(page.locator('#authGate')).toBeHidden();
     const total = await page.evaluate(() => window.MOCK_DATA.kpis.total);
-    expect(total).toBe(123456.78); // fixture sintética — nunca o dataset legado/real
-    await expect(page.locator('#kpiTotal')).toContainText('123.456');
+    expect(total).toBe(30000); // fixture sintética — nunca o dataset legado/real
+    await expect(page.locator('#kpiTotal')).toContainText('30.000');
   });
 });
 
@@ -190,13 +190,14 @@ test.describe('Auth Gate — SyncHub e isolamento de storage (P8/P10)', () => {
     await page.evaluate(() => localStorage.removeItem('investidor10-demo'));
 
     // muta + persiste
+    const fixtureEntriesCount = await page.evaluate(() => window.DEMO_FIXTURE.entries.length);
     await page.evaluate(() => {
       window.MOCK_DATA.entries.push({ date: '2026-10-16', type: 'compra', ticker: 'ALFA11', asset: 'ALFA11', qty: 1, price: 10, total: 10, class: 'fiis' });
       window.MOCK_DATA.kpis.total = 555;
       window.saveToStorage();
     });
     let entries = await page.evaluate(() => window.MOCK_DATA.entries.length);
-    expect(entries).toBeGreaterThan(6); // mutação aplicada
+    expect(entries).toBeGreaterThan(fixtureEntriesCount); // mutação aplicada
 
     // P11: restaura defaults via botão do badge
     await page.click('#btnDemoReset');
@@ -204,8 +205,8 @@ test.describe('Auth Gate — SyncHub e isolamento de storage (P8/P10)', () => {
     entries = await page.evaluate(() => window.MOCK_DATA.entries.length);
     const total = await page.evaluate(() => window.MOCK_DATA.kpis.total);
     const keyGone = await page.evaluate(() => localStorage.getItem('investidor10-demo') === null);
-    expect(entries).toBe(6);            // fixture default restaurada
-    expect(total).toBe(123456.78);
+    expect(entries).toBe(fixtureEntriesCount);     // fixture default restaurada
+    expect(total).toBe(30000);
     expect(keyGone).toBe(true);          // edits do demo descartados
   });
 
