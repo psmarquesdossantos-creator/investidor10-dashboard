@@ -1558,9 +1558,11 @@
     </div>
 
     <!-- Ordem P22: carteira-data.js (fonte local, se existir) → gate sobrescreve
-         conforme modo (DEMO=fixture / REAL=cloud) → script.js aplica após resolver.
-         Produção: carteira-data.js não existe (404) → sample sintético assume. -->
-    <script src="carteira-data.sample.js" defer></script>
+         conforme modo (DEMO=fixture 30k / REAL=cloud) → script.js aplica após resolver.
+         Em produção o arquivo não existe (404): github.io segue o fluxo lock→demo
+         do gate (P26/P27); alias Vercel usa o mock inline derivado da carteira
+         PÚBLICA do Investidor10. carteira-data.sample.js fica como template
+         documentado, sem script tag (override quebrava o demo fixture). -->
     <script src="carteira-data.js?v=20261012" defer></script>
     <!-- Auth (Phase 1): fixture demo + data sources ANTES do gate (gate os usa no boot) -->
     <script src="src/auth/demo-fixture.js" defer></script>
