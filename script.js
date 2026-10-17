@@ -1526,6 +1526,7 @@ function initPositionsFilters() {
 // ========================================
 
 let filteredEarnings = [...MOCK_DATA.earnings];
+let _earningsDataRef = MOCK_DATA.earnings;
 
 // Helper para label de tipo de provento
 function getEarningsTypeLabel(type) {
@@ -1541,6 +1542,14 @@ function getEarningsTypeLabel(type) {
 }
 
 function renderEarnings() {
+  // Sync: se MOCK_DATA.earnings foi trocado (import real/demo/gate), atualiza a
+  // cópia filtrada (mesma garantia que renderPositions já tinha) — sem isso a
+  // aba exibia dados obsoletos do parse após applyRealData/gate (bug mascarado).
+  if (MOCK_DATA.earnings !== _earningsDataRef) {
+    _earningsDataRef = MOCK_DATA.earnings;
+    filteredEarnings = [...MOCK_DATA.earnings];
+    state.currentEarningsPage = 1;
+  }
   const start = (state.currentEarningsPage - 1) * state.earningsPerPage;
   const end = start + state.earningsPerPage;
   const pageData = filteredEarnings.slice(start, end);
@@ -1647,8 +1656,15 @@ function initEarningsFilters() {
 // ========================================
 
 let filteredEntries = [...MOCK_DATA.entries];
+let _entriesDataRef = MOCK_DATA.entries;
 
 function renderEntries() {
+  // Sync: idem renderEarnings — dados trocados (import/gate) exigem cópia nova
+  if (MOCK_DATA.entries !== _entriesDataRef) {
+    _entriesDataRef = MOCK_DATA.entries;
+    filteredEntries = [...MOCK_DATA.entries];
+    state.currentEntriesPage = 1;
+  }
   const start = (state.currentEntriesPage - 1) * state.entriesPerPage;
   const end = start + state.entriesPerPage;
   const pageData = filteredEntries.slice(start, end);

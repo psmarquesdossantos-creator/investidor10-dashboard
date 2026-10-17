@@ -208,4 +208,39 @@ test.describe('Auth Gate — SyncHub e isolamento de storage (P8/P10)', () => {
     expect(total).toBe(123456.78);
     expect(keyGone).toBe(true);          // edits do demo descartados
   });
+
+  test('DEMO end-to-end: abas Posições e Proventos mostram APENAS fictícios (P26)', async ({ page }) => {
+    await page.addInitScript(() => { window.__AUTH_GATE_FORCE__ = 'demo'; });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    // Tickers do dataset LEGADO (realista — jamais podem aparecer no demo público)
+    const LEGACY = ['PETR4', 'VALE3', 'ITUB4', 'BBDC4', 'ABEV3', 'WEGE3', 'HGLG11', 'MXRF11', 'IVVB11', 'BOVA11', 'BBAS3', 'RENT3', 'LREN3', 'RADL3'];
+
+    // Aba Posições
+    await page.evaluate(() => window.switchTab('positions'));
+    await page.waitForTimeout(800);
+    const posText = await page.locator('#panel-positions').innerText();
+    expect(posText).toContain('ALFA11'); // fictício presente
+    for (const t of LEGACY) {
+      expect(posText, `demo não deve conter ${t}`).not.toContain(t);
+    }
+
+    // Aba Proventos
+    await page.evaluate(() => window.switchTab('earnings'));
+    await page.waitForTimeout(800);
+    const earnText = await page.locator('#panel-earnings').innerText();
+    expect(earnText).toContain('ALFA11');
+    for (const t of LEGACY) {
+      expect(earnText, `demo não deve conter ${t}`).not.toContain(t);
+    }
+
+    // Aba Patrimônio (gráfico/labels da fixture, 12 meses)
+    await page.evaluate(() => window.switchTab('patrimony'));
+    await page.waitForTimeout(600);
+    const patText = await page.locator('#panel-patrimony').innerText();
+    for (const t of LEGACY) {
+      expect(patText, `demo não deve conter ${t}`).not.toContain(t);
+    }
+  });
 });
