@@ -9,11 +9,12 @@ test('Import backup em produção simulada + persiste após reload', async ({ pa
   page.on('pageerror', err => errors.push(err.message));
 
   // Bloqueia carteira-data.js — simula deploy (arquivo não existe no host)
-  await page.route('**/carteira-data.js', route => route.fulfill({ status: 404, body: '' }));
+  // (glob com * final: a tag usa ?v=20261012 — sem ele o arquivo real vazava na simulação)
+  await page.route('**/carteira-data.js*', route => route.fulfill({ status: 404, body: '' }));
   // Primeira visita: localStorage limpo
   await page.addInitScript(() => { try { localStorage.clear(); } catch (e) {} });
 
-  // 1) Load sem dados reais → deve mostrar mock (686.972,13)
+  // 1) Load sem dados reais → deve mostrar base sintética (30.000,00 — fixture demo P26/P27)
   await page.goto('http://localhost:8765/');
   await page.waitForLoadState('networkidle');
   await page.waitForTimeout(1500);

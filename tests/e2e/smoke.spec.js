@@ -14,7 +14,7 @@ test.describe('Smoke Tests', () => {
 
   test('18 abas de navegação presentes', async ({ page }) => {
     const tabs = page.locator('.tab-btn');
-    await expect(tabs).toHaveCount(18);
+    await expect(tabs).toHaveCount(19);
 
     const expectedTabs = [
       'Resumo', 'Posições', 'Proventos', 'Patrimônio', 'Rentabilidade',
@@ -23,7 +23,8 @@ test.describe('Smoke Tests', () => {
       'Importar', 'Backup Port.',
       'Eventos Corp.',
       'Data Trust',
-      'Metas'
+      'Metas',
+      'Configurações'
     ];
 
     for (const tabName of expectedTabs) {
@@ -55,6 +56,12 @@ test.describe('Smoke Tests', () => {
 
     await page.reload();
     await page.waitForLoadState('networkidle');
+
+    // Debug: origem dos erros de console (arquivo:linha)
+    errors.forEach(e => {
+      const loc = (() => { try { return (e.stack || '').split('\n')[1] || ''; } catch { return ''; } })();
+      console.log('CONSOLE ERROR:', e, '|', loc.trim().slice(0, 200));
+    });
 
     // Filtra erros conhecidos não-críticos (ex: favicon, APIs externas, CDN)
     const criticalErrors = errors.filter(e =>

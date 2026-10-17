@@ -221,11 +221,10 @@ Consulte `MODEL_SELECTION_GUIDE.md` e `AGENT_USAGE_GUIDE.md`.
 ## 📁 Backup & Persistência
 
 ```bash
-# Backup automático para Google Drive
-cp -r . "/mnt/g/Meu Drive/Codex/investidor10-dashboard/"
-
-# Ou use o script
-./docs/plans/2026-09-27-execucao-noturna.sh
+# Backup para Google Drive (Windows / git-bash — rsync indisponível)
+printf 'node_modules\ntest-results\nplaywright-report\nskills\nuploads\n.git\n' > xcopy-exclude.tmp
+xcopy /E /I /Y /EXCLUDE:xcopy-exclude.tmp . "G:\\Meu Drive\\Codex\\investidor10-dashboard\\"
+rm xcopy-exclude.tmp
 ```
 
 ---
@@ -251,6 +250,18 @@ window.CARTEIRA_DATA = {
 2. Adicione `<section role="tabpanel" id="panel-nova" hidden>...</section>` no main
 3. Adicione init em `real-mode.js`: `initNovaPanel()`
 4. Registre em `TABS` array nos testes
+
+---
+
+## 📚 Documentação
+
+| Documento | Conteúdo |
+|-----------|----------|
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) | Setup local, regras de ouro, gate de merge (testes), deploy |
+| [`SECURITY.md`](SECURITY.md) | Política de dados (P26), camadas de defesa, verificação pós-deploy |
+| [`docs/architecture.md`](docs/architecture.md) | Diagrama de boot, módulos, fluxos críticos (import/backup/produção) |
+| [`FIREBASE_SETUP.md`](FIREBASE_SETUP.md) | Ativação do login real + sync Firestore (P22) |
+| [`CHANGELOG.md`](CHANGELOG.md) | Histórico de releases |
 
 ---
 

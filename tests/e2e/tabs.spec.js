@@ -19,7 +19,8 @@ const TABS = [
   { id: 'panel-backup', label: 'Backup', tabData: 'backup' },
   { id: 'panel-corporate-events', label: 'Eventos Corp.', tabData: 'corporate-events' },
   { id: 'panel-data-trust', label: 'Data Trust', tabData: 'data-trust' },
-  { id: 'panel-backup-portability', label: 'Backup Port.', tabData: 'backup-portability' }
+  { id: 'panel-backup-portability', label: 'Backup Port.', tabData: 'backup-portability' },
+  { id: 'panel-settings', label: 'Configurações', tabData: 'settings' }
 ];
 
 test.describe('Navegação entre Abas', () => {

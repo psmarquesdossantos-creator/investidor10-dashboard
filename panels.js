@@ -1016,7 +1016,7 @@
       const LAZY_TABS = new Set([
         'rebalance', 'fixed', 'benchmarks', 'tax', 'corporate-events',
         'data-trust', 'backup-portability', 'risk', 'montecarlo', 'import', 'backup',
-        'patrimony', 'earnings', 'goals', 'entries', 'returns'
+        'patrimony', 'earnings', 'goals', 'entries', 'returns', 'settings'
       ]);
 
       // Expor para testes: permite resetar o estado de abas renderizadas
@@ -1050,6 +1050,7 @@
         else if (tabName === 'entries') renderAportes();
         else if (tabName === 'returns') renderClassReturns();
         else if (tabName === 'montecarlo') autoRunMonteCarlo();
+        else if (tabName === 'settings') renderSettingsPanel();
       } catch (e) {
         console.warn('lazy render failed:', tabName, e);
         renderedTabs.delete(tabName);
@@ -1065,6 +1066,95 @@
         const btn = document.getElementById('btnRunMC');
         if (btn && !btn.disabled) btn.click();
       }, 500);
+    }
+
+    // Settings: hub organizado (Conta/Aparência/Dados/Sobre) — P29
+    function renderSettingsPanel() {
+      const modeEl = document.getElementById('settingsAccountMode');
+      const emailEl = document.getElementById('settingsAccountEmail');
+      const syncEl = document.getElementById('settingsSyncInfo');
+      const loginBtn = document.getElementById('settingsLoginBtn');
+      const signOutBtn = document.getElementById('settingsSignOutBtn');
+
+      const gate = window.AuthGate;
+      const mode = gate ? gate.mode : 'INACTIVE';
+      const MODE_LABEL = { REAL: 'Conta ativa', DEMO: 'Demonstração', LOGIN: 'Acesso restrito', BLOCKED: 'Bloqueado', INACTIVE: 'Modo local' };
+      const MODE_DESC = {
+        REAL: 'Sincronizando com a nuvem — seus dados em qualquer dispositivo',
+        DEMO: 'Dados 100% fictícios',
+        LOGIN: 'Entre com sua conta Google para acessar',
+        BLOCKED: 'Conta sem permissão',
+        INACTIVE: 'Dados locais deste navegador (produção: só fictício)'
+      };
+      if (modeEl) modeEl.textContent = MODE_LABEL[mode] || mode;
+      if (syncEl) syncEl.textContent = MODE_DESC[mode] || '';
+
+      if (emailEl) {
+        emailEl.textContent = '—';
+        if (window.firebase && window.firebase.auth) {
+          const u = window.firebase.auth().currentUser;
+          if (u && u.email) emailEl.textContent = u.email;
+        }
+      }
+      if (loginBtn) loginBtn.hidden = mode === 'REAL';
+      if (signOutBtn) signOutBtn.hidden = !(mode === 'REAL' || mode === 'DEMO');
+
+      const statsEl = document.getElementById('settingsDataStats');
+      if (statsEl) {
+        const d = (typeof DATA === 'function') ? (DATA() || {}) : (window.__CARTEIRA_OVERRIDE || {});
+        statsEl.textContent = `${(d.positions || []).length} posições · ${(d.entries || []).length} lançamentos · ${(d.earnings || []).length} proventos`;
+      }
+      const verEl = document.getElementById('settingsVersion');
+      if (verEl) {
+        const v = (window.CARTEIRA_META && window.CARTEIRA_META.version)
+          || (window.DEMO_FIXTURE && window.DEMO_FIXTURE.meta && window.DEMO_FIXTURE.meta.version) || '—';
+        verEl.textContent = 'v' + v;
+      }
+
+      const themeSel = document.getElementById('settingsThemeSelect');
+      if (themeSel) themeSel.value = document.documentElement.getAttribute('data-theme') || 'system';
+      const motionSel = document.getElementById('settingsMotionSelect');
+      if (motionSel) motionSel.value = document.documentElement.getAttribute('data-motion') === 'reduced' ? 'off' : 'on';
+
+      // wire com guard __wired (observer pode re-disparar o render)
+      if (loginBtn && !loginBtn.__wired) {
+        loginBtn.__wired = true;
+        loginBtn.addEventListener('click', () => {
+          if (window.firebase && window.firebase.auth) {
+            try {
+              const provider = new window.firebase.auth.GoogleAuthProvider();
+              window.firebase.auth().signInWithPopup(provider);
+            } catch (e) {
+              if (window.showToast) window.showToast('Login indisponível agora.', 'error');
+            }
+          } else if (window.showToast) {
+            window.showToast('Autenticação não configurada neste ambiente (modo local).', 'info');
+          }
+        });
+      }
+      if (signOutBtn && !signOutBtn.__wired) {
+        signOutBtn.__wired = true;
+        signOutBtn.addEventListener('click', () => { if (window.__signOutFlow) window.__signOutFlow(); });
+      }
+      const wire = (id, fn) => { const b = document.getElementById(id); if (b && !b.__wired) { b.__wired = true; b.addEventListener('click', fn); } };
+      wire('settingsGoImport', () => { if (window.switchTab) window.switchTab('import'); });
+      wire('settingsGoBackup', () => { if (window.switchTab) window.switchTab('backup'); });
+      wire('settingsGoBackupPort', () => { if (window.switchTab) window.switchTab('backup-portability'); });
+      wire('settingsWipeBtn', () => {
+        if (!confirm('Limpar TODOS os dados locais desta carteira? O sync na nuvem não é afetado — ao entrar novamente, seus dados voltam.')) return;
+        ['investidor10-dashboard-data', 'investidor10-snapshots', 'auditSnapshots', 'investidor10:importHistory', 'investidor10-quarantine', 'investidor10-demo']
+          .forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
+        if (window.showToast) window.showToast('Dados locais limpos. Recarregando…', 'info');
+        setTimeout(() => location.reload(), 800);
+      });
+      if (themeSel && !themeSel.__wired) {
+        themeSel.__wired = true;
+        themeSel.addEventListener('change', () => { if (window.applyThemePreference) window.applyThemePreference(themeSel.value); });
+      }
+      if (motionSel && !motionSel.__wired) {
+        motionSel.__wired = true;
+        motionSel.addEventListener('change', () => { if (window.applyMotionPreference) window.applyMotionPreference(motionSel.value); });
+      }
     }
 
     // Hook: renderizar quando a aba correspondente abre (via switchTab original)

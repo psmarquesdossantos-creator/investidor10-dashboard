@@ -49,8 +49,16 @@
         normalized.sector = 'Outros';
       }
       
-      // Garante campos numéricos
-      normalized.qty = Number(normalized.qty) || 0;
+      // Handle qty: keep null/undefined as unknown, else convert to number
+      let qtyValue = normalized.qty;
+      if (qtyValue === null || qtyValue === undefined) {
+        normalized.qtyUnknown = true;
+        normalized.qty = null; // keep as null to indicate unknown
+      } else {
+        normalized.qty = Number(qtyValue) || 0;
+        normalized.qtyUnknown = false;
+      }
+      
       normalized.avgPrice = Number(normalized.avgPrice) || 0;
       normalized.currentPrice = Number(normalized.currentPrice) || 0;
       normalized.value = Number(normalized.value) || 0;
@@ -58,15 +66,17 @@
       normalized.ret = Number(normalized.ret) || 0;
       normalized.dy = Number(normalized.dy) || 0;
       
-      // Calcula value e invested se faltando
-      if (normalized.value === 0 && normalized.qty > 0 && normalized.currentPrice > 0) {
-        normalized.value = +(normalized.qty * normalized.currentPrice).toFixed(2);
-      }
-      if (normalized.invested === 0 && normalized.qty > 0 && normalized.avgPrice > 0) {
-        normalized.invested = +(normalized.qty * normalized.avgPrice).toFixed(2);
-      }
-      if (normalized.ret === 0 && normalized.invested > 0 && normalized.value > 0) {
-        normalized.ret = +(((normalized.value / normalized.invested) - 1) * 100).toFixed(2);
+      // Calcula value e invested somente se qty conhecido e >0
+      if (!normalized.qtyUnknown && normalized.qty > 0) {
+        if (normalized.value === 0 && normalized.currentPrice > 0) {
+          normalized.value = +(normalized.qty * normalized.currentPrice).toFixed(2);
+        }
+        if (normalized.invested === 0 && normalized.avgPrice > 0) {
+          normalized.invested = +(normalized.qty * normalized.avgPrice).toFixed(2);
+        }
+        if (normalized.ret === 0 && normalized.invested > 0 && normalized.value > 0) {
+          normalized.ret = +(((normalized.value / normalized.invested) - 1) * 100).toFixed(2);
+        }
       }
       
       // Adiciona metadata de normalização

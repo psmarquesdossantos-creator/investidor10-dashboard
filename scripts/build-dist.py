@@ -30,7 +30,7 @@ ROOT_FILES = [
     "rebalance-engine.js", "risk-engine.js", "monte-carlo-engine.js",
     "benchmark-engine.js", "tax-engine.js", "mc-worker.js",
 ]
-ROOT_DIRS = ["vendor", "src"]  # src = só código de engines/parsers (sem dados)
+ROOT_DIRS = ["vendor", "src", "assets"]  # vendor=chart+firebase SDK; src=engines/auth (só código); assets=ícones PWA (manifest)
 
 # Arquivos de src que NUNCA vão (redundância defensiva — allowlist de dirs)
 SRC_DENY = ["firebase-config.js", "firebase-debug.log"]

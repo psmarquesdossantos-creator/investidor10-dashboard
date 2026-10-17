@@ -12,6 +12,7 @@ const TABS = [
   { id: 'panel-fixed', label: 'Renda Fixa', tabData: 'fixed' },
   { id: 'panel-entries', label: 'Lançamentos', tabData: 'entries' },
   { id: 'panel-patrimony', label: 'Patrimônio', tabData: 'patrimony' },
+  { id: 'panel-settings', label: 'Configurações', tabData: 'settings' },
 ];
 
 test.describe('Acessibilidade (axe-core)', () => {

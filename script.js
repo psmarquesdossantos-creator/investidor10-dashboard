@@ -61,135 +61,28 @@ function centsToMoney(cents) {
 // Mock Data
 /* ======================================== */
 
-const MOCK_DATA = {
-  // KPIs
-  kpis: {
-    total: 686972.13,
-    invested: 675043.28,
-    profit: 131023.55,
-    capitalGain: 11928.84,
-    dividends: 119094.71,
-    earnings12m: 32323.72,
-    totalChange: 1.77,
-    return12m: 11.09,
-    returnTotal: 32.41,
-    yield12m: 4.71
-  },
+// P26/P27: base padrão = fixture SINTÉTICA 30k (src/auth/demo-fixture.js carrega
+// ANTES deste script na ordem de boot). Dados reais NUNCA ficam embutidos no código
+// público: entram via carteira-data.js (__CARTEIRA_OVERRIDE), Importar Backup
+// (loadFromStorage) ou sync Firestore (P22). Fallback vazio mantém estado vazio legível.
+const MOCK_DATA = (typeof window !== 'undefined' && window.DEMO_FIXTURE)
+  ? JSON.parse(JSON.stringify(window.DEMO_FIXTURE))
+  : {
+      kpis: { total: 0, invested: 0, profit: 0, capitalGain: 0, dividends: 0, earnings12m: 0, totalChange: 0, return12m: 0, returnTotal: 0, yield12m: 0 },
+      monthly: [],
+      patrimony: { labels: [], portfolio: [], invested: [], cdi: [], ibov: [] },
+      allocation: { byAsset: [], byClass: [] },
+      positions: [],
+      earnings: [],
+      entries: [],
+      assetReturns: [],
+      allTickers: []
+    };
 
-  // Monthly performance
-  monthly: [
-    { period: '09/25', invested: 338615.07, gain: 11643.14 },
-    { period: '10/25', invested: 340764.75, gain: 9220.50 },
-    { period: '11/25', invested: 332836.57, gain: 14270.94 },
-    { period: '12/25', invested: 427190.95, gain: 21120.21 },
-    { period: '01/26', invested: 500425.60, gain: 23562.00 },
-    { period: '02/26', invested: 504468.91, gain: 24641.03 },
-    { period: '03/26', invested: 528960.65, gain: 18369.03 },
-    { period: '04/26', invested: 535186.60, gain: 24210.29 },
-    { period: '05/26', invested: 637744.88, gain: 17066.94 },
-    { period: '06/26', invested: 645319.50, gain: 11606.64 },
-    { period: '07/26', invested: 651460.48, gain: 13946.94 },
-    { period: '08/26', invested: 675043.28, gain: 12583.55 },
-    { period: '09/26', invested: 675043.28, gain: 11928.85 }
-  ],
-
-  // Patrimony chart data (12 months)
-  patrimony: {
-    labels: ['Set/25', 'Out/25', 'Nov/25', 'Dez/25', 'Jan/26', 'Fev/26', 'Mar/26', 'Abr/26', 'Mai/26', 'Jun/26', 'Jul/26', 'Ago/26', 'Set/26'],
-    portfolio: [350258, 349985, 347107, 448311, 523987, 529109, 547329, 559396, 654811, 656926, 665407, 687626, 686972],
-    invested: [338615, 340765, 332837, 427191, 500426, 504469, 528961, 535187, 637745, 645320, 651460, 675043, 675043],
-    cdi: [342100, 345200, 348900, 432100, 505000, 509800, 534200, 541800, 644500, 652100, 658900, 682300, 681200],
-    ibov: [340500, 338900, 342100, 441200, 512300, 508700, 529800, 545600, 648900, 642300, 656700, 678900, 679800]
-  },
-
-  // Allocation
-  allocation: {
-    byAsset: [
-      { name: 'PETR4', class: 'stocks', value: 89450.32, pct: 13.2, return: 15.2 },
-      { name: 'VALE3', class: 'stocks', value: 78210.15, pct: 11.6, return: 8.7 },
-      { name: 'ITUB4', class: 'stocks', value: 65430.80, pct: 9.7, return: 12.4 },
-      { name: 'HGLG11', class: 'fiis', value: 58920.45, pct: 8.7, return: 10.1 },
-      { name: 'MXRF11', class: 'fiis', value: 52100.30, pct: 7.7, return: 9.8 },
-      { name: 'IVVB11', class: 'etfs', value: 48750.00, pct: 7.2, return: 18.5 },
-      { name: 'BOVA11', class: 'etfs', value: 42300.60, pct: 6.3, return: 14.2 },
-      { name: 'Tesouro IPCA+ 2035', class: 'fixed', value: 85600.00, pct: 12.7, return: 6.2 },
-      { name: 'CDB 120% CDI', class: 'fixed', value: 62400.00, pct: 9.2, return: 9.1 },
-      { name: 'Outros', class: 'other', value: 91881.66, pct: 13.7, return: 7.3 }
-    ],
-    byClass: [
-      { name: 'Ações', value: 305450.27, pct: 45.2, color: '#1A73E8' },
-      { name: 'FIIs', value: 168920.75, pct: 25.0, color: '#34A853' },
-      { name: 'Renda Fixa', value: 148000.00, pct: 21.9, color: '#3730A3' },
-      { name: 'ETFs', value: 91050.60, pct: 13.5, color: '#F9AB00' },
-      { name: 'Outros', value: 91881.66, pct: 13.7, color: '#80868B' }
-    ]
-  },
-
-  // Positions (42 assets)
-  positions: [
-    { ticker: 'PETR4', name: 'Petrobras PN', class: 'stocks', qty: 1200, avgPrice: 38.45, currentPrice: 42.12, value: 50544.00, pl: 4404.00, return: 9.5, weight: 7.5 },
-    { ticker: 'VALE3', name: 'Vale ON', class: 'stocks', qty: 800, avgPrice: 62.30, currentPrice: 58.90, value: 47120.00, pl: -2720.00, return: -5.5, weight: 7.0 },
-    { ticker: 'ITUB4', name: 'Itaú Unibanco PN', class: 'stocks', qty: 1500, avgPrice: 28.90, currentPrice: 31.45, value: 47175.00, pl: 3825.00, return: 8.8, weight: 7.0 },
-    { ticker: 'BBDC4', name: 'Bradesco PN', class: 'stocks', qty: 1800, avgPrice: 16.75, currentPrice: 15.80, value: 28440.00, pl: -1710.00, return: -5.7, weight: 4.2 },
-    { ticker: 'ABEV3', name: 'Ambev ON', class: 'stocks', qty: 2200, avgPrice: 14.20, currentPrice: 13.45, value: 29590.00, pl: -1650.00, return: -5.3, weight: 4.4 },
-    { ticker: 'WEGE3', name: 'WEG ON', class: 'stocks', qty: 600, avgPrice: 35.80, currentPrice: 41.20, value: 24720.00, pl: 3240.00, return: 15.1, weight: 3.7 },
-    { ticker: 'RENT3', name: 'Localiza ON', class: 'stocks', qty: 500, avgPrice: 48.90, currentPrice: 52.30, value: 26150.00, pl: 1700.00, return: 7.0, weight: 3.9 },
-    { ticker: 'LREN3', name: 'Lojas Renner ON', class: 'stocks', qty: 800, avgPrice: 22.40, currentPrice: 19.80, value: 15840.00, pl: -2080.00, return: -11.6, weight: 2.3 },
-    { ticker: 'RADL3', name: 'Raia Drogasil ON', class: 'stocks', qty: 700, avgPrice: 26.50, currentPrice: 28.90, value: 20230.00, pl: 1680.00, return: 9.1, weight: 3.0 },
-    { ticker: 'BBAS3', name: 'Banco do Brasil ON', class: 'stocks', qty: 1000, avgPrice: 24.80, currentPrice: 26.10, value: 26100.00, pl: 1300.00, return: 5.2, weight: 3.9 },
-    { ticker: 'HGLG11', name: 'CSHG Logística', class: 'fiis', qty: 450, avgPrice: 142.50, currentPrice: 131.20, value: 59040.00, pl: -5085.00, return: -7.9, weight: 8.7 },
-    { ticker: 'MXRF11', name: 'Maxi Renda', class: 'fiis', qty: 1200, avgPrice: 10.80, currentPrice: 10.45, value: 12540.00, pl: -420.00, return: -3.2, weight: 1.9 },
-    { ticker: 'XPLG11', name: 'XP Log', class: 'fiis', qty: 300, avgPrice: 105.00, currentPrice: 98.50, value: 29550.00, pl: -1950.00, return: -6.2, weight: 4.4 },
-    { ticker: 'VGIP11', name: 'VGI Properties', class: 'fiis', qty: 250, avgPrice: 118.00, currentPrice: 112.40, value: 28100.00, pl: -1400.00, return: -4.7, weight: 4.2 },
-    { ticker: 'KNCR11', name: 'Kinea Rendimentos', class: 'fiis', qty: 400, avgPrice: 125.00, currentPrice: 119.80, value: 47920.00, pl: -2080.00, return: -4.2, weight: 7.1 },
-    { ticker: 'IVVB11', name: 'iShares S&P 500', class: 'etfs', qty: 180, avgPrice: 245.00, currentPrice: 271.50, value: 48870.00, pl: 4770.00, return: 10.8, weight: 7.2 },
-    { ticker: 'BOVA11', name: 'iShares IBOV', class: 'etfs', qty: 400, avgPrice: 98.50, currentPrice: 105.75, value: 42300.00, pl: 2900.00, return: 7.4, weight: 6.3 },
-    { ticker: 'FIXA11', name: 'Tesouro IPCA+ 2035', class: 'fixed', qty: 85, avgPrice: 980.00, currentPrice: 1007.00, value: 85595.00, pl: 2295.00, return: 2.8, weight: 12.7 },
-    { ticker: 'CDB120', name: 'CDB 120% CDI', class: 'fixed', qty: 1, avgPrice: 62400.00, currentPrice: 62400.00, value: 62400.00, pl: 0, return: 9.1, weight: 9.2 },
-    { ticker: 'XPBR31', name: 'XP Inc BDR', class: 'bdr', qty: 200, avgPrice: 115.00, currentPrice: 128.50, value: 25700.00, pl: 2700.00, return: 11.7, weight: 3.8 },
-    // ... more assets would go here
-  ],
-
-  // Earnings (proventos)
-  earnings: [
-    { date: '2024-08-15', ticker: 'PETR4', name: 'Petrobras PN', type: 'dividend', perShare: 1.25, qty: 1200, gross: 1500.00, tax: 0, net: 1500.00 },
-    { date: '2024-08-10', ticker: 'VALE3', name: 'Vale ON', type: 'dividend', perShare: 2.80, qty: 800, gross: 2240.00, tax: 0, net: 2240.00 },
-    { date: '2024-07-25', ticker: 'ITUB4', name: 'Itaú Unibanco PN', type: 'jcp', perShare: 0.35, qty: 1500, gross: 525.00, tax: 78.75, net: 446.25 },
-    { date: '2024-07-15', ticker: 'HGLG11', name: 'CSHG Logística', type: 'dividend', perShare: 0.95, qty: 450, gross: 427.50, tax: 0, net: 427.50 },
-    { date: '2024-07-10', ticker: 'MXRF11', name: 'Maxi Renda', type: 'dividend', perShare: 0.10, qty: 1200, gross: 120.00, tax: 0, net: 120.00 },
-    { date: '2024-06-28', ticker: 'BBDC4', name: 'Bradesco PN', type: 'jcp', perShare: 0.22, qty: 1800, gross: 396.00, tax: 59.40, net: 336.60 },
-    { date: '2024-06-20', ticker: 'WEGE3', name: 'WEG ON', type: 'dividend', perShare: 0.18, qty: 600, gross: 108.00, tax: 0, net: 108.00 },
-    { date: '2024-06-15', ticker: 'IVVB11', name: 'iShares S&P 500', type: 'dividend', perShare: 1.85, qty: 180, gross: 333.00, tax: 49.95, net: 283.05 },
-    { date: '2024-05-30', ticker: 'KNCR11', name: 'Kinea Rendimentos', type: 'dividend', perShare: 1.10, qty: 400, gross: 440.00, tax: 0, net: 440.00 },
-    { date: '2024-05-15', ticker: 'XPLG11', name: 'XP Log', type: 'dividend', perShare: 0.85, qty: 300, gross: 255.00, tax: 0, net: 255.00 },
-  ],
-
-  // Entries (lançamentos)
-  entries: [
-    { date: '2024-08-20', ticker: 'PETR4', name: 'Petrobras PN', type: 'buy', qty: 100, price: 41.50, value: 4150.00, fees: 8.50, source: 'manual' },
-    { date: '2024-08-15', ticker: 'HGLG11', name: 'CSHG Logística', type: 'buy', qty: 50, price: 129.80, value: 6490.00, fees: 12.00, source: 'b3' },
-    { date: '2024-08-10', ticker: 'IVVB11', name: 'iShares S&P 500', type: 'buy', qty: 10, price: 268.00, value: 2680.00, fees: 5.00, source: 'manual' },
-    { date: '2024-08-05', ticker: 'VALE3', name: 'Vale ON', type: 'sell', qty: 200, price: 60.20, value: 12040.00, fees: 15.00, source: 'manual' },
-    { date: '2024-07-28', ticker: 'MXRF11', name: 'Maxi Renda', type: 'buy', qty: 200, price: 10.35, value: 2070.00, fees: 5.00, source: 'cei' },
-    { date: '2024-07-22', ticker: 'WEGE3', name: 'WEG ON', type: 'bonus', qty: 60, price: 0, value: 0, fees: 0, source: 'b3' },
-    { date: '2024-07-15', ticker: 'ITUB4', name: 'Itaú Unibanco PN', type: 'buy', qty: 200, price: 30.80, value: 6160.00, fees: 10.00, source: 'manual' },
-    { date: '2024-07-10', ticker: 'BOVA11', name: 'iShares IBOV', type: 'buy', qty: 50, price: 103.50, value: 5175.00, fees: 8.00, source: 'manual' },
-  ],
-
-  // Asset returns
-  assetReturns: [
-    { ticker: 'PETR4', class: 'stocks', weight: 7.5, return: 15.2, contrib: 1.14, benchmark: 8.7, alpha: 6.5 },
-    { ticker: 'VALE3', class: 'stocks', weight: 7.0, return: -5.5, contrib: -0.39, benchmark: 8.7, alpha: -14.2 },
-    { ticker: 'ITUB4', class: 'stocks', weight: 7.0, return: 12.4, contrib: 0.87, benchmark: 8.7, alpha: 3.7 },
-    { ticker: 'HGLG11', class: 'fiis', weight: 8.7, return: 10.1, contrib: 0.88, benchmark: 6.8, alpha: 3.3 },
-    { ticker: 'IVVB11', class: 'etfs', weight: 7.2, return: 18.5, contrib: 1.33, benchmark: 14.2, alpha: 4.3 },
-    { ticker: 'FIXA11', class: 'fixed', weight: 12.7, return: 6.2, contrib: 0.79, benchmark: 8.8, alpha: -2.6 },
-    { ticker: 'CDB120', class: 'fixed', weight: 9.2, return: 9.1, contrib: 0.84, benchmark: 8.8, alpha: 0.3 },
-  ],
-
-  // All tickers for autocomplete
-  allTickers: ['PETR4', 'VALE3', 'ITUB4', 'BBDC4', 'ABEV3', 'WEGE3', 'RENT3', 'LREN3', 'RADL3', 'BBAS3', 'HGLG11', 'MXRF11', 'XPLG11', 'VGIP11', 'KNCR11', 'IVVB11', 'BOVA11', 'FIXA11', 'CDB120', 'XPBR31']
-};
+// autocomplete: deriva da própria base (fixture não exporta allTickers)
+if (!Array.isArray(MOCK_DATA.allTickers) || !MOCK_DATA.allTickers.length) {
+  MOCK_DATA.allTickers = (MOCK_DATA.positions || []).map(p => p && p.ticker).filter(Boolean);
+}
 
 // ========================================
 // Formatters
@@ -645,6 +538,32 @@ function initUserMenu() {
       els.userAvatar.focus();
     }
   });
+
+  // P29: ações reais dos itens do menu (antes decorativos)
+  const closeMenu = () => {
+    els.userAvatar.setAttribute('aria-expanded', 'false');
+    els.userDropdown.hidden = true;
+    els.userDropdown.parentElement.classList.remove('open');
+  };
+  const wireItem = (id, fn) => {
+    const item = document.getElementById(id);
+    if (item && !item.__wired) { item.__wired = true; item.addEventListener('click', () => { closeMenu(); fn(); }); }
+  };
+  wireItem('userProfileItem', () => {
+    if (typeof switchTab === 'function') switchTab('settings');
+    const card = document.getElementById('settingsAccountCard');
+    if (card) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      card.classList.add('settings-card-flash');
+      setTimeout(() => card.classList.remove('settings-card-flash'), 1600);
+    }
+  });
+  wireItem('userSettingsItem', () => { if (typeof switchTab === 'function') switchTab('settings'); });
+  wireItem('userHelpItem', () => {
+    const h = document.getElementById('helpModal');
+    if (h && typeof h.showModal === 'function') h.showModal();
+  });
+  wireItem('userSignOutItem', () => { if (window.__signOutFlow) window.__signOutFlow(); });
 }
 
 // ========================================
@@ -763,6 +682,46 @@ function updateThemeIcons(theme) {
     if (moonIcon) moonIcon.style.display = 'block';
   }
 }
+
+// Preferências (aba Configurações / menu do usuário — P29)
+window.applyThemePreference = function applyThemePreference(pref) {
+  if (pref === 'system') {
+    document.documentElement.removeAttribute('data-theme');
+  } else {
+    document.documentElement.setAttribute('data-theme', pref);
+  }
+  const effective = pref !== 'system' ? pref
+    : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  updateThemeIcons(effective);
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const data = raw ? JSON.parse(raw) : {};
+    if (pref === 'system') delete data.theme; else data.theme = pref;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch (e) { console.warn('applyThemePreference: falha ao persistir', e); }
+};
+
+window.applyMotionPreference = function applyMotionPreference(pref) {
+  if (pref === 'off') document.documentElement.setAttribute('data-motion', 'reduced');
+  else document.documentElement.removeAttribute('data-motion');
+  try { localStorage.setItem('investidor10-motion', pref); } catch (e) {}
+};
+
+// P29: fluxo único de saída — menu do usuário + aba Configurações
+window.__signOutFlow = async function __signOutFlow() {
+  const gate = window.AuthGate;
+  if (gate && gate.mode === 'REAL') {
+    if (typeof showToast === 'function') showToast('Saindo…', 'info');
+    try { await gate.signOut(); } catch (e) { console.warn('signOut falhou:', e); }
+    return; // o onAuthStateChanged do gate limpa os dados locais e recarrega (P26)
+  }
+  if (gate && gate.mode === 'DEMO') {
+    try { localStorage.removeItem('investidor10-demo'); } catch (e) {}
+    location.reload(); // volta ao lock de acesso
+    return;
+  }
+  if (typeof showToast === 'function') showToast('Modo local — nenhuma conta ativa.', 'info');
+};
 
 // ========================================
 // KPIs Render
@@ -1835,7 +1794,7 @@ function renderEntries() {
       <td class="text-right">${fmt.currency(e.price)}</td>
       <td class="text-right fw-600">${fmt.currency(e.value)}</td>
       <td class="text-right">${fmt.currency(e.fees)}</td>
-      <td><span class="asset-class" class="tag-pill dyn-bg dyn-color" data-bg="${getSourceColor(e.source)}" data-color="${getSourceTextColor(e.source)}">${getSourceLabel(e.source)}</span></td>
+      <td><span class="tag-pill dyn-bg dyn-color" data-bg="${getSourceColor(e.source)}" data-color="${getSourceTextColor(e.source)}">${getSourceLabel(e.source)}</span></td>
       <td>
         <button class="action-btn edit-entry-btn" data-index="${globalIndex}" aria-label="Editar lançamento ${e.ticker}">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -1849,10 +1808,13 @@ function renderEntries() {
   }).join('');
   }
 
-  els.entriesSummary.textContent = `Mostrando ${filteredEntries.length} lançamentos`;
+  els.entriesSummary.textContent = filteredEntries.length
+    ? `Mostrando ${pageData.length} de ${filteredEntries.length} lançamentos`
+    : 'Nenhum lançamento';
 
-  // Attach edit/delete handlers
+  // Attach edit/delete handlers + paginação
   attachEntryActionHandlers();
+  updateEntriesPagination();
 }
 
 function attachEntryActionHandlers() {
@@ -1901,17 +1863,18 @@ function openEntryModalForEdit(index) {
 }
 
 function deleteEntry(index) {
-  if (!confirm('Tem certeza que deseja excluir este lançamento?')) return;
-  
-  filteredEntries.splice(index, 1);
-  // Also remove from main MOCK_DATA.entries
-  const mainIndex = MOCK_DATA.entries.findIndex(e => 
-    e.date === filteredEntries[index]?.date && 
-    e.ticker === filteredEntries[index]?.ticker &&
-    e.type === filteredEntries[index]?.type
-  );
+  const entry = filteredEntries[index];
+  if (!entry) return;
+  if (!confirm(`Excluir ${getEntryTypeLabel(entry.type).toLowerCase()} de ${entry.ticker} em ${fmt.date(entry.date)}?`)) return;
+
+  // Fix: remove por IDENTIDADE (o código antigo lia filteredEntries[index] DEPOIS do
+  // splice — excluía o lançamento SEGUINTE da fonte). Objetos são compartilhados
+  // entre filteredEntries e MOCK_DATA.entries.
+  const mainIndex = MOCK_DATA.entries.indexOf(entry);
   if (mainIndex !== -1) MOCK_DATA.entries.splice(mainIndex, 1);
-  
+  const fi = filteredEntries.indexOf(entry);
+  if (fi !== -1) filteredEntries.splice(fi, 1);
+
   renderEntries();
   saveToStorage();
   showToast('Lançamento excluído', 'success');
@@ -1943,13 +1906,28 @@ function filterEntries() {
   const typeFilter = els.entriesType?.value;
   const periodFilter = els.entriesPeriod?.value;
 
+  // Fix: período era lido e NUNCA aplicado (select decorativo)
+  const dias = periodFilter === '30d' ? 30 : periodFilter === '90d' ? 90 : periodFilter === '12m' ? 365 : null;
+  const corte = dias ? (Date.now() - dias * 86400000) : null;
+
   filteredEntries = MOCK_DATA.entries.filter(e => {
     const matchType = !typeFilter || e.type === typeFilter;
-    return matchType;
+    const matchPeriod = !corte || new Date(String(e.date) + 'T00:00:00').getTime() >= corte;
+    return matchType && matchPeriod;
   });
 
   state.currentEntriesPage = 1;
   renderEntries();
+}
+
+function updateEntriesPagination() {
+  const totalPages = Math.max(1, Math.ceil(filteredEntries.length / state.entriesPerPage));
+  const prevBtn = document.querySelector('#panel-entries .pagination button[aria-label="Página anterior"]');
+  const nextBtn = document.querySelector('#panel-entries .pagination button[aria-label="Próxima página"]');
+  const pageInfo = document.querySelector('#panel-entries .page-info');
+  if (prevBtn) prevBtn.disabled = state.currentEntriesPage <= 1;
+  if (nextBtn) nextBtn.disabled = state.currentEntriesPage >= totalPages;
+  if (pageInfo) pageInfo.textContent = `Página ${state.currentEntriesPage} de ${totalPages}`;
 }
 
 function initEntriesFilters() {
@@ -2069,26 +2047,31 @@ function initModal() {
     });
   }
 
-  // Close modal
+  // Close modal — cada botão fecha o SEU dialog (antes: todos fechavam o entryModal)
   if (els.modalCloseBtns) {
     els.modalCloseBtns.forEach(btn => {
-      btn.addEventListener('click', () => els.entryModal.close());
+      btn.addEventListener('click', () => {
+        const dlg = btn.closest('dialog');
+        if (dlg && typeof dlg.close === 'function') dlg.close();
+        else if (els.entryModal) els.entryModal.close();
+      });
     });
   }
 
-  // Close on backdrop click
-  if (els.entryModal) {
-    els.entryModal.addEventListener('click', (e) => {
-      if (e.target === els.entryModal || e.target.classList.contains('modal-backdrop')) {
-        els.entryModal.close();
-      }
-    });
-  }
+  // Backdrop click — fecha o dialog correspondente (qualquer modal do app)
+  document.addEventListener('click', (e) => {
+    const bd = e.target.closest ? e.target.closest('.modal-backdrop') : null;
+    if (bd) {
+      const dlg = bd.closest('dialog');
+      if (dlg && typeof dlg.close === 'function') dlg.close();
+    }
+  });
 
-  // Close on Escape
+  // Close on Escape — fecha o dialog aberto (qualquer modal do app)
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && els.entryModal?.open) {
-      els.entryModal.close();
+    if (e.key === 'Escape') {
+      const open = document.querySelector('dialog[open]');
+      if (open && typeof open.close === 'function') open.close();
     }
   });
 
@@ -2098,33 +2081,48 @@ function initModal() {
       e.preventDefault();
       const formData = new FormData(els.entryForm);
       const entry = Object.fromEntries(formData);
-      
-      // Convert numeric fields
-      entry.qty = parseFloat(entry.qty);
-      entry.price = parseFloat(entry.price);
-      entry.fees = parseFloat(entry.fees) || 0;
-      entry.value = entry.qty * entry.price;
-      
-      console.log(currentEditEntry ? 'Editando lançamento:' : 'Novo lançamento:', entry);
-      showToast(currentEditEntry ? 'Lançamento atualizado com sucesso!' : 'Lançamento salvo com sucesso!', 'success');
-      els.entryModal.close();
-      
-      // In real app: add to entries table
-      if (!currentEditEntry) {
-        // Add to mock data for demo
+
+      // Converte campos numéricos (aceita vírgula decimal BR)
+      entry.qty = parseFloat(String(entry.qty || '').replace(',', '.'));
+      entry.price = parseFloat(String(entry.price || '').replace(',', '.'));
+      entry.fees = parseFloat(String(entry.fees || '0').replace(',', '.')) || 0;
+      entry.ticker = String(entry.asset || '').trim().toUpperCase();
+
+      if (!entry.ticker) { showToast('Informe o ativo.', 'error'); return; }
+      if (!entry.type) { showToast('Selecione o tipo de lançamento.', 'error'); return; }
+      if (!entry.date) { showToast('Informe a data.', 'error'); return; }
+      if (!isFinite(entry.qty) || entry.qty <= 0) { showToast('Quantidade inválida.', 'error'); return; }
+      if (!isFinite(entry.price) || entry.price <= 0) { showToast('Preço unitário inválido.', 'error'); return; }
+      entry.value = +(entry.qty * entry.price).toFixed(2);
+
+      // Nome real do ativo quando conhecido (posições), senão o ticker
+      const known = (MOCK_DATA.positions || []).find(p => p.ticker === entry.ticker);
+      const name = known ? known.name : entry.ticker;
+
+      if (currentEditEntry) {
+        // Fix: EDITAR realmente salvava nada (só toast). Atualiza o objeto por identidade.
+        const t = currentEditEntry;
+        t.date = entry.date; t.type = entry.type; t.qty = entry.qty;
+        t.price = entry.price; t.value = entry.value; t.fees = entry.fees;
+        t.source = entry.source || 'manual';
+        t.class = entry.class || (known && known.class) || t.class || '';
+        t.ticker = entry.ticker; t.name = name;
+        currentEditEntry = null;
+        showToast('Lançamento atualizado com sucesso!', 'success');
+      } else {
+        // NOVO: entra na fonte E na view (o código antigo não atualizava a view
+        // filtrada — o item novo só aparecia depois de trocar o filtro)
         MOCK_DATA.entries.unshift({
-          date: entry.date,
-          ticker: entry.asset,
-          name: entry.asset,
-          type: entry.type,
-          qty: entry.qty,
-          price: entry.price,
-          value: entry.value,
-          fees: entry.fees,
-          source: entry.source
+          date: entry.date, ticker: entry.ticker, name,
+          type: entry.type, qty: entry.qty, price: entry.price,
+          value: entry.value, fees: entry.fees,
+          source: entry.source || 'manual',
+          class: entry.class || (known && known.class) || ''
         });
-        renderEntries();
+        showToast('Lançamento salvo com sucesso!', 'success');
       }
+      els.entryModal.close();
+      filterEntries(); // reconstrói a view (pág. 1 — novo item no topo)
       saveToStorage();
     });
   }
@@ -2538,6 +2536,8 @@ const COMMANDS = [
   { id: 'tab-data-trust', title: 'Ir para Data Trust', desc: 'Auditoria e confiança', icon: '🔍', action: () => switchTab('data-trust') },
   { id: 'tab-goals', title: 'Ir para Metas', desc: 'Objetivos financeiros', icon: '🎯', action: () => switchTab('goals') },
   { id: 'tab-backup-portability', title: 'Ir para Backup Port.', desc: 'Portabilidade avançada', icon: '📦', action: () => switchTab('backup-portability') },
+  { id: 'tab-settings', title: 'Ir para Configurações', desc: 'Conta, aparência e dados', icon: '⚙️', action: () => switchTab('settings') },
+  { id: 'help-open', title: 'Abrir Ajuda', desc: 'Atalhos e fluxos do app', icon: '❓', action: () => { const h = document.getElementById('helpModal'); if (h && typeof h.showModal === 'function') h.showModal(); } },
   { id: 'new-entry', title: 'Novo lançamento', desc: 'Adicionar compra/venda', shortcut: 'N', icon: '➕', action: () => { currentEditEntry = null; els.entryModal.showModal(); resetModalForm(); } },
   { id: 'toggle-theme', title: 'Alternar tema', desc: 'Dark/Light mode', shortcut: 'T', icon: '🌓', action: () => document.getElementById('themeToggle').click() },
   { id: 'toggle-live', title: 'Alternar preços tempo real', desc: 'Simular variação de preços', shortcut: 'L', icon: '⚡', action: () => document.getElementById('livePricesToggle').click() },
@@ -2972,6 +2972,8 @@ async function init() {
   initTabs();
   initUserMenu();
   initThemeToggle();
+  // Preferência de animações reduzidas persistida (aba Configurações)
+  try { if (localStorage.getItem('investidor10-motion') === 'off') document.documentElement.setAttribute('data-motion', 'reduced'); } catch (e) {}
   initLivePricesToggle();
   initCommandPalette();
   initPriceAlerts();

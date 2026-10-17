@@ -4,6 +4,40 @@
 
 ---
 
+## [15.0.0] — 2026-10-17
+
+### Added — Conta Google, Configurações e UX (P29)
+
+- **Entrar com Google** como login primário (botão primário com branding no lock; e-mail/senha vira alternativa) — `FIREBASE_SETUP.md` atualizado com provider Google + allowlist P16 passo a passo
+- **Logout limpa o dispositivo (P26)**: ao sair da conta REAL, os dados locais da carteira são removidos e o app recarrega só com o fictício — "deslogado = apenas demonstração"
+- **Aba Configurações** (hub organizado): Conta (modo/e-mail/login/sair), Aparência (tema claro/escuro/sistema + animações reduzidas persistidas), Dados (stats + atalhos + wipe local), Sobre (versão/stack/docs) — +3 testes E2E
+- **Menu do usuário funcional**: Perfil → Configurações (card Conta destacado), Configurações → aba, Ajuda → modal de atalhos/fluxos, Sair → fluxo único por modo (REAL/DEMO/local)
+- **Modal Ajuda** (⌘K também) e entradas novas na paleta de comandos
+- `docs/compare-investidor10.md` — paridade de números (auditoria de fórmulas ✅ Lucro = GC + Dividendos exato) + matriz de features vs investidor10.com.br
+- `scripts/preview-screenshot.mjs` — preview do README em modo DEMO com guard de privacidade (aborta se dados ≠ fixture)
+
+### Fixed — Lançamentos (CRUD de verdade) e modais
+
+- **Editar lançamento salvava nada** (só toast de sucesso) — agora atualiza o objeto e re-renderiza
+- **Excluir removia o lançamento SEGUINTE** (índice lido pós-splice) — remoção por identidade
+- **Novo lançamento não aparecia** (view filtrada stale) — re-filter após mutação
+- **Filtro de período era decorativo** (lido e nunca aplicado) — 30d/90d/12m/todo funciona
+- **"Salvar" inaclicável com mouse**: `.modal-backdrop` cobria o conteúdo (z-index) — afetava TODOS os modais
+- **Fechar modal fechava o errado**: todo `.modal-close` fechava o entryModal; agora cada botão/ESC/backdrop fecha o próprio dialog
+- **class duplicada** no pill de origem quebrava o tema dinâmico (dyn-bg)
+- 3 specs de regressão E2E: `entries-crud.spec.js` (add/edit/delete/filtros/paginação)
+- Teste de produção vazava o arquivo real na simulação (glob sem `?v=`) — `carteira-data.js*`
+
+### Changed — Privacidade (P26) e higiene
+
+- **MOCK_DATA interno (R$ 687k real-derivado) substituído pela fixture sintética 30k** — o padrão sem login agora é SEMPRE fictício (≤100k) e os valores reais saíram do código público
+- Links mortos do topo removidos (Carteira/Mercados/Recomendações/Cursos/IR)
+- SW v27 · README: seção Documentação + preview real + backup xcopy correto
+- `build-dist.py`: allowlist agora inclui `assets/` (ícones PWA que davam 404)
+- CONTRASTE/estados: `.toast-content` com cor explícita (axe AA)
+
+---
+
 ## [Unreleased] — 2026-09-28
 
 ### Added — Governance & Memory Bootstrap

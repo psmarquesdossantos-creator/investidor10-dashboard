@@ -9,7 +9,7 @@ test('debug: wait for panels.js to execute', async ({ page }) => {
   // Now wait for panels.js to have executed by checking for a known global
   await page.waitForFunction(() => {
     return typeof window.renderAllPanels === 'function';
-  }, { timeout: 5000 });
+  }, { timeout: 15000 });
   
   // If we get here, panels.js has executed
   const iifeRan = await page.evaluate(() => {

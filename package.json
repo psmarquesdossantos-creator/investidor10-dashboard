@@ -1,6 +1,6 @@
 {
   "name": "investidor10-dashboard",
-  "version": "14.0.0",
+  "version": "15.0.0",
   "description": "Réplica funcional do gerenciador de carteira do Investidor10 (área logada), construída com HTML/CSS/JS puro — zero dependências de build, roda em qualquer servidor estático.",
   "type": "module",
   "scripts": {
@@ -24,6 +24,8 @@
   "private": true,
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
-    "@playwright/test": "^1.63.0"
+    "@playwright/test": "^1.63.0",
+    "clean-css": "^5.3.2",
+    "terser": "^5.51.2"
   }
 }

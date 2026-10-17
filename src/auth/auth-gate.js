@@ -14,6 +14,22 @@
 
   let mode = null;
   let authBound = false;
+  let hadUser = false; // P26: distingue logout REAL de evento inicial sem usuário
+
+  // P26: chaves de dados reais no dispositivo — SAIR = nenhum dado real permanece.
+  const REAL_DATA_KEYS = [
+    'investidor10-dashboard-data',  // carteira importada/sincronizada
+    'investidor10-snapshots',       // SnapshotManager
+    'auditSnapshots',               // DataTrust
+    'investidor10:importHistory',   // histórico de imports
+    'investidor10-quarantine'       // resíduos durability
+  ];
+  function wipeLocalRealData() {
+    try {
+      REAL_DATA_KEYS.forEach(k => localStorage.removeItem(k));
+      console.info('[authz] logout REAL: dados locais da carteira removidos (P26 — deslogado = só fictício)');
+    } catch (e) { console.warn('[authz] wipe localStorage falhou:', e && e.message); }
+  }
 
   const AuthGate = {
     get mode() { return mode; },
@@ -204,6 +220,15 @@
     authBound = true;
     window.firebase.auth().onAuthStateChanged(user => {
       if (!user) {
+        // logout REAL → limpa dados locais da carteira e recarrega limpo (P26):
+        // deslogado = apenas fictício. Guard: só quando HOUVE usuário REAL antes
+        // (o listener também dispara null no boot sem login — não pode wipear).
+        if (hadUser && mode === 'REAL') {
+          wipeLocalRealData();
+          location.reload();
+          return;
+        }
+        hadUser = false;
         // logout → volta ao overlay de login (P27/P28)
         console.info('[authz] logout → LOGIN');
         mode = 'LOGIN';
@@ -211,6 +236,7 @@
         showLoginOverlay({ validateOnly: false });
         return;
       }
+      hadUser = true;
       // login efetivado: resolve modo (oculta overlay dentro de resolveUser)
       hide(document.getElementById('authGate'));
       resolveUser(user);
