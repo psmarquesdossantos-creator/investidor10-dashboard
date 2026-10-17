@@ -76,6 +76,6 @@ Home: hero patrimônio + 4 KPIs + gráficos + alertas + cards Alocação vs Meta
 
 ```
 DATE=2026-10-17
-COMMIT=a82ce01 (demo R$ 30.000 perfil do dono — CI verde, live 4/4)
-UPDATED_BY=Muse Spark (demo espelha perfil: 37 ativos, 24 FIIs, proventos mensais; total fictício)
+COMMIT=9d7afa0 (HEAD — docs demo perfil; CI a82ce01 verde, live 4/4)
+UPDATED_BY=Muse Spark (pós P0-P4 + demo perfil R$ 30.000; DECISIONS.md com 8 registros da sessão)
 ```

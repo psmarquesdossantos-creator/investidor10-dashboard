@@ -234,3 +234,93 @@
 **REVERSIBLE**: true
 **RELATED_FILES**: docs/ai/VISUAL_CANON.md, styles.css
 **RELATED_COMMIT**: N/A (uncommitted â€” commit pendente de autorizaÃ§Ã£o)
+---
+
+## 2026-10-16 — AUTH Phase 1: Multiuser REAL/DEMO/BLOCKED (P1–P35)
+
+**CONTEXT**: Dono quer carteira na nuvem acessível de qualquer device; visitantes sem acesso real. Site estático, zero backend, dados reais sempre locais (gitignored).
+**DECISION**: Firebase Auth (Google + e-mail/senha) via SDK compat UMD **vendorado** (vendor/firebase/, CSP `script-src 'self'` intacto); AUTHENTICATION ? AUTHORIZATION (P2) — allowlist Firestore `authorization/{uid}` = {email normalizado P15, enabled, role, blocked}, leitura só do próprio uid, escrita deny p/ client (P16); resolução de modo no boot (P21/P22: INACTIVE?LOGIN?DEMO/REAL/BLOCKED, nada renderiza antes); **rules re-computam autorização server-side via get()** (P5 — frontend forjado não passa); fail-closed: erro nunca resolve REAL (P24); dados UID-isolados `users/{uid}/portfolio/{section}` field-scoped (P6/P8); sync FirestoreRealDataSource (onSnapshot P7) + SyncHub no-op por padrão; localhost bypass (CI/dev intactos — suíte verde sem Firebase).
+**WHY**: requisitos P1–P35 do dono (chat 2026-10-16); zero-custo Spark (P30); demo nunca toca Firestore.
+**ALTERNATIVES_REJECTED**: Supabase; claims via Admin SDK (exige função/backend); hardcode allowlist no JS (P16).
+**RISKS**: REAL path não exercitado contra Firebase vivo até Fase 2 (config do dono); emulator rules tests bloqueados local (Java 8) — escritos p/ CI.
+**REVERSIBLE**: true
+**RELATED_FILES**: src/auth/*, firestore.rules, firebase.json, tests/rules/rules.test.cjs, tests/e2e/auth-gate.spec.js, docs/ai/FIREBASE_SETUP.md
+**RELATED_COMMIT**: 153c5ad..f4b0984 (13 commits)
+
+---
+
+## 2026-10-16 — Vazamento de dados reais no repo: PURGE TOTAL (incidente)
+
+**CONTEXT**: Arquivos com dados financeiros REAIS estavam commitados e públicos: carteira-data-backup-*.js (×2), carteira-data-real.json (3.7MB), parsed_data.json (3.7MB), generate_carteira_data*.py (×5). data.js NUNCA vazou (gitignored desde o início).
+**DECISION**: `git rm --cached` (locais preservados) + .gitignore ampliado + scrub de valores em docs/tests (valores esperados ? tests/e2e/real-data.values.local.json gitignored; real-data.spec pula sem o arquivo) + **filter-branch --index-filter em TODA a história** + force push. Forks: 0.
+**WHY**: regra 7 AGENTS.md (NUNCA versionar dados financeiros); privacidade > continuidade de hashes.
+**ALTERNATIVES_REJECTED**: só remover do HEAD (história continuaria pública por SHA).
+**RISKS**: RESIDUAL — GitHub serve objetos inalcançáveis por raw URL até GC interno ? **ação do dono: ticket support.github.com "remove sensitive data" OU delete+recreate** (PAT sem delete_repo). hashes antigos mudaram (memória referencia os novos).
+**REVERSIBLE**: false (história reescrita — backup local implícito: arquivos reais seguem no worktree + backup-pre-purge)
+**RELATED_FILES**: .gitignore, tests/e2e/real-data.spec.js, docs/ai/PROJECT_STATE.md
+**RELATED_COMMIT**: ce41446 (force), e87d7e2
+
+---
+
+## 2026-10-16 — Preview lock público (produção sem Firebase ainda configurado)
+
+**CONTEXT**: Sem firebase-config.js (Fase 2 pendente do dono), a produção renderizava o dataset legado realista (PETR4, R$ 686k) para qualquer visitante sem login — parecia uma carteira real.
+**DECISION**: Origem não-localhost + sem config ? **lock screen "Acesso restrito" + botão "Explorar demonstração"** (fixture sintética + badge P27). Form de login escondido nesse modo (sem Firebase não há login real). CI/localhost continuam INACTIVE (fluxo atual, suíte verde).
+**WHY**: P22 (nada antes da decisão) + expectativa do dono "site com tela de login"; legado realista não pode passar por carteira verdadeira.
+**ALTERNATIVES_REJECTED**: manter aberto até Fase 2; forçar login sem backend (impossível).
+**RISKS**: nenhum — dados reais nunca existem no host estático.
+**REVERSIBLE**: true
+**RELATED_FILES**: src/auth/auth-gate.js, index.html (#authDemoEntry), styles.css (data-authmode=preview)
+**RELATED_COMMIT**: e87d7e2, validado por tests/e2e/live-prod.spec.js (4/4 na produção)
+
+---
+
+## 2026-10-17 — Classe Fundos end-to-end (fidelidade P0)
+
+**CONTEXT**: Carteira real tem 2 fundos FIC (TRENDDI/TREND D2, ~13%); import B3 XLSX jogava o sheet "Fundos" inteiro em 'fiis' — fundo sumia da classe correta; I10 público mostra "Fundos 16%".
+**DECISION**: Heurística no posToCanonical: ticker termina em '11' OU nome FII/imobiliário ? 'fiis', senão ? 'funds'. Classe funds propagada em TODOS os maps (writer cn/cc, classColorMap+CHART_COLORS.classFundos, getClassLabel, ptToCls rebalance, panels labels, demo fixture FUND1, sample FUND1).
+**WHY**: divergência de relatório vs I10; agrupamento correto na home/posições.
+**ALTERNATIVES_REJECTED**: classificar tudo como fundos (quebraria FIIs); campo manual.
+**RISKS**: heurística erra nomes atípicos (edge raro, mitigável por alias manual).
+**REVERSIBLE**: true
+**RELATED_FILES**: real-mode.js (posToCanonical/ptToCls), script.js, panels.js, src/import-center/writer.js, src/auth/demo-fixture.js, carteira-data.sample.js
+**RELATED_COMMIT**: a86034e — validado com dados reais: grupo Fundos 26 ativos (24 FII + 2 FIC) bate com I10
+
+---
+
+## 2026-10-17 — Organização P1/P2/P4 (proventos, ordenação, metas)
+
+**CONTEXT**: Dono pediu "organização em dividendos e ativos" + auditoria vs I10 apontou gaps.
+**DECISION**: (P1) tabela **Proventos por ativo** (ticker, total, 12M, yield on cost, frequência, último — 132 tickers reais agregados) + **colunas ordenáveis** th[data-sort] asc/desc com aria-sort dentro de cada grupo; (P2) **cards Alocação vs Meta** na home (badge Comprar/Vender/Meta ±2pp, CSP-safe data-w) + **coluna Variação diária** via brapi regularMarketChangePercent ('—' honesto sem live prices); (P4) card **Independência pela Renda** em Metas (patrimônio p/ renda-alvo com yield 12m).
+**WHY**: pedido explícito + paridade I10 (colunas Variação/Nota/%ideal; nota I10 = dado proprietário — substituída por score/confiança próprio).
+**ALTERNATIVES_REJECTED**: agenda de proventos anunciados externa (sem API pública confiável — calendário Fase H + eventos corp cobrem futuros de import).
+**RISKS**: sort mobile (cards) — teste skipa UX desktop-only.
+**REVERSIBLE**: true
+**RELATED_FILES**: script.js (renderEarningsByAsset/renderAllocationVsGoal/initPositionsSorting/dayChange), panels.js (renderGoals), index.html, styles.css, tests/e2e/organization.spec.js
+**RELATED_COMMIT**: a86034e
+
+---
+
+## 2026-10-17 — Demo espelha o PERFIL do dono, total fictício R$ 30.000
+
+**CONTEXT**: Dono: "demo deve parecer o que tenho, mas 100% fictícia, total ~R$ 30.000 apenas para demonstração".
+**DECISION**: Fixture com 37 ativos espelhando a ESTRUTURA real (7 ações, 24 FIIs, 4 RF, 1 fundo, 1 cripto, caixa), proventos mensais (173 eventos fictícios), **escala proporcional determinística por classe** (FIIs 46% · RF 24% · fundos 13% · ações 10% · cripto 0,2%) + **caixa absorvedora** p/ total exato 30000.00. Tickers D-prefix/gregos; ZERO valores/nomes reais (P26).
+**WHY**: demo realista no funcionamento (renda mensal FII-heavy) sem vazar nada.
+**ALTERNATIVES_REJECTED**: valores próximos dos reais (viola P26 e o pedido "claramente demo").
+**RISKS**: colisão coincidental de ticker com FII real existente (inofensivo — badge MODO DEMONSTRAÇÃO + valores fictícios).
+**REVERSIBLE**: true
+**RELATED_FILES**: src/auth/demo-fixture.js, tests/e2e/auth-gate.spec.js, tests/e2e/live-prod.spec.js
+**RELATED_COMMIT**: a82ce01
+
+---
+
+## 2026-10-17 — Bug: renders usavam cópia filtrada obsoleta (earnings/entries)
+
+**CONTEXT**: renderEarnings/renderEntries renderizavam `filteredEarnings/Entries` (cópia do parse-time) — abas exibiam dataset LEGADO mesmo após applyRealData/gate (mascarado: testes só exigiam "=1 row").
+**DECISION**: Sync por troca de referência (`if (MOCK_DATA.x !== ref) ref=…; filtered=[...]; page=1`) — mesmo garantia que renderPositions (L1289) já tinha. Detectado pelo teste demo-purity P26 (PETR4 no demo).
+**WHY**: dados trocam após import/gate; render nunca pode mostrar dados que não são a fonte atual (integridade > performance).
+**ALTERNATIVES_REJECTED**: re-sync incondicional a cada render (quebraria filtros ativos).
+**RISKS**: troca de dados reset filtros/paginação (aceitável — dado mudou por completo).
+**REVERSIBLE**: true
+**RELATED_FILES**: script.js (renderEarnings/renderEntries), tests/e2e/auth-gate.spec.js (purity)
+**RELATED_COMMIT**: d9c0721
