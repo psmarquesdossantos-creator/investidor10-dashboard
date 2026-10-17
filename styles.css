@@ -466,6 +466,7 @@ html[data-theme="dark"] .theme-toggle .icon-moon {
 .chart-period, .filter-select { padding: var(--space-1) var(--space-3); font-size: var(--font-size-xs); border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-bg-white); color: var(--color-text); min-width: 140px; min-height: 44px; }
 .chart-period:focus, .filter-select:focus { border-color: var(--color-border-focus); outline: none; }
 .chart-container { position: relative; width: 100%; height: 300px; background: var(--color-bg-white); }
+.chart-container canvas { max-width: 100% !important; height: auto !important; } /* P0 audit 2026-10-17: canvas width attr (800px) forÃ§ava overflow na coluna grid (tablet 768) */
 .chart-container.large { height: 450px; }
 .chart-legend { display: flex; flex-wrap: wrap; gap: var(--space-4); padding: var(--space-3) var(--space-5); font-size: var(--font-size-xs); color: var(--color-text-secondary); }
 .legend-item { display: inline-flex; align-items: center; gap: var(--space-1); }
@@ -633,6 +634,7 @@ html[data-theme="dark"] {
    Returns Layout
    ======================================== */
 .returns-layout { display: grid; grid-template-columns: 1fr; gap: var(--space-6); }
+.returns-layout > * { min-width: 0; } /* grid item min-content nÃ£o pode forÃ§ar a track alÃ©m do container */
 @media (min-width: 1024px) { .returns-layout { grid-template-columns: var(--sidebar-width) 1fr; } }
 .returns-sidebar { background: var(--color-bg-card); border: 1px solid var(--color-border-light); border-radius: var(--radius-lg); padding: var(--space-5); height: fit-content; position: sticky; top: calc(var(--header-total) + var(--space-6)); }
 .sidebar-title { font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); margin-bottom: var(--space-4); padding-bottom: var(--space-3); border-bottom: 1px solid var(--color-border-light); }
@@ -1401,7 +1403,7 @@ body.auth-locked #toastContainer { visibility: hidden; }
   .demo-badge { max-width: calc(100vw - var(--space-6)); bottom: calc(var(--bottom-nav-height, 64px) + var(--space-2)); }
 }
 /* ========================================
-   P1/P2 — Organização (proventos por ativo, colunas ordenáveis, alocação vs meta)
+   P1/P2 ï¿½ Organizaï¿½ï¿½o (proventos por ativo, colunas ordenï¿½veis, alocaï¿½ï¿½o vs meta)
    ======================================== */
 .data-table th.sortable { cursor: pointer; user-select: none; }
 .data-table th.sortable:hover { color: var(--color-text); }
