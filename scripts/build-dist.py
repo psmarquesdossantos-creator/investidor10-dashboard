@@ -37,20 +37,56 @@ SRC_DENY = ["firebase-config.js", "firebase-debug.log"]
 
 
 def sh(*cmd):
-    r = subprocess.run(cmd, capture_output=True, text=True, shell=(sys.platform == "win32"))
+    # capture_output em BYTES + decode tolerante: npx/terser no Windows emite cp1252,
+    # e text=True estoura UnicodeDecodeError no reader thread (falso-negativo de build).
+    r = subprocess.run(cmd, capture_output=True, shell=(sys.platform == "win32"))
+    out = (r.stdout or b"").decode("utf-8", errors="replace")
+    err = (r.stderr or b"").decode("utf-8", errors="replace")
     if r.returncode != 0:
-        print(f"ERRO em {' '.join(cmd)}:\n{r.stdout}\n{r.stderr}")
+        print(f"ERRO em {' '.join(cmd)}:\n{out}\n{err}")
         sys.exit(1)
-    return r.stdout
+    return out
 
 
 def minify_js(path: Path, out: Path):
-    sh("npx", "--yes", "terser", str(path), "--compress", "--mangle",
-       "--comments", "false", "-o", str(out))
+    # API node_modules local — npx/CLI quebra em paths com espaço no Windows
+    # ("Meu Drive") e emite cp1252. Fallback: copia sem minificar (deploy funcional).
+    code = (
+        "const fs=require('fs');"
+        "try{const T=require('terser');"
+        f"T.minify(fs.readFileSync({str(path)!r},'utf8'),{{compress:true,mangle:true,format:{{comments:false}}}})"
+        ".then(r=>{if(r.error)throw r.error;fs.writeFileSync('" + str(out).replace("\\", "/") + "',r.code);process.exit(0)})" 
+        ".catch(e=>{console.error(e&&e.message||e);process.exit(1)});"
+        "}catch(e){console.error('NOMIN:'+ (e&&e.code||e&&e.message||e));process.exit(3)}"
+    )
+    r = subprocess.run(["node", "-e", code], capture_output=True, shell=False)
+    if r.returncode == 0:
+        return
+    if r.returncode == 3:  # terser não instalado → sem minificar
+        print(f"  AVISO: terser ausente — {path.name} copiado SEM minificar")
+    else:
+        print((r.stderr or b"").decode("utf-8", errors="replace"))
+    if path != out:
+        shutil.copy2(path, out)
 
 
 def minify_css(path: Path, out: Path):
-    sh("npx", "--yes", "clean-css-cli", "-o", str(out), str(path))
+    code = (
+        "const fs=require('fs');"
+        "try{const C=require('clean-css');"
+        f"const r=new C().minify(fs.readFileSync({str(path)!r},'utf8'));"
+        "if(r.errors&&r.errors.length){console.error(r.errors.join(';'));process.exit(1)}"
+        "fs.writeFileSync('" + str(out).replace("\\", "/") + "',r.styles);process.exit(0);"
+        "}catch(e){console.error('NOMIN:'+ (e&&e.code||e&&e.message||e));process.exit(3)}"
+    )
+    r = subprocess.run(["node", "-e", code], capture_output=True, shell=False)
+    if r.returncode == 0:
+        return
+    if r.returncode == 3:
+        print(f"  AVISO: clean-css ausente — {path.name} copiado SEM minificar")
+    else:
+        print((r.stderr or b"").decode("utf-8", errors="replace"))
+    shutil.copy2(path, out)
 
 
 def main():
@@ -80,17 +116,17 @@ def main():
         total_before += src.stat().st_size
         total_after += dst.stat().st_size
 
-    # 2. Dirs (vendor já é .min; src = código)
+    # 2. Dirs (vendor já é .min — NÃO re-minifica; src = código → minifica)
     for d in ROOT_DIRS:
         target = DIST / d
         shutil.copytree(ROOT / d, target,
                         ignore=shutil.ignore_patterns(*SRC_DENY, "__pycache__"))
-        # Minifica JS de src/ (mantém estrutura)
-        for js in target.rglob("*.js"):
-            before = js.stat().st_size
-            minify_js(js, js)
-            total_before += before
-            total_after += js.stat().st_size
+        if d != "vendor":
+            for js in target.rglob("*.js"):
+                before = js.stat().st_size
+                minify_js(js, js)
+                total_before += before
+                total_after += js.stat().st_size
 
     # vercel.json já copiado acima; vendor sizes somam no before/after
     for f in DIST.rglob("*"):
