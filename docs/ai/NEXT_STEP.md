@@ -41,14 +41,34 @@ HISTÓRICO DESTA SESSÃO: CI-GREEN antes desta (26→0 falhas, runs 38944485486+
 ## NEXT MISSION (ordem atual)
 
 ```
-1. ✅ Purge do vazamento + preview lock público (concluído 2026-10-16 — ver PROJECT_STATE)
-2. AÇÃO DO DONO (privacidade residual): GitHub ainda serve SHAs antigos por raw URL
-   → ticket support.github.com "Remove sensitive data from repository" OU
-   delete+recreate do repo (0 forks, histórico local íntegro; Pages/Actions reconfigurar)
-3. AÇÃO DO DONO: Vercel import (vercel.json pronto — 2 min)
-4. FASE 2 Firebase (FIREBASE_SETUP.md) → login REAL na produção
-5. DEMO: manter 100% fictícia (testes pinam ausência de tickers legados) —
-   próximos: audit vs investidor10.com.br/wallet/public/2206425 + roadmap melhorias
+CONCLUÍDO (2026-10-16/17):
+  ✅ Purge vazamento + preview lock público + live tests 4/4
+  ✅ Bug real corrigido: renderEarnings/renderEntries usavam cópia obsoleta do
+     parse — abas exibiam dados LEGADOS mesmo com carteira real aplicada
+     (agora: real 2202 proventos visíveis; demo 100% fixture; teste purity P26
+     pinando ausência de 14 tickers legados nas abas posições/proventos/patrimônio)
+
+AUDITORIA vs investidor10.com.br/wallet/public/2206425 (extraída 2026-10-17):
+  Carteira pública I10: 37 ativos (7 Ações, 24 FIIs, 4 RF, 1 FUNDO, 1 Cripto, 0 ETFs)
+  Alocação: FIIs 52,93% · RF 26,55% · FUNDOS 16,43% · Ações 4,06% · Criptos 0,03%
+  GAPS nossos: (1) classe FUNDOS não existe no pipeline (16% da carteira!);
+  (2) coluna Variação diária por ativo; (3) nota/score por ativo (I10 = dado
+  proprietário — usar score próprio data-trust); (4) cards % atual vs % ideal
+  na home; (5) agenda de proventos ANUNCIADOS (I10 tem database própria; nosso
+  calendário cobre pagamentos futuros do backup)
+  DIVERGÊNCIA A INVESTIGAR: nosso total 702k vs I10 público 623k (snapshot/preços
+  ou fundo não contabilizado no I10)
+
+ROADMAP SUGERIDO (prioridade):
+  P0 fidelidade: classe Fundos end-to-end (parsers→engines→rebalance→demo) + investigar divergência
+  P1 ORGANIZAÇÃO (pedido do dono): Proventos por ATIVO (grupo por ticker, yield on
+     cost, frequência, filtro ano) + Posições AGRUPADAS por classe com subtotais
+     e colunas ordenáveis
+  P2 UX: variação diária (brapi), cards % ideal na home, agenda proventos anunciados
+  P3 pendências dono: GitHub GC dos SHAs antigos, Vercel import, Fase 2 Firebase
+  P4 vida longa: metas/projeções, alertas push, multi-carteira, comparador ativos
+
+STOP: implementar P1/P2 requer escolha do dono (proposta entregue em 2026-10-17)
 ```
 
 ---
