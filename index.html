@@ -1558,7 +1558,9 @@
     </div>
 
     <!-- Ordem P22: carteira-data.js (fonte local, se existir) → gate sobrescreve
-         conforme modo (DEMO=fixture / REAL=cloud) → script.js aplica após resolver -->
+         conforme modo (DEMO=fixture / REAL=cloud) → script.js aplica após resolver.
+         Produção: carteira-data.js não existe (404) → sample sintético assume. -->
+    <script src="carteira-data.sample.js"></script>
     <script src="carteira-data.js?v=20261012"></script>
     <!-- Auth (Phase 1): fixture demo + data sources ANTES do gate (gate os usa no boot) -->
     <script src="src/auth/demo-fixture.js"></script>

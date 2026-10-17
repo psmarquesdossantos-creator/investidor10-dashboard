@@ -1,4 +1,16 @@
-# Exclui do deploy Vercel (dados reais FICAM - proteção Standard cuida do acesso)
+# CRÍTICO: dados reais NUNCA no deploy (quando .vercelignore existe, o CLI
+# deixa de aplicar o .gitignore — então TUDO sensível precisa estar AQUI)
+carteira-data.js
+data.js
+parsed_data.json
+carteira-data-real.json
+carteira-data-backup-*.js
+generate_carteira_data*.py
+firebase-config.js
+backup-carteira-*.json
+backup-*.json
+
+# Lixo de desenvolvimento
 node_modules
 test-results
 playwright-report
