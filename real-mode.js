@@ -2609,7 +2609,7 @@ window.initDataTrustPanel = initDataTrustPanel;
       events.slice(0, 2).forEach(e => {
         const type = (e.type || 'dividend').toLowerCase();
         const label = e.ticker || '?';
-        html += `<span class="cal-event${type === 'jcp' ? ' jcp' : ''}" title="${e.ticker}: ${fmt.cur(e.gross ?? e.grossValue ?? 0)}">${label}</span>`;
+        html += `<span class="cal-event${type === 'jcp' ? ' jcp' : ''}" title="${e.ticker}: ${fmtCur(e.gross ?? e.grossValue ?? 0)}">${label}</span>`;
       });
       if (events.length > 2) html += `<span class="cal-event">+${events.length - 2}</span>`;
       html += '</div>';
