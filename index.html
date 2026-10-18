@@ -72,10 +72,7 @@
                     <button role="tab" id="tab-fixed" aria-controls="panel-fixed" aria-selected="false" class="tab-btn" data-tab="fixed" tabindex="-1">Renda Fixa</button>
                     <button role="tab" id="tab-rebalance" aria-controls="panel-rebalance" aria-selected="false" class="tab-btn" data-tab="rebalance" tabindex="-1">Rebalancear</button>
                     <button role="tab" id="tab-risk" aria-controls="panel-risk" aria-selected="false" class="tab-btn" data-tab="risk" tabindex="-1">Risco</button>
-                    <button role="tab" id="tab-montecarlo" aria-controls="panel-montecarlo" aria-selected="false" class="tab-btn" data-tab="montecarlo" tabindex="-1">Monte Carlo</button>
                     <button role="tab" id="tab-data-trust" aria-controls="panel-data-trust" aria-selected="false" class="tab-btn" data-tab="data-trust" tabindex="-1">Data Trust</button>
-                    <button role="tab" id="tab-goals" aria-controls="panel-goals" aria-selected="false" class="tab-btn" data-tab="goals" tabindex="-1">Metas</button>
-                    <button role="tab" id="tab-benchmarks" aria-controls="panel-benchmarks" aria-selected="false" class="tab-btn" data-tab="benchmarks" tabindex="-1">Benchmarks</button>
                     <button role="tab" id="tab-tax" aria-controls="panel-tax" aria-selected="false" class="tab-btn" data-tab="tax" tabindex="-1">Impostos</button>
                     <button role="tab" id="tab-corporate-events" aria-controls="panel-corporate-events" aria-selected="false" class="tab-btn" data-tab="corporate-events" tabindex="-1">Eventos Corp.</button>
                     <button role="tab" id="tab-import" aria-controls="panel-import" aria-selected="false" class="tab-btn" data-tab="import" tabindex="-1">Importar</button>
@@ -769,8 +766,9 @@
     <!-- NOVOS PAINÉIS: Risco, Monte Carlo, Benchmarks, Impostos -->
     <section role="tabpanel" aria-labelledby="tab-risk" class="tab-panel" id="panel-risk" hidden>
     <div class="panel-header mb-4">
-      <h2 class="section-heading">Análise de Risco</h2>
+      <h2 class="section-heading">Análise de Risco (Visão geral)</h2>
       <p class="text-muted m-0">VaR, Sharpe, Sortino, Max Drawdown, Beta vs Benchmarks</p>
+      <p class=\"text-muted\">Entenda os riscos da sua carteira através de métricas como VaR, Sharpe e Drawdown.</p>
     </div>
     <div class="kpi-grid mb-4" id="riskKpis"></div>
     <div class="card p-6-mb-4">
@@ -783,84 +781,8 @@
     </div>
   </section>
 
-  <section role="tabpanel" aria-labelledby="tab-montecarlo" class="tab-panel" id="panel-montecarlo" hidden>
-    <div class="panel-header mb-4">
-      <h2 class="section-heading">Projeção Monte Carlo</h2>
-      <p class="text-muted m-0">Simulação estocástica 10.000+ cenários - Cone de confiança 10-30 anos</p>
-    </div>
-    <div class="card p-4-mb-4">
-      <div class="form-row flex-4-wrap-end">
-        <div class="form-group flex-grow">
-          <label>Horizonte (anos)</label>
-          <input type="number" id="mcHorizon" value="30" min="1" max="50" class="w-100px">
-        </div>
-        <div class="form-group flex-grow">
-          <label>Valor Inicial (R$)</label>
-          <input type="number" id="mcInitial" value="500000" min="0" step="1000" class="w-140px">
-        </div>
-        <div class="form-group flex-grow">
-          <label>Aporte Mensal (R$)</label>
-          <input type="number" id="mcMonthly" value="5000" min="0" step="100" class="w-140px">
-        </div>
-        <div class="form-group flex-grow">
-          <label>Retorno Esperado (% a.a.)</label>
-          <input type="number" id="mcReturn" value="12" min="0" max="50" step="0.5" class="w-100px">
-        </div>
-        <div class="form-group flex-grow">
-          <label>Volatilidade (% a.a.)</label>
-          <input type="number" id="mcVol" value="18" min="0" max="100" step="0.5" class="w-100px">
-        </div>
-        <button class="btn btn-primary h-38" id="btnRunMC">Executar Simulação</button>
-        <button class="btn btn-ghost" id="btnRunStress">Stress Test</button>
-      </div>
-    </div>
-    <div class="kpi-grid mb-4" id="mcKpis"></div>
-    <div class="card p-6">
-      <canvas id="mcChart" height="400"></canvas>
-    </div>
-    <div class="card p-4-mt-4 hidden" id="stressResults">
-      <h3 class="mb-3">Stress Test — Cenários Extremos</h3>
-      <div id="stressTable"></div>
-    </div>
-  </section>
-
-  <section role="tabpanel" aria-labelledby="tab-benchmarks" class="tab-panel" id="panel-benchmarks" hidden>
-    <div class="panel-header mb-4">
-      <h2 class="section-heading">Benchmarks</h2>
-      <p class="text-muted m-0">CDI, IBOV, IFIX, SMLL, IDIV, IMAB, BTC, DOL, USD/BRL</p>
-    </div>
-    <div class="card p-4-mb-4">
-      <button class="btn btn-primary btn-sm" id="btnFetchBenchmarks">Atualizar Benchmarks</button>
-      <span class="text-muted ml-3" id="benchStatus"></span>
-    </div>
-    <div class="kpi-grid mb-4" id="benchKpis"></div>
-    <div class="card p-6-mb-4">
-      <h3 class="mb-3">Comparação vs Carteira</h3>
-      <div id="benchComparison"></div>
-    </div>
-    <div class="card p-4-mb-4">
-      <button class="btn btn-ghost" id="btnBacktest">Backtest vs Meta</button>
-      <div id="backtestResults" class="mt-3"></div>
-    </div>
-    <div class="table-wrapper">
-      <table class="data-table" id="benchTable">
-        <thead>
-          <tr>
-            <th>Benchmark</th>
-            <th>Preço Atual</th>
-            <th>1D %</th>
-            <th>YTD %</th>
-            <th>Vol %</th>
-            <th>Sharpe</th>
-            <th>Max DD %</th>
-            <th>Fonte</th>
-          </tr>
-        </thead>
-        <tbody id="benchBody"></tbody>
-      </table>
-    </div>
-  </section>
-
+  
+  
   <section role="tabpanel" aria-labelledby="tab-tax" class="tab-panel" id="panel-tax" hidden>
     <div class="panel-header mb-4">
       <h2 class="section-heading">Central de Impostos (IRPF)</h2>
@@ -1206,22 +1128,7 @@
   </section>
 
   <!-- METAS TAB (modelo "Tela remtabilidade e metas e patrimonio") -->
-  <section role="tabpanel" aria-labelledby="tab-goals" class="tab-panel" id="panel-goals" hidden>
-    <div class="panel-header mb-4">
-      <h2 class="section-heading">Metas</h2>
-      <p class="text-muted m-0">Resumo das metas financeiras da carteira</p>
-    </div>
-    <div id="goalsList" class="grid-300-4">
-      <p class="text-muted p-4">Carregando…</p>
-    </div>
-    <div id="allocationGoals" class="card mt-6">
-      <h3 class="mb-3">Metas de Alocação por Classe</h3>
-      <div id="allocationGoalsBody">
-        <p class="text-muted p-3">Carregando…</p>
-      </div>
-    </div>
-  </section>
-
+  
 
   <!-- BACKUP PORTABILITY TAB -->
   <section role="tabpanel" aria-labelledby="tab-backup-portability" class="tab-panel" id="panel-backup-portability" hidden>
@@ -1290,11 +1197,11 @@
 
       <!-- PAINEL: CONFIGURAÇÕES (hub organizado: Conta/Aparência/Dados/Sobre) -->
       <section role="tabpanel" aria-labelledby="tab-settings" class="tab-panel" id="panel-settings" hidden>
-        <div class="panel-header mb-4">
+    <div class="panel-header mb-4">
           <h2 class="section-heading">Configurações</h2>
           <p class="text-muted m-0">Conta, aparência, dados e informações do sistema</p>
         </div>
-        <div class="grid-280-4" role="list">
+<div class="grid-280-4" role="list">
           <article class="card kpi-card settings-card" id="settingsAccountCard" role="listitem">
             <h3 class="kpi-label">👤 Conta</h3>
             <p class="kpi-value fs-lg-700" id="settingsAccountMode">—</p>
@@ -1303,42 +1210,103 @@
               <button class="btn btn-primary btn-sm" id="settingsLoginBtn" type="button">Entrar com Google</button>
               <button class="btn btn-secondary btn-sm" id="settingsSignOutBtn" type="button">Sair da conta</button>
             </div>
-            <p class="text-muted fs-11-muted-ink" id="settingsSyncInfo"></p>
-          </article>
-          <article class="card kpi-card settings-card" id="settingsAppearanceCard" role="listitem">
-            <h3 class="kpi-label">🎨 Aparência</h3>
-            <label class="auth-label" for="settingsThemeSelect">Tema</label>
-            <select class="filter-select" id="settingsThemeSelect">
-              <option value="system">Sistema (automático)</option>
-              <option value="light">Claro</option>
-              <option value="dark">Escuro</option>
-            </select>
-            <label class="auth-label settings-gap" for="settingsMotionSelect">Animações</label>
-            <select class="filter-select" id="settingsMotionSelect">
-              <option value="on">Ativadas</option>
-              <option value="off">Reduzidas</option>
-            </select>
-          </article>
-          <article class="card kpi-card settings-card" id="settingsDataCard" role="listitem">
-            <h3 class="kpi-label">🗄️ Dados</h3>
-            <p class="text-muted" id="settingsDataStats">—</p>
-            <div class="mt-4-flex-2-center">
-              <button class="btn btn-secondary btn-sm" id="settingsGoImport" type="button">Importar</button>
-              <button class="btn btn-secondary btn-sm" id="settingsGoBackup" type="button">Backup</button>
-              <button class="btn btn-secondary btn-sm" id="settingsGoBackupPort" type="button">Backup Port.</button>
-            </div>
-            <button class="btn btn-ghost btn-sm btn-danger-text settings-gap" id="settingsWipeBtn" type="button">Limpar dados locais</button>
-            <p class="text-muted fs-11-muted-ink">O wipe não afeta o sync na nuvem — ao entrar novamente, seus dados voltam.</p>
-          </article>
-          <article class="card kpi-card settings-card" id="settingsAboutCard" role="listitem">
-            <h3 class="kpi-label">ℹ️ Sobre</h3>
-            <p class="kpi-value fs-lg-700">Investidor10 Dashboard</p>
-            <p class="text-muted" id="settingsVersion">—</p>
-            <p class="text-muted">HTML/CSS/JS puro · Chart.js self-hosted · sem build · PWA offline-first</p>
-            <p class="text-muted fs-11-muted-ink">Docs: CONTRIBUTING.md · SECURITY.md · docs/architecture.md · FIREBASE_SETUP.md</p>
-          </article>
+
+      <!-- Metas, Benchmarks, Simulação movidos para dentro de Configurações -->
+      <div class="settings-subpanel card mt-6">
+        <div class="panel-header mb-4">
+      <h2 class="section-heading">Metas</h2>
+      <p class="text-muted m-0">Resumo das metas financeiras da carteira</p>
+    </div>
+    <div id="goalsList" class="grid-300-4">
+      <p class="text-muted p-4">Carregando…</p>
+    </div>
+    <div id="allocationGoals" class="card mt-6">
+      <h3 class="mb-3">Metas de Alocação por Classe</h3>
+      <button class="btn btn-primary btn-sm mt-2" id="editAllocationGoals">Editar metas</button>
+      <div id="allocationGoalsBody" contenteditable="true" style="padding:8px; border:1px solid #ddd; min-height:60px;">
+        <p class="text-muted p-3">Carregando…</p>
+      </div>
+    </div>
+      </div>
+      <div class="settings-subpanel card mt-6">
+        <div class="panel-header mb-4">
+      <h2 class="section-heading">Benchmarks (Comparação com índices)</h2>
+      <p class="text-muted m-0">CDI, IBOV, IFIX, SMLL, IDIV, IMAB, BTC, DOL, USD/BRL</p>
+      <p class="text-muted">Compare o desempenho da sua carteira com os principais índices do mercado.</p>
+    </div>
+    <div class="card p-4-mb-4">
+      <button class="btn btn-primary btn-sm" id="btnFetchBenchmarks">Atualizar Benchmarks</button>
+      <span class="text-muted ml-3" id="benchStatus"></span>
+    </div>
+    <div class="kpi-grid mb-4" id="benchKpis"></div>
+    <div class="card p-6-mb-4">
+      <h3 class="mb-3">Comparação vs Carteira</h3>
+      <div id="benchComparison"></div>
+    </div>
+    <div class="card p-4-mb-4">
+      <button class="btn btn-ghost" id="btnBacktest">Backtest vs Meta</button>
+      <div id="backtestResults" class="mt-3"></div>
+    </div>
+    <div class="table-wrapper">
+      <table class="data-table" id="benchTable">
+        <thead>
+          <tr>
+            <th>Benchmark</th>
+            <th>Preço Atual</th>
+            <th>1D %</th>
+            <th>YTD %</th>
+            <th>Vol %</th>
+            <th>Sharpe</th>
+            <th>Max DD %</th>
+            <th>Fonte</th>
+          </tr>
+        </thead>
+        <tbody id="benchBody"></tbody>
+      </table>
+    </div>
+      </div>
+      <div class="settings-subpanel card mt-6">
+        <div class="panel-header mb-4">
+      <h2 class="section-heading">Simulação de Cenários Futuro</h2>
+      <p class="text-muted m-0">Simulação estocástica 10.000+ cenários - Cone de confiança 10-30 anos</p>
+      <p class="text-muted">Ajuste os parâmetros abaixo e clique em "Executar Simulação" para ver os possíveis resultados futuros.</p>
+    </div>
+    <div class="card p-4-mb-4">
+      <div class="form-row flex-4-wrap-end">
+        <div class="form-group flex-grow">
+          <label>Horizonte (anos)</label>
+          <input type="number" id="mcHorizon" value="30" min="1" max="50" class="w-100px">
         </div>
-      </section>
+        <div class="form-group flex-grow">
+          <label>Valor Inicial (R$)</label>
+          <input type="number" id="mcInitial" value="500000" min="0" step="1000" class="w-140px">
+        </div>
+        <div class="form-group flex-grow">
+          <label>Aporte Mensal (R$)</label>
+          <input type="number" id="mcMonthly" value="5000" min="0" step="100" class="w-140px">
+        </div>
+        <div class="form-group flex-grow">
+          <label>Retorno Esperado (% a.a.)</label>
+          <input type="number" id="mcReturn" value="12" min="0" max="50" step="0.5" class="w-100px">
+        </div>
+        <div class="form-group flex-grow">
+          <label>Volatilidade (% a.a.)</label>
+          <input type="number" id="mcVol" value="18" min="0" max="100" step="0.5" class="w-100px">
+        </div>
+        <button class="btn btn-primary h-38" id="btnRunMC">Executar Simulação</button>
+        <button class="btn btn-ghost" id="btnRunStress">Stress Test</button>
+      </div>
+    </div>
+    <div class="kpi-grid mb-4" id="mcKpis"></div>
+    <div class="card p-6">
+      <canvas id="mcChart" height="400"></canvas>
+    </div>
+    <div class="card p-4-mt-4 hidden" id="stressResults">
+      <h3 class="mb-3">Stress Test — Cenários Extremos</h3>
+      <div id="stressTable"></div>
+    </div>
+      </div>
+  </section>
 </main>
 
   <!-- MODAL: AJUDA -->
