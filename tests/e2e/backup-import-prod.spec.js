@@ -1,8 +1,11 @@
 // E2E: simula PRODUÇÃO (sem carteira-data.js) — importa backup real e verifica persistência
 import { test, expect } from '@playwright/test';
 import path from 'path';
+import { existsSync } from 'node:fs';
 
 const BACKUP = path.resolve('backup-carteira-2026-10-17.json');
+// Backup real é local apenas (gitignored — regra 7): CI pula, dono roda local.
+test.skip(!existsSync(BACKUP), 'backup real ausente (fixture local apenas)');
 
 // P-NIGHT: em dev local o Service Worker precacheia carteira-data.js e o
 // serve no reload, burlando o bloqueio de rota abaixo (em produção o arquivo
