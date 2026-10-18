@@ -227,7 +227,7 @@ for m in movs:
             'tax': 0,
             'net': gross,
         })
-earnings.sort(key=lambda x: x['date'], reverse=True)
+earnings.sort(key=lambda x: x['date'])  # ASC — convenção do dataset: [0] = mais antigo (2019)
 print(f'  earnings: {len(earnings)}')
 
 # entries: histórico validado (10/10) + eventos novos (09-15/10/2026).

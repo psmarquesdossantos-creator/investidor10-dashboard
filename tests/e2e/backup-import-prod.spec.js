@@ -4,6 +4,12 @@ import path from 'path';
 
 const BACKUP = path.resolve('backup-carteira-2026-10-17.json');
 
+// P-NIGHT: em dev local o Service Worker precacheia carteira-data.js e o
+// serve no reload, burlando o bloqueio de rota abaixo (em produção o arquivo
+// 404 no servidor e o SW nunca o cacheia — live-prod verifica isso).
+// serviceWorkers:'block' mantém o teste fiel ao cenário de produção.
+test.use({ serviceWorkers: 'block' });
+
 test('Import backup em produção simulada + persiste após reload', async ({ page }) => {
   const errors = [];
   page.on('pageerror', err => errors.push(err.message));
@@ -11,8 +17,15 @@ test('Import backup em produção simulada + persiste após reload', async ({ pa
   // Bloqueia carteira-data.js — simula deploy (arquivo não existe no host)
   // (glob com * final: a tag usa ?v=20261012 — sem ele o arquivo real vazava na simulação)
   await page.route('**/carteira-data.js*', route => route.fulfill({ status: 404, body: '' }));
-  // Primeira visita: localStorage limpo
-  await page.addInitScript(() => { try { localStorage.clear(); } catch (e) {} });
+  // Primeira visita: localStorage limpo — mas SOMENTE na primeira (flag em
+  // sessionStorage, que sobrevive ao reload). O addInitScript roda em todo
+  // load; limpar sempre aniquilava o backup importado (P-NIGHT fix).
+  await page.addInitScript(() => {
+    if (!sessionStorage.getItem('__primeira_visita__')) {
+      sessionStorage.setItem('__primeira_visita__', '1');
+      try { localStorage.clear(); } catch (e) {}
+    }
+  });
 
   // 1) Load sem dados reais → deve mostrar base sintética (30.000,00 — fixture demo P26/P27)
   await page.goto('http://localhost:8765/');
