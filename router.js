@@ -20,7 +20,7 @@
     import:       { panel: 'import',       title: 'Importar' },
     backup:       { panel: 'backup',       title: 'Backup' },
     'corporate-events': { panel: 'corporate-events', title: 'Eventos Corp.' },
-    'data-trust': { panel: 'data-trust',   title: 'Data Trust' },
+    'data-quality': { panel: 'data-quality', title: 'Qualidade dos Dados' },
     'goals':      { panel: 'goals',        title: 'Metas' },
     'backup-portability': { panel: 'backup-portability', title: 'Backup Port.' },
   };

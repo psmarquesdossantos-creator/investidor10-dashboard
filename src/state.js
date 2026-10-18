@@ -60,7 +60,8 @@ const initialState = {
   kpis: {},
   priceAlerts: [],
   // UI state
-  collapsedGroups: new Set(),
+  collapsedGroups: new Set(), // será populado com todas as chaves de grupo no primeiro render
+  positionsColumnOrder: null, // ordem salva das colunas da tabela de posições
   // etc.
 };
 

@@ -509,8 +509,8 @@ function initTabs() {
 // ========================================
 
 function initUserMenu() {
-  if (!els.userAvatar || !els.userDropdown) return;
-
+  if (window.__userMenuInitialized) return; window.__userMenuInitialized = true; // Prevent multiple initializations
+  if (!els.userAvatar || !els.userDropdown) { console.warn("[initUserMenu] Missing user avatar or dropdown elements"); return; }
   els.userAvatar.addEventListener('click', (e) => {
     e.stopPropagation();
     const isOpen = els.userAvatar.getAttribute('aria-expanded') === 'true';
@@ -655,6 +655,7 @@ function clearStorage() {
 // ========================================
 
 function initThemeToggle() {
+  if (window.__themeToggleInitialized) return; window.__themeToggleInitialized = true; // Prevent multiple initializations
   const themeToggle = document.getElementById('themeToggle');
   if (!themeToggle) return;
   
@@ -1274,7 +1275,60 @@ function renderPositions() {
     }
   });
 
-  // KPI strip acima da tabela (modelo tela "Aportes e Ativos")
+  // ===== INICIALIZAR GRUPOS RECOLHIDOS POR PADRÃO (P30) =====
+  // Se collapsedGroups estiver vazio, popular com todas as chaves de grupo que têm posições
+  if (state.collapsedGroups.size === 0 && allPos.length > 0) {
+    const categoryGroups = [
+      { key: 'acoes', classes: ['stocks'] },
+      { key: 'fundos', classes: ['fiis', 'funds'] },
+      { key: 'renda-fixa', classes: ['fixed'] },
+      { key: 'etfs', classes: ['etfs'] },
+      { key: 'outros', classes: ['crypto', 'bdr', 'other'] }
+    ];
+    categoryGroups.forEach(g => {
+      const hasPositions = allPos.some(p => g.classes.includes(p.class || 'other'));
+      if (hasPositions) state.collapsedGroups.add(g.key);
+    });
+  }
+
+    // ===== GET CURRENT COLUMN ORDER FROM DOM (for drag-and-drop reordering) =====
+    function getColumnOrder() {
+      const table = document.getElementById('positionsTable');
+      if (!table) return null;
+      const headerRow = table.querySelector('thead tr');
+      if (!headerRow) return null;
+      const headers = Array.from(headerRow.querySelectorAll('th'));
+      return headers.map(th => {
+        if (th.dataset.sort) return th.dataset.sort;
+        if (th.classList.contains('col-classe')) return 'classe';
+        if (th.classList.contains('col-ideal')) return 'ideal';
+        if (th.classList.contains('col-var')) return 'variacao';
+        if (th.classList.contains('col-conf')) return 'confianca';
+        if (th.querySelector('.action-btn')) return 'acoes';
+        return null;
+      }).filter(Boolean);
+    }
+
+    const columnOrder = getColumnOrder();
+
+    // Cell renderers map - each key matches a column identifier
+        // Note: renderers for 'ideal' and 'shouldBuy' need per-position data, computed inline
+        const cellRenderers = {
+          ticker: (p) => `<td><div class="asset-cell"><span class="asset-ticker">${p.ticker}</span><span class="asset-name">${p.name}</span></div></td>`,
+          classe: (p) => `<td class="col-classe"><span class="asset-class ${p.class}">${getClassLabel(p.class)}</span></td>`,
+          qty: (p) => `<td class="text-right">${fmt.number(p.qty, 4)}</td>`,
+          avgPrice: (p) => `<td class="text-right">${fmt.currency(p.avgPrice)}</td>`,
+          currentPrice: (p) => `<td class="text-right">${fmt.currency(p.currentPrice)}</td>`,
+          value: (p) => `<td class="text-right fw-600">${fmt.currency(p.value)}</td>`,
+          pl: (p) => `<td class="text-right pl-cell ${p.pl >= 0 ? 'positive' : 'negative'}">${fmt.currency(p.pl)}</td>`,
+          return: (p) => `<td class="text-right pct-cell ${p.return >= 0 ? 'positive' : 'negative'}">${fmt.percent(p.return)}</td>`,
+          weight: (p) => `<td class="text-right">${fmt.percent(p.weight)}</td>`,
+          variacao: (p) => `<td class="text-right pct-cell col-var ${p.dayChange == null ? '' : p.dayChange >= 0 ? 'positive' : 'negative'}" title="${p.dayChange == null ? 'Ative preços ao vivo para ver a variação diária' : ''}">${p.dayChange == null ? '—' : (p.dayChange >= 0 ? '+' : '') + fmt.percent(p.dayChange)}</td>`,
+          confianca: (p) => `<td class="col-conf">${getConfidenceBadge(p)}</td>`,
+          acoes: (p, globalIndex) => `<td><button class="action-btn edit-position-btn" data-index="${globalIndex}" aria-label="Editar ${p.ticker}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></td>`
+        };
+
+    // KPI strip acima da tabela (modelo tela "Aportes e Ativos")
   const strip = document.getElementById('positionsKpiStrip');
   if (strip) {
     const totalInvested = MOCK_DATA.kpis.invested || 0;
@@ -1343,64 +1397,96 @@ function renderPositions() {
     }
 
     // Add group header row (P30: colapsável — clique recolhe/expand os ativos do grupo)
-    const groupValue = groupPositions.reduce((s, p) => s + (p.value || 0), 0);
-    const groupPct = totalValue > 0 ? (groupValue / totalValue * 100) : 0;
-    const isCollapsed = state.collapsedGroups.has(group.key);
-    allRows.push(`
-      <tr class="group-header${isCollapsed ? ' collapsed' : ''}" data-group="${group.key}">
-        <td colspan="16">
-          <button type="button" class="group-toggle" aria-expanded="${!isCollapsed}" title="${isCollapsed ? 'Expandir' : 'Recolher'} ativos do grupo">
-            <span class="group-chevron" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
-            <span class="group-icon">${group.icon}</span>
-            <span class="group-label">${group.label}</span>
-            <span class="group-count">${groupPositions.length} ativo${groupPositions.length !== 1 ? 's' : ''}</span>
-            <span class="group-value">${fmt.currency(groupValue)}</span>
-            <span class="group-pct">${fmt.percent(groupPct)}</span>
-          </button>
-        </td>
-      </tr>
-    `);
+        const groupValue = groupPositions.reduce((s, p) => s + (p.value || 0), 0);
+        const groupPct = totalValue > 0 ? (groupValue / totalValue * 100) : 0;
+        const isCollapsed = state.collapsedGroups.has(group.key);
+        const colSpan = (columnOrder && columnOrder.length > 0) ? columnOrder.length : 16;
+        allRows.push(`
+          <tr class="group-header${isCollapsed ? ' collapsed' : ''}" data-group="${group.key}">
+            <td colspan="${colSpan}">
+              <button type="button" class="group-toggle" aria-expanded="${!isCollapsed}" title="${isCollapsed ? 'Expandir' : 'Recolher'} ativos do grupo">
+                <span class="group-chevron" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+                <span class="group-icon">${group.icon}</span>
+                <span class="group-label">${group.label}</span>
+                <span class="group-count">${groupPositions.length} ativo${groupPositions.length !== 1 ? 's' : ''}</span>
+                <span class="group-value">${fmt.currency(groupValue)}</span>
+                <span class="group-pct">${fmt.percent(groupPct)}</span>
+              </button>
+            </td>
+          </tr>
+        `);
 
     // Add position rows for this group (paginated)
-    const groupStart = allRows.length === 1 ? 0 : allRows.filter(r => r.includes('group-header')).length; // simplified
-    groupPositions.forEach((p, idx) => {
-      const globalIndex = start + globalRowIndex++;
-      const cls = p.class || 'other';
-      const idealAssetPct = classCounts[cls] > 0 ? (classIdeal[cls] || 0) / classCounts[cls] : 0;
-      const currentPct = p.weight != null ? p.weight : (p.value / totalValue * 100);
-      const shouldBuy = currentPct < idealAssetPct * 0.9; // 10% de tolerância
-      const hideRow = isCollapsed ? ' hidden' : '';
-      allRows.push(`
-        <tr data-group="${group.key}" data-ticker="${p.ticker}"${hideRow}>
-          <td>
-            <div class="asset-cell">
-              <span class="asset-ticker">${p.ticker}</span>
-              <span class="asset-name">${p.name}</span>
-            </div>
-          </td>
-          <td class="col-classe"><span class="asset-class ${p.class}">${getClassLabel(p.class)}</span></td>
-          <td class="text-right">${fmt.number(p.qty, 4)}</td>
-          <td class="text-right">${fmt.currency(p.avgPrice)}</td>
-          <td class="text-right">${fmt.currency(p.currentPrice)}</td>
-          <td class="text-right fw-600">${fmt.currency(p.value)}</td>
-          <td class="text-right pl-cell ${p.pl >= 0 ? 'positive' : 'negative'}">${fmt.currency(p.pl)}</td>
-          <td class="text-right pct-cell ${p.return >= 0 ? 'positive' : 'negative'}">${fmt.percent(p.return)}</td>
-          <td class="text-right">${fmt.percent(p.weight)}</td>
-          <td class="text-right col-ideal text-primary-ink">${idealAssetPct > 0 ? fmt.percent(idealAssetPct) : '—'}</td>
-          <td class="text-right">${idealAssetPct > 0 ? `<span class="asset-class ${shouldBuy ? 'fiis' : 'bdr'}">${shouldBuy ? 'Sim' : '—'}</span>` : '—'}</td>
-           <td class="text-right">${div12mByTicker[p.ticker] > 0 ? fmt.currency(div12mByTicker[p.ticker] / 12) : '—'}</td>
-           <td class="text-right">${div12mByTicker[p.ticker] > 0 && p.value > 0 ? fmt.percent(div12mByTicker[p.ticker] / p.value * 100) : '—'}</td>
-           <td class="text-right pct-cell col-var ${p.dayChange == null ? '' : p.dayChange >= 0 ? 'positive' : 'negative'}" title="${p.dayChange == null ? 'Ative preços ao vivo para ver a variação diária' : ''}">${p.dayChange == null ? '—' : (p.dayChange >= 0 ? '+' : '') + fmt.percent(p.dayChange)}</td>
-            <td class="col-conf">${getConfidenceBadge(p)}</td>
-           <td>
-             <button class="action-btn edit-position-btn" data-index="${globalIndex}" aria-label="Editar ${p.ticker}">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            </button>
-          </td>
-        </tr>
-      `);
-    });
-  });
+        const groupStart = allRows.length === 1 ? 0 : allRows.filter(r => r.includes('group-header')).length; // simplified
+        groupPositions.forEach((p, idx) => {
+          const globalIndex = start + globalRowIndex++;
+          const cls = p.class || 'other';
+          const idealAssetPct = classCounts[cls] > 0 ? (classIdeal[cls] || 0) / classCounts[cls] : 0;
+          const currentPct = p.weight != null ? p.weight : (p.value / totalValue * 100);
+          const shouldBuy = currentPct < idealAssetPct * 0.9; // 10% de tolerância
+          const hideRow = isCollapsed ? ' hidden' : '';
+      
+          // Build cells dynamically based on current column order
+                let cellsHtml = '';
+                if (columnOrder && columnOrder.length > 0) {
+                  cellsHtml = columnOrder.map(colKey => {
+                    const renderer = cellRenderers[colKey];
+                    if (renderer) {
+                      return renderer(p, globalIndex);
+                    }
+                    // Colunas que precisam de cálculos por posição
+                    if (colKey === 'ideal') {
+                      const cls = p.class || 'other';
+                      const idealAssetPct = classCounts[cls] > 0 ? (classIdeal[cls] || 0) / classCounts[cls] : 0;
+                      return `<td class="text-right col-ideal text-primary-ink">${idealAssetPct > 0 ? fmt.percent(idealAssetPct) : '—'}</td>`;
+                    }
+                    if (colKey === 'shouldBuy') {
+                      const cls = p.class || 'other';
+                      const idealAssetPct = classCounts[cls] > 0 ? (classIdeal[cls] || 0) / classCounts[cls] : 0;
+                      const currentPct = p.weight != null ? p.weight : (p.value / totalValue * 100);
+                      const shouldBuy = currentPct < idealAssetPct * 0.9;
+                      return `<td class="text-right">${idealAssetPct > 0 ? `<span class="asset-class ${shouldBuy ? 'fiis' : 'bdr'}">${shouldBuy ? 'Sim' : '—'}</span>` : '—'}</td>`;
+                    }
+                    if (colKey === 'divMes') {
+                      return `<td class="text-right">${div12mByTicker[p.ticker] > 0 ? fmt.currency(div12mByTicker[p.ticker] / 12) : '—'}</td>`;
+                    }
+                    if (colKey === 'dy') {
+                      return `<td class="text-right">${div12mByTicker[p.ticker] > 0 && p.value > 0 ? fmt.percent(div12mByTicker[p.ticker] / p.value * 100) : '—'}</td>`;
+                    }
+                    if (colKey === 'weight') {
+                      return `<td class="text-right">${fmt.percent(p.weight)}</td>`;
+                    }
+                    return '';
+                  }).join('');
+                } else {
+            // Fallback to original fixed order
+            cellsHtml = `
+              <td><div class="asset-cell"><span class="asset-ticker">${p.ticker}</span><span class="asset-name">${p.name}</span></div></td>
+              <td class="col-classe"><span class="asset-class ${p.class}">${getClassLabel(p.class)}</span></td>
+              <td class="text-right">${fmt.number(p.qty, 4)}</td>
+              <td class="text-right">${fmt.currency(p.avgPrice)}</td>
+              <td class="text-right">${fmt.currency(p.currentPrice)}</td>
+              <td class="text-right fw-600">${fmt.currency(p.value)}</td>
+              <td class="text-right pl-cell ${p.pl >= 0 ? 'positive' : 'negative'}">${fmt.currency(p.pl)}</td>
+              <td class="text-right pct-cell ${p.return >= 0 ? 'positive' : 'negative'}">${fmt.percent(p.return)}</td>
+              <td class="text-right">${fmt.percent(p.weight)}</td>
+              <td class="text-right col-ideal text-primary-ink">${idealAssetPct > 0 ? fmt.percent(idealAssetPct) : '—'}</td>
+              <td class="text-right">${idealAssetPct > 0 ? `<span class="asset-class ${shouldBuy ? 'fiis' : 'bdr'}">${shouldBuy ? 'Sim' : '—'}</span>` : '—'}</td>
+              <td class="text-right">${div12mByTicker[p.ticker] > 0 ? fmt.currency(div12mByTicker[p.ticker] / 12) : '—'}</td>
+              <td class="text-right">${div12mByTicker[p.ticker] > 0 && p.value > 0 ? fmt.percent(div12mByTicker[p.ticker] / p.value * 100) : '—'}</td>
+              <td class="text-right pct-cell col-var ${p.dayChange == null ? '' : p.dayChange >= 0 ? 'positive' : 'negative'}" title="${p.dayChange == null ? 'Ative preços ao vivo para ver a variação diária' : ''}">${p.dayChange == null ? '—' : (p.dayChange >= 0 ? '+' : '') + fmt.percent(p.dayChange)}</td>
+              <td class="col-conf">${getConfidenceBadge(p)}</td>
+              <td><button class="action-btn edit-position-btn" data-index="${globalIndex}" aria-label="Editar ${p.ticker}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></td>
+            `;
+          }
+      
+          allRows.push(`
+            <tr data-group="${group.key}" data-ticker="${p.ticker}"${hideRow}>
+              ${cellsHtml}
+            </tr>
+          `);
+        });
+      });
 
   // Apply pagination to the combined rows (headers + positions)
   const paginatedRows = allRows.slice(start, end);
@@ -1507,6 +1593,162 @@ function initPositionsSorting() {
       renderPositions();
     });
   });
+
+  // ===== Column Drag & Drop Reordering =====
+  if (!table.__dragBound) {
+    table.__dragBound = true;
+    const thead = table.querySelector('thead');
+    if (!thead) return;
+    const headerRow = thead.querySelector('tr');
+    if (!headerRow) return;
+    
+    // Add drag handles to sortable columns
+    headerRow.querySelectorAll('th[data-sort]').forEach((th, idx) => {
+      if (idx === 0) return; // Keep ticker column fixed
+      th.draggable = true;
+      th.setAttribute('role', 'columnheader');
+      th.setAttribute('aria-grabbed', 'false');
+      
+      // Add visual drag handle
+      if (!th.querySelector('.positions-drag-handle')) {
+        const handle = document.createElement('span');
+        handle.className = 'positions-drag-handle';
+        handle.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="5 9 2 12 5 15"/><polyline points="19 9 22 12 19 15"/></svg>';
+        handle.setAttribute('aria-hidden', 'true');
+        th.appendChild(handle);
+      }
+    });
+    
+    let draggedTh = null;
+    let placeholder = null;
+    
+    headerRow.addEventListener('dragstart', (e) => {
+      const th = e.target.closest('th[data-sort]');
+      if (!th || th === headerRow.querySelector('th:first-child')) return; // Don't drag first column
+      draggedTh = th;
+      th.classList.add('drag-placeholder');
+      th.setAttribute('aria-grabbed', 'true');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', th.dataset.sort);
+      
+      // Create placeholder
+      placeholder = document.createElement('th');
+      placeholder.className = 'drag-placeholder';
+      placeholder.style.height = th.offsetHeight + 'px';
+    });
+    
+    headerRow.addEventListener('dragend', (e) => {
+      if (draggedTh) {
+        draggedTh.classList.remove('drag-placeholder');
+        draggedTh.setAttribute('aria-grabbed', 'false');
+        draggedTh = null;
+      }
+      headerRow.querySelectorAll('th.drag-over').forEach(th => th.classList.remove('drag-over'));
+      if (placeholder && placeholder.parentNode) placeholder.parentNode.removeChild(placeholder);
+      placeholder = null;
+    });
+    
+    headerRow.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      const targetTh = e.target.closest('th[data-sort]');
+      if (!targetTh || targetTh === draggedTh || targetTh === headerRow.querySelector('th:first-child')) return;
+      
+      headerRow.querySelectorAll('th.drag-over').forEach(th => th.classList.remove('drag-over'));
+      targetTh.classList.add('drag-over');
+      
+      // Insert placeholder before or after target
+      const rect = targetTh.getBoundingClientRect();
+      const midX = rect.left + rect.width / 2;
+      if (e.clientX < midX) {
+        targetTh.parentNode.insertBefore(placeholder, targetTh);
+      } else {
+        targetTh.parentNode.insertBefore(placeholder, targetTh.nextSibling);
+      }
+    });
+    
+    headerRow.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const targetTh = e.target.closest('th[data-sort]');
+      if (!targetTh || targetTh === draggedTh || targetTh === headerRow.querySelector('th:first-child')) return;
+      
+      // Move the dragged column
+      const draggedIndex = Array.from(headerRow.children).indexOf(draggedTh);
+      const targetIndex = Array.from(headerRow.children).indexOf(targetTh);
+      const rect = targetTh.getBoundingClientRect();
+      const midX = rect.left + rect.width / 2;
+      const insertBefore = e.clientX < midX;
+      
+      // Reorder columns in the DOM
+      if (insertBefore) {
+        headerRow.insertBefore(draggedTh, targetTh);
+      } else {
+        headerRow.insertBefore(draggedTh, targetTh.nextSibling);
+      }
+      
+      // Update the data-col-order attribute for persistence
+      updateColumnOrder(headerRow);
+      
+      // Re-render table body to match new column order
+      renderPositions();
+    });
+    
+    headerRow.addEventListener('dragleave', (e) => {
+      if (!headerRow.contains(e.relatedTarget)) {
+        headerRow.querySelectorAll('th.drag-over').forEach(th => th.classList.remove('drag-over'));
+        if (placeholder && placeholder.parentNode) placeholder.parentNode.removeChild(placeholder);
+      }
+    });
+  }
+}
+
+function updateColumnOrder(headerRow) {
+  const order = Array.from(headerRow.querySelectorAll('th[data-sort]')).map(th => th.dataset.sort);
+  // Store in localStorage for persistence
+  try { localStorage.setItem('positionsColumnOrder', JSON.stringify(order)); } catch {}
+  // Update state
+  state.positionsColumnOrder = order;
+}
+
+function restorePositionsColumnOrder() {
+  try {
+    const saved = localStorage.getItem('positionsColumnOrder');
+    if (!saved) return;
+    const order = JSON.parse(saved);
+    if (!Array.isArray(order) || order.length === 0) return;
+    
+    const table = document.getElementById('positionsTable');
+    if (!table) return;
+    const headerRow = table.querySelector('thead tr');
+    if (!headerRow) return;
+    
+    // Get all sortable headers (excluding the first fixed column)
+    const sortableHeaders = Array.from(headerRow.querySelectorAll('th[data-sort]'));
+    if (sortableHeaders.length < 2) return;
+    
+    // Create a map of sort key to header element
+    const headerMap = {};
+    sortableHeaders.forEach(th => { headerMap[th.dataset.sort] = th; });
+    
+    // Reorder headers according to saved order
+    // Keep the first column (ticker) fixed
+    const firstTh = sortableHeaders[0];
+    const remainingOrder = order.filter(key => key !== firstTh.dataset.sort);
+    
+    // Remove all sortable headers except the first from the DOM
+    sortableHeaders.slice(1).forEach(th => th.remove());
+    
+    // Re-insert in saved order
+    remainingOrder.forEach(key => {
+      const th = headerMap[key];
+      if (th) headerRow.appendChild(th);
+    });
+    
+    // Update state
+    state.positionsColumnOrder = order;
+  } catch (e) {
+    console.warn('Failed to restore positions column order:', e);
+  }
 }
 
 // P1: Proventos por ativo — agregação por ticker (total, 12M, yield on cost, frequência)
@@ -2440,6 +2682,7 @@ let livePricesInterval = null;
 let livePricesActive = false;
 
 function initLivePricesToggle() {
+  if (window.__livePricesToggleInitialized) return; window.__livePricesToggleInitialized = true; // Prevent multiple initializations
   const toggle = document.getElementById('livePricesToggle');
   if (!toggle) return;
 
@@ -2685,7 +2928,7 @@ const COMMANDS = [
   { id: 'tab-import', title: 'Ir para Importar', desc: 'Centro de importação', icon: '📥', action: () => switchTab('import') },
   { id: 'tab-backup', title: 'Ir para Backup', desc: 'Exportar/importar dados', icon: '💾', action: () => switchTab('backup') },
   { id: 'tab-corporate-events', title: 'Ir para Eventos Corp.', desc: 'Splits, JCP, dividendas', icon: '📅', action: () => switchTab('corporate-events') },
-  { id: 'tab-data-trust', title: 'Ir para Data Trust', desc: 'Auditoria e confiança', icon: '🔍', action: () => switchTab('data-trust') },
+  { id: 'tab-data-quality', title: 'Ir para Qualidade dos Dados', desc: 'Auditoria e confiança', icon: '🔍', action: () => switchTab('data-quality') },
   { id: 'tab-goals', title: 'Ir para Metas', desc: 'Objetivos financeiros', icon: '🎯', action: () => switchTab('goals') },
   { id: 'tab-backup-portability', title: 'Ir para Backup Port.', desc: 'Portabilidade avançada', icon: '📦', action: () => switchTab('backup-portability') },
   { id: 'tab-settings', title: 'Ir para Configurações', desc: 'Conta, aparência e dados', icon: '⚙️', action: () => switchTab('settings') },
@@ -2705,6 +2948,7 @@ let paletteSelectedIndex = 0;
 let filteredCommands = [...COMMANDS];
 
 function initCommandPalette() {
+  if (window.__commandPaletteInitialized) return; window.__commandPaletteInitialized = true; // Prevent multiple initializations
   const toggle = document.getElementById('commandPaletteToggle');
   const modal = document.getElementById('commandPaletteModal');
   const search = document.getElementById('paletteSearch');
@@ -2838,6 +3082,7 @@ function executePaletteCommand(cmd) {
 // ========================================
 
 function initPriceAlerts() {
+  if (window.__priceAlertsInitialized) return; window.__priceAlertsInitialized = true; // Prevent multiple initializations
   // Load from storage
   const stored = localStorage.getItem('priceAlerts');
   if (stored) {
@@ -3100,6 +3345,10 @@ async function init() {
 
   // Initialize DOM references first
   initDOM();
+  initUserMenu();
+
+  // Restore saved column order for positions table
+  restorePositionsColumnOrder();
 
   // Apply real wallet override if provided by carteira-data.js
   if (window.__CARTEIRA_OVERRIDE) {
@@ -3122,7 +3371,6 @@ async function init() {
   renderKPIs();
   renderMonthlyTable();
   initTabs();
-  initUserMenu();
   initThemeToggle();
   // Preferência de animações reduzidas persistida (aba Configurações)
   try { if (localStorage.getItem('investidor10-motion') === 'off') document.documentElement.setAttribute('data-motion', 'reduced'); } catch (e) {}

@@ -12,7 +12,7 @@ const TABS = [
   { tab: 'rebalance', name: 'Rebalancear' },
   { tab: 'risk', name: 'Risco' },
   { tab: 'montecarlo', name: 'Monte Carlo' },
-  { tab: 'data-trust', name: 'Data Trust' },
+  { tab: 'data-quality', name: 'Qualidade dos Dados' },
   { tab: 'goals', name: 'Metas' },
   { tab: 'benchmarks', name: 'Benchmarks' },
   { tab: 'tax', name: 'Impostos' },

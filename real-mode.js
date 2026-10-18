@@ -1061,9 +1061,8 @@
           if (panel.id==='panel-rebalance') initRebalance();
           if (panel.id==='panel-fixed') initFixedIncome();
           if (panel.id==='panel-risk') initRiskPanel();
-          // P-NIGHT: Monte Carlo vive como subpainél de Configurações agora
-          // (panel-montecarlo não existe mais) — liga o botão junto com settings
-          if (panel.id==='panel-settings') initMonteCarloPanel();
+          // Monte Carlo: agora é aba própria (panel-montecarlo) + subpainél legacy (panel-settings)
+          if (panel.id==='panel-montecarlo' || panel.id==='panel-settings') initMonteCarloPanel();
           }
         }
       }

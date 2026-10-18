@@ -12,14 +12,15 @@ test.describe('Smoke Tests', () => {
     await expect(page).toHaveTitle(/Investidor10|Dashboard|Carteira/i);
   });
 
-  test('15 abas de navegação presentes', async ({ page }) => {
+  test('19 abas de navegação presentes', async ({ page }) => {
     const tabs = page.locator('.tab-btn');
-    await expect(tabs).toHaveCount(15);
+    await expect(tabs).toHaveCount(19);
 
     const expectedTabs = [
       'Resumo', 'Patrimônio', 'Rentabilidade', 'Posições', 'Proventos',
       'Lançamentos', 'Renda Fixa', 'Rebalancear', 'Risco', 'Impostos',
       'Eventos Corp.', 'Importar', 'Backup', 'Backup Port.',
+      'Metas', 'Benchmarks', 'Simulação', 'Qualidade dos Dados',
       'Configurações'
     ];
 

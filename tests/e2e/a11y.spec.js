@@ -12,6 +12,10 @@ const TABS = [
   { id: 'panel-fixed', label: 'Renda Fixa', tabData: 'fixed' },
   { id: 'panel-entries', label: 'Lançamentos', tabData: 'entries' },
   { id: 'panel-patrimony', label: 'Patrimônio', tabData: 'patrimony' },
+  { id: 'panel-goals', label: 'Metas', tabData: 'goals' },
+  { id: 'panel-benchmarks', label: 'Benchmarks', tabData: 'benchmarks' },
+  { id: 'panel-montecarlo', label: 'Simulação', tabData: 'montecarlo' },
+  { id: 'panel-data-quality', label: 'Qualidade dos Dados', tabData: 'data-quality' },
   { id: 'panel-settings', label: 'Configurações', tabData: 'settings' },
 ];
 

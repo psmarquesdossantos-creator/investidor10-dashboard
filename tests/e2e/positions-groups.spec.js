@@ -17,9 +17,9 @@ test('barra de abas não tem rótulos de grupo (não clicáveis removidos)', asy
   await page.goto('http://localhost:8765/');
   await page.waitForLoadState('networkidle');
   await expect(page.locator('.tabs-group-label')).toHaveCount(0);
-  // as 15 abas continuam presentes (P-NIGHT: Metas/Benchmarks/MC/Data Trust
-  // viraram subpainéis de Configurações)
-  await expect(page.locator('.tab-btn')).toHaveCount(15);
+  // as 19 abas continuam presentes (v15.2: Metas/Benchmarks/MC/Qualidade
+  // dos Dados voltaram a ser abas próprias)
+  await expect(page.locator('.tab-btn')).toHaveCount(19);
 });
 
 test('Ativos: grupos colapsam e expandem com clique', async ({ page }) => {
@@ -37,22 +37,29 @@ test('Ativos: grupos colapsam e expandem com clique', async ({ page }) => {
   const groupKey = await firstHeader.getAttribute('data-group');
   const toggle = firstHeader.locator('.group-toggle');
 
-  // estado inicial: expandido (linhas visíveis)
+  // estado inicial: RECOLHIDO por padrão (P30 — v15.2)
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  const visibleCollapsed = await page.locator(`#positionsBody tr[data-group="${groupKey}"]:not(.group-header):visible`).count();
+  expect(visibleCollapsed).toBe(0);
+  // as linhas continuam no DOM (estado preservado para dados/testes)
+  const inDomStart = await page.locator(`#positionsBody tr[data-group="${groupKey}"]:not(.group-header)`).count();
+  expect(inDomStart).toBeGreaterThan(0);
+
+  // clica → expande
+  await firstHeader.click();
+  await page.waitForTimeout(300);
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
   const visibleBefore = await page.locator(`#positionsBody tr[data-group="${groupKey}"]:not(.group-header):visible`).count();
   expect(visibleBefore).toBeGreaterThan(0);
-  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
 
-  // clica → colapsa
+  // clica de novo → colapsa
   await firstHeader.click();
   await page.waitForTimeout(300);
   await expect(toggle).toHaveAttribute('aria-expanded', 'false');
   const visibleAfter = await page.locator(`#positionsBody tr[data-group="${groupKey}"]:not(.group-header):visible`).count();
   expect(visibleAfter).toBe(0);
-  // as linhas continuam no DOM (estado preservado para dados/testes)
-  const inDom = await page.locator(`#positionsBody tr[data-group="${groupKey}"]:not(.group-header)`).count();
-  expect(inDom).toBeGreaterThan(0);
 
-  // clica de novo → expande
+  // clica mais uma vez → restaura
   await firstHeader.click();
   await page.waitForTimeout(300);
   await expect(toggle).toHaveAttribute('aria-expanded', 'true');

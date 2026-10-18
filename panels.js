@@ -1087,7 +1087,7 @@
       const renderedTabs = new Set();
       const LAZY_TABS = new Set([
         'rebalance', 'fixed', 'benchmarks', 'tax', 'corporate-events',
-        'data-trust', 'backup-portability', 'risk', 'montecarlo', 'import', 'backup',
+        'data-quality', 'backup-portability', 'risk', 'montecarlo', 'import', 'backup',
         'patrimony', 'earnings', 'goals', 'entries', 'returns', 'settings'
       ]);
 
@@ -1104,12 +1104,6 @@
         else if (tabName === 'benchmarks') renderBenchmarks();
         else if (tabName === 'tax') renderTax();
         else if (tabName === 'corporate-events') renderCorporateEvents();
-        else if (tabName === 'data-trust') {
-          renderDataTrust();
-          renderDataTrustAlerts();
-          renderAuditSnapshots();
-          renderDataFreshness();
-        }
         else if (tabName === 'backup-portability') renderBackupHistory();
         else if (tabName === 'risk') {
           // Delay: real-mode.js MutationObserver sobrescreve #riskKpis logo após o
@@ -1122,29 +1116,15 @@
         else if (tabName === 'entries') renderAportes();
         else if (tabName === 'returns') renderClassReturns();
         else if (tabName === 'montecarlo') autoRunMonteCarlo();
+        else if (tabName === 'benchmarks') renderBenchmarks();
+        else if (tabName === 'data-quality') {
+          renderDataTrust();
+          renderDataTrustAlerts();
+          renderAuditSnapshots();
+          renderDataFreshness();
+        }
         else if (tabName === 'settings') {
           renderSettingsPanel();
-          // P-NIGHT: Metas, Benchmarks, Monte Carlo e Qualidade dos Dados
-          // (ex-abas) vivem dentro de Configurações agora — renderizam na
-          // primeira abertura da aba.
-          const subRenderers = [
-            ['goals', () => renderGoals()],
-            ['benchmarks', () => renderBenchmarks()],
-            ['montecarlo', () => autoRunMonteCarlo()],
-            ['data-trust', () => {
-              renderDataTrust();
-              renderDataTrustAlerts();
-              renderAuditSnapshots();
-              renderDataFreshness();
-            }],
-          ];
-          for (const [name, fn] of subRenderers) {
-            if (!renderedTabs.has(name)) {
-              renderedTabs.add(name);
-              try { fn(); }
-              catch (e2) { console.warn(name, 'render (settings) falhou:', e2); }
-            }
-          }
         }
       } catch (e) {
         console.warn('lazy render failed:', tabName, e);

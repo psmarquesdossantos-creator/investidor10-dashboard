@@ -6,7 +6,7 @@ const PANELS = [
   { tab: 'benchmarks', body: 'benchBody', minRows: 1 },
   { tab: 'tax', body: 'darfBody', minRows: 1 },
   { tab: 'corporate-events', body: 'corpEventsLogBody', minRows: 1 },
-  { tab: 'data-trust', body: 'dataTrustBody', minRows: 1 },
+  { tab: 'data-quality', body: 'dataTrustBody', minRows: 1 },
   { tab: 'backup-portability', body: 'migrationLogBody', minRows: 1 },
   { tab: 'fixed', body: 'fixedBody', minRows: 2 },
 ];
@@ -103,17 +103,12 @@ test.describe('Painéis secundários — render real', () => {
         // Listen for console messages
         page.on('console', msg => console.log('BROWSER CONSOLE:', msg.text()));
 
-        // P-NIGHT: benchmarks e data-trust agora são subpainéis da aba
-        // Configurações — navegam via settings em vez de aba própria
-        if (tab === 'benchmarks' || tab === 'data-trust') {
-          await page.locator('.tab-btn[data-tab="settings"]').click();
-          await page.waitForTimeout(700);
-        } else {
-          const btn = page.locator(`.tab-btn[data-tab="${tab}"]`);
-          await expect(btn).toHaveCount(1);
-          await btn.click();
-          await page.waitForTimeout(300);
-        }
+        // v15.2: benchmarks e data-quality são abas próprias novamente —
+        // navegação direta pelo botão da aba
+        const btn = page.locator(`.tab-btn[data-tab="${tab}"]`);
+        await expect(btn).toHaveCount(1);
+        await btn.click();
+        await page.waitForTimeout(300);
 
         const rows = await page.locator(`#${body} tr`).count();
         // O painel precisa ter AO MENOS uma linha — dados OU estado vazio explícito
@@ -131,8 +126,8 @@ test('data-trust audita todos os ativos', async ({ page }) => {
   await page.goto('/');
   await page.waitForLoadState('networkidle');
   await page.evaluate(() => window.__resetRenderedTabs?.());
-  // P-NIGHT: Data Trust vive dentro de Configurações agora
-  await page.locator('.tab-btn[data-tab="settings"]').click();
+  // v15.2: Qualidade dos Dados é aba própria (data-quality)
+  await page.locator('.tab-btn[data-tab="data-quality"]').click();
   await page.waitForTimeout(700);
   const rows = await page.locator('#dataTrustBody tr').count();
   expect(rows).toBeGreaterThanOrEqual(20); // 20+ ativos reais nos dados

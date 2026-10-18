@@ -1,7 +1,7 @@
 // Diagnóstico visual: screenshots de todas as abas em 2 viewports + dump de métricas
 import { test, expect } from '@playwright/test';
 
-const TABS = ['summary','patrimony','returns','positions','earnings','entries','fixed','rebalance','risk','montecarlo','benchmarks','tax','import','backup','corporate-events','data-trust','backup-portability'];
+const TABS = ['summary','patrimony','returns','positions','earnings','entries','fixed','rebalance','risk','montecarlo','benchmarks','tax','import','backup','corporate-events','data-quality','backup-portability'];
 
 test('audit visual — abas principais desktop 1366', async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 768 });

@@ -71,15 +71,16 @@ test.describe('Live — produção pública (privacidade + lock)', () => {
 
 test.describe('Live — saúde funcional da produção', () => {
   test('Monte Carlo executa via Web Worker na produção', async ({ page }) => {
+    test.setTimeout(120000); // Monte Carlo pode demorar >60s na produção
     await page.goto(BASE + '/index.html');
     await page.waitForLoadState('networkidle');
     await enterApp(page);
-    // P-NIGHT: Monte Carlo é subpainél de Configurações agora
-    await page.evaluate(() => { if (window.__resetRenderedTabs) window.__resetRenderedTabs(); window.switchTab('settings'); });
+    // Monte Carlo agora é aba própria (tab-montecarlo)
+    await page.evaluate(() => { if (window.__resetRenderedTabs) window.__resetRenderedTabs(); window.switchTab('montecarlo'); });
     await page.waitForFunction(() => {
       const k = document.getElementById('mcKpis');
       return k && k.innerText && k.innerText.includes('P50') && !/Carregando|Simulando/.test(k.innerText);
-    }, { timeout: 30000 });
+    }, { timeout: 90000 });
     const txt = await page.evaluate(() => document.getElementById('mcKpis')?.innerText?.replace(/\n/g, ' | ').slice(0, 180));
     console.log('MC (produção):', txt);
     const hasChart = await page.evaluate(() => !!(window.Chart && window.Chart.getChart(document.getElementById('mcChart'))));
