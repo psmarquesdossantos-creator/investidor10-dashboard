@@ -4,6 +4,21 @@
 
 ---
 
+## [15.1.0] — 2026-10-17 (P30)
+
+### Changed — Rebrand e UX da aba Ativos
+
+- **Rebrand**: logo/título/lock agora "Carteira de Investimentos" (antes "Investidor10")
+- **Badge "vs Investidor10: +2.2%" removido** — comparava contra valor real hardcoded (686.972,13) no código público (P26)
+- **Rótulos de grupo da barra de abas removidos** (Visão Geral/Ativos/Análise/Mercado/Configurações — não clicáveis, só poluíam)
+- **Ativos sem arrastar**: colunas de contexto somem progressivamente (≤1600: Classe/Variação/Confiança; ≤1370: % Ideal + célula Ativo empilhada + padding compacto) — no monitor 2560 TODAS as 16 colunas continuam visíveis
+- **Grupos colapsáveis** em Ativos (Ações/Fundos/Renda Fixa/ETFs/Outros): clique no header recolhe/expand com chevron + aria-expanded; linhas ficam no DOM (dados/testes intactos)
+- Fix: atributo `class` duplicado na célula % Ideal (caía o estilo)
+- +5 specs E2E (`positions-groups.spec.js`): rebrand, barra slim, colapso, no-drag 1366, 16 colunas @2560
+- SW v28
+
+---
+
 ## [15.0.0] — 2026-10-17
 
 ### Added — Conta Google, Configurações e UX (P29)

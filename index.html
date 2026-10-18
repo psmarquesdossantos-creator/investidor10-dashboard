@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Investidor10 - Gerenciador de Carteira de Investimentos">
-  <title>Carteira de Investimentos - Investidor10</title>
+  <title>Carteira de Investimentos</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -18,12 +18,12 @@
   <header class="header" role="banner">
     <div class="header-top">
       <div class="container header-inner">
-        <a href="#" class="logo" aria-label="Investidor10 Home">
+        <a href="#" class="logo" aria-label="Carteira de Investimentos — Início">
           <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
             <rect width="32" height="32" rx="8" fill="#1A73E8"/>
             <path d="M8 16L14 22L24 10" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          <span>Investidor10</span>
+          <span>Carteira de Investimentos</span>
         </a>
         <!-- P26: nav de links mortos removida (Mercados/Recomendações/Cursos/IR não
              funcionavam neste app) — navegação real é a barra de abas + paleta ⌘K -->
@@ -63,26 +63,21 @@
     </div>
     <div class="header-tabs" role="tablist" aria-label="Abas da carteira" tabindex="0">
                   <div class="container">
-                    <span class="tabs-group-label" aria-hidden="true">Visão Geral</span>
                     <button role="tab" id="tab-summary" aria-controls="panel-summary" aria-selected="true" class="tab-btn active" data-tab="summary" tabindex="0">Resumo</button>
                     <button role="tab" id="tab-patrimony" aria-controls="panel-patrimony" aria-selected="false" class="tab-btn" data-tab="patrimony" tabindex="-1">Patrimônio</button>
                     <button role="tab" id="tab-returns" aria-controls="panel-returns" aria-selected="false" class="tab-btn" data-tab="returns" tabindex="-1">Rentabilidade</button>
-                    <span class="tabs-group-label" aria-hidden="true">Ativos</span>
                     <button role="tab" id="tab-positions" aria-controls="panel-positions" aria-selected="false" class="tab-btn" data-tab="positions" tabindex="-1">Posições</button>
                     <button role="tab" id="tab-earnings" aria-controls="panel-earnings" aria-selected="false" class="tab-btn" data-tab="earnings" tabindex="-1">Proventos</button>
                     <button role="tab" id="tab-entries" aria-controls="panel-entries" aria-selected="false" class="tab-btn" data-tab="entries" tabindex="-1">Lançamentos</button>
                     <button role="tab" id="tab-fixed" aria-controls="panel-fixed" aria-selected="false" class="tab-btn" data-tab="fixed" tabindex="-1">Renda Fixa</button>
-                    <span class="tabs-group-label" aria-hidden="true">Análise</span>
                     <button role="tab" id="tab-rebalance" aria-controls="panel-rebalance" aria-selected="false" class="tab-btn" data-tab="rebalance" tabindex="-1">Rebalancear</button>
                     <button role="tab" id="tab-risk" aria-controls="panel-risk" aria-selected="false" class="tab-btn" data-tab="risk" tabindex="-1">Risco</button>
                     <button role="tab" id="tab-montecarlo" aria-controls="panel-montecarlo" aria-selected="false" class="tab-btn" data-tab="montecarlo" tabindex="-1">Monte Carlo</button>
                     <button role="tab" id="tab-data-trust" aria-controls="panel-data-trust" aria-selected="false" class="tab-btn" data-tab="data-trust" tabindex="-1">Data Trust</button>
                     <button role="tab" id="tab-goals" aria-controls="panel-goals" aria-selected="false" class="tab-btn" data-tab="goals" tabindex="-1">Metas</button>
-                    <span class="tabs-group-label" aria-hidden="true">Mercado</span>
                     <button role="tab" id="tab-benchmarks" aria-controls="panel-benchmarks" aria-selected="false" class="tab-btn" data-tab="benchmarks" tabindex="-1">Benchmarks</button>
                     <button role="tab" id="tab-tax" aria-controls="panel-tax" aria-selected="false" class="tab-btn" data-tab="tax" tabindex="-1">Impostos</button>
                     <button role="tab" id="tab-corporate-events" aria-controls="panel-corporate-events" aria-selected="false" class="tab-btn" data-tab="corporate-events" tabindex="-1">Eventos Corp.</button>
-                    <span class="tabs-group-label" aria-hidden="true">Configurações</span>
                     <button role="tab" id="tab-import" aria-controls="panel-import" aria-selected="false" class="tab-btn" data-tab="import" tabindex="-1">Importar</button>
                     <button role="tab" id="tab-backup" aria-controls="panel-backup" aria-selected="false" class="tab-btn" data-tab="backup" tabindex="-1">Backup</button>
                     <button role="tab" id="tab-backup-portability" aria-controls="panel-backup-portability" aria-selected="false" class="tab-btn" data-tab="backup-portability" tabindex="-1">Backup Port.</button>
@@ -322,7 +317,7 @@
             <thead>
               <tr>
                 <th scope="col" data-sort="ticker" class="sortable" aria-sort="none">Ativo</th>
-                <th scope="col">Classe</th>
+                <th scope="col" class="col-classe">Classe</th>
                 <th scope="col" data-sort="qty" class="sortable" aria-sort="none">Qtd.</th>
                 <th scope="col" data-sort="avgPrice" class="sortable" aria-sort="none">Preço médio</th>
                 <th scope="col" data-sort="currentPrice" class="sortable" aria-sort="none">Preço atual</th>
@@ -330,12 +325,12 @@
                 <th scope="col">P&L</th>
                 <th scope="col" data-sort="return" class="sortable" aria-sort="none">Rentab.</th>
                 <th scope="col">% Carteira</th>
-                <th scope="col">% Ideal</th>
+                <th scope="col" class="col-ideal">% Ideal</th>
                 <th scope="col">Comprar?</th>
                 <th scope="col">Div./mês (12M)</th>
                 <th scope="col">DY</th>
-                <th scope="col">Variação</th>
-                <th scope="col">Confiança</th>
+                <th scope="col" class="col-var">Variação</th>
+                <th scope="col" class="col-conf">Confiança</th>
                 <th scope="col"><span class="visually-hidden">Ações</span></th>
               </tr>
             </thead>
@@ -602,7 +597,7 @@
                   <thead>
                     <tr>
                       <th scope="col">Ativo</th>
-                      <th scope="col">Classe</th>
+                      <th scope="col" class="col-classe">Classe</th>
                       <th scope="col">Peso</th>
                       <th scope="col">Rentab. (12M)</th>
                       <th scope="col">Contribuição</th>
@@ -624,7 +619,7 @@
                 <table class="data-table" id="classReturnTable">
                   <thead>
                     <tr>
-                      <th scope="col">Classe</th>
+                      <th scope="col" class="col-classe">Classe</th>
                       <th scope="col">Ativos</th>
                       <th scope="col">Custo total</th>
                       <th scope="col">Valor atual</th>
@@ -723,7 +718,7 @@
           <table class="data-table" id="rebalanceTable">
             <thead>
               <tr>
-                <th scope="col">Classe</th>
+                <th scope="col" class="col-classe">Classe</th>
                 <th scope="col">Atual %</th>
                 <th scope="col">Meta %</th>
                 <th scope="col">Diferença</th>
@@ -952,7 +947,7 @@
                     <tr>
                       <th scope="col">Ticker</th>
                       <th scope="col">Nome</th>
-                      <th scope="col">Classe</th>
+                      <th scope="col" class="col-classe">Classe</th>
                       <th scope="col">Atual (Qtd / PM / Valor)</th>
                       <th scope="col">Novo (Qtd / PM / Valor)</th>
                       <th scope="col">Var. %</th>
@@ -1592,7 +1587,7 @@
     </div>
     <section id="authGate" class="auth-gate hidden" role="dialog" aria-modal="true" aria-labelledby="authTitle">
       <div class="auth-card">
-        <div class="auth-logo" aria-hidden="true">Investidor10</div>
+        <div class="auth-logo" aria-hidden="true">Carteira de Investimentos</div>
         <h2 id="authTitle">Acesso restrito</h2>
         <p class="auth-sub">Entre para acessar sua carteira. Contas não autorizadas entram no modo demonstração.</p>
         <div id="authError" class="auth-error hidden"></div>

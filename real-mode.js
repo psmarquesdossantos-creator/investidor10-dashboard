@@ -812,22 +812,6 @@
     }).join('');
   }
 
-  // ---- 6. Extras: comparação Investidor10 (diff vs público) ----
-  function injectInvestidor10Diff() {
-    // adiciona badge no header se houver diferença grande
-    const publicValue = 686972.13; // do Investidor10 público
-    const myValue = MOCK_DATA.kpis.total;
-    const diff = ((myValue - publicValue) / publicValue * 100).toFixed(1);
-    if (Math.abs(diff) > 1) {
-      const badge = document.createElement('span');
-      badge.className = 'badge ' + (diff > 0 ? 'badge-warning' : 'badge-info');
-      badge.style.marginLeft = 'var(--space-2)';
-      badge.textContent = `vs Investidor10: ${diff>0?'+':''}${diff}%`;
-      const logo = document.querySelector('.logo');
-      if (logo) logo.appendChild(badge);
-    }
-  }
-
   // ---- 7. Extras: atalho teclado (⌘K) paleta comandos ----
   function setupCommandPalette() {
     const btn = document.getElementById('commandPaletteToggle');
@@ -1084,7 +1068,6 @@
         waitForCarteiraData();
 
     // inject diff badge
-    injectInvestidor10Diff();
 
     // maturity check
     checkFixedMaturity();

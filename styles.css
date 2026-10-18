@@ -1094,6 +1094,26 @@ html[data-motion="reduced"] *, html[data-motion="reduced"] *::before, html[data-
 .settings-card-flash { outline: 2px solid var(--color-border-focus); outline-offset: 2px; }
 .btn-danger-text { color: var(--color-danger-text); }
 .settings-card { flex-direction: column; align-items: stretch; gap: var(--space-2); }
+/* P30: posições colapsáveis por grupo */
+.group-header { cursor: pointer; user-select: none; }
+.group-header:hover { background: var(--color-bg); }
+.group-toggle { display: flex; align-items: center; gap: var(--space-2); width: 100%; background: transparent; border: none; padding: 0; font: inherit; color: inherit; text-align: left; cursor: pointer; min-height: 44px; }
+.group-toggle:focus-visible { outline: 2px solid var(--color-border-focus); outline-offset: 2px; border-radius: var(--radius-sm); }
+.group-chevron { display: inline-flex; align-items: center; transition: transform var(--transition-fast); color: var(--color-text-muted); }
+.group-header.collapsed .group-chevron { transform: rotate(-90deg); }
+/* P30: fit sem arrastar — colunas de contexto somem progressivamente
+   (Classe é redundante com o header do grupo; Variação/Confiança sem preços ao vivo = '—') */
+@media (max-width: 1600px) { #positionsTable .col-classe, #positionsTable .col-var, #positionsTable .col-conf { display: none; } }
+@media (max-width: 1370px) {
+  #positionsTable .col-ideal { display: none; }
+  #positionsTable th, #positionsTable td { padding: var(--space-1) var(--space-2); }
+  /* Ativo compacto: ticker em cima, nome embaixo (economiza ~85px da coluna) */
+  #positionsTable .asset-cell { flex-direction: column; align-items: flex-start; gap: 0; }
+  #positionsTable .asset-name { max-width: 150px; }
+}
+/* P30: tabela slim (menos padding nas posições) */
+#positionsTable th { padding: var(--space-2) var(--space-3); }
+#positionsTable td { padding: var(--space-2) var(--space-3); }
 .settings-gap { margin-top: 10px; }
 .search-input { flex: 1; border: none; background: transparent; font-size: var(--font-size-lg); outline: none; }
 .badge-sm { font-size: 10px; padding: 2px 6px; border-radius: 4px; background: var(--color-bg); border: 1px solid var(--color-border); }

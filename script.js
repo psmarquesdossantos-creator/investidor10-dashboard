@@ -202,7 +202,8 @@ const state = {
   currentEntriesPage: 1,
   positionsPerPage: 15,
   earningsPerPage: 20,
-  entriesPerPage: 20
+  entriesPerPage: 20,
+  collapsedGroups: new Set() // P30: grupos de ativos recolhidos (colapsáveis)
 };
 
 // ========================================
@@ -1341,19 +1342,21 @@ function renderPositions() {
       });
     }
 
-    // Add group header row
+    // Add group header row (P30: colapsável — clique recolhe/expand os ativos do grupo)
     const groupValue = groupPositions.reduce((s, p) => s + (p.value || 0), 0);
     const groupPct = totalValue > 0 ? (groupValue / totalValue * 100) : 0;
+    const isCollapsed = state.collapsedGroups.has(group.key);
     allRows.push(`
-      <tr class="group-header" data-group="${group.key}">
+      <tr class="group-header${isCollapsed ? ' collapsed' : ''}" data-group="${group.key}">
         <td colspan="16">
-          <div class="group-header-content">
+          <button type="button" class="group-toggle" aria-expanded="${!isCollapsed}" title="${isCollapsed ? 'Expandir' : 'Recolher'} ativos do grupo">
+            <span class="group-chevron" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
             <span class="group-icon">${group.icon}</span>
             <span class="group-label">${group.label}</span>
             <span class="group-count">${groupPositions.length} ativo${groupPositions.length !== 1 ? 's' : ''}</span>
             <span class="group-value">${fmt.currency(groupValue)}</span>
             <span class="group-pct">${fmt.percent(groupPct)}</span>
-          </div>
+          </button>
         </td>
       </tr>
     `);
@@ -1366,15 +1369,16 @@ function renderPositions() {
       const idealAssetPct = classCounts[cls] > 0 ? (classIdeal[cls] || 0) / classCounts[cls] : 0;
       const currentPct = p.weight != null ? p.weight : (p.value / totalValue * 100);
       const shouldBuy = currentPct < idealAssetPct * 0.9; // 10% de tolerância
+      const hideRow = isCollapsed ? ' hidden' : '';
       allRows.push(`
-        <tr data-group="${group.key}">
+        <tr data-group="${group.key}"${hideRow}>
           <td>
             <div class="asset-cell">
               <span class="asset-ticker">${p.ticker}</span>
               <span class="asset-name">${p.name}</span>
             </div>
           </td>
-          <td><span class="asset-class ${p.class}">${getClassLabel(p.class)}</span></td>
+          <td class="col-classe"><span class="asset-class ${p.class}">${getClassLabel(p.class)}</span></td>
           <td class="text-right">${fmt.number(p.qty, 4)}</td>
           <td class="text-right">${fmt.currency(p.avgPrice)}</td>
           <td class="text-right">${fmt.currency(p.currentPrice)}</td>
@@ -1382,12 +1386,12 @@ function renderPositions() {
           <td class="text-right pl-cell ${p.pl >= 0 ? 'positive' : 'negative'}">${fmt.currency(p.pl)}</td>
           <td class="text-right pct-cell ${p.return >= 0 ? 'positive' : 'negative'}">${fmt.percent(p.return)}</td>
           <td class="text-right">${fmt.percent(p.weight)}</td>
-          <td class="text-right" class="text-primary-ink">${idealAssetPct > 0 ? fmt.percent(idealAssetPct) : '—'}</td>
+          <td class="text-right col-ideal text-primary-ink">${idealAssetPct > 0 ? fmt.percent(idealAssetPct) : '—'}</td>
           <td class="text-right">${idealAssetPct > 0 ? `<span class="asset-class ${shouldBuy ? 'fiis' : 'bdr'}">${shouldBuy ? 'Sim' : '—'}</span>` : '—'}</td>
            <td class="text-right">${div12mByTicker[p.ticker] > 0 ? fmt.currency(div12mByTicker[p.ticker] / 12) : '—'}</td>
            <td class="text-right">${div12mByTicker[p.ticker] > 0 && p.value > 0 ? fmt.percent(div12mByTicker[p.ticker] / p.value * 100) : '—'}</td>
-           <td class="text-right pct-cell ${p.dayChange == null ? '' : p.dayChange >= 0 ? 'positive' : 'negative'}" title="${p.dayChange == null ? 'Ative preços ao vivo para ver a variação diária' : ''}">${p.dayChange == null ? '—' : (p.dayChange >= 0 ? '+' : '') + fmt.percent(p.dayChange)}</td>
-            <td>${getConfidenceBadge(p)}</td>
+           <td class="text-right pct-cell col-var ${p.dayChange == null ? '' : p.dayChange >= 0 ? 'positive' : 'negative'}" title="${p.dayChange == null ? 'Ative preços ao vivo para ver a variação diária' : ''}">${p.dayChange == null ? '—' : (p.dayChange >= 0 ? '+' : '') + fmt.percent(p.dayChange)}</td>
+            <td class="col-conf">${getConfidenceBadge(p)}</td>
            <td>
              <button class="action-btn edit-position-btn" data-index="${globalIndex}" aria-label="Editar ${p.ticker}">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -1412,6 +1416,20 @@ function renderPositions() {
       openPositionModalForEdit(index);
     });
   });
+
+  // P30: colapsar/expandir grupos — delegação ÚNICA no tbody (re-render não re-bind)
+  if (!els.positionsBody.__groupToggleWired) {
+    els.positionsBody.__groupToggleWired = true;
+    els.positionsBody.addEventListener('click', (e) => {
+      const header = e.target.closest('tr.group-header');
+      if (!header) return;
+      const g = header.dataset.group;
+      if (!g) return;
+      if (state.collapsedGroups.has(g)) state.collapsedGroups.delete(g);
+      else state.collapsedGroups.add(g);
+      renderPositions();
+    });
+  }
 
   // Update pagination
   updatePositionsPagination();
