@@ -1371,7 +1371,7 @@ function renderPositions() {
       const shouldBuy = currentPct < idealAssetPct * 0.9; // 10% de tolerância
       const hideRow = isCollapsed ? ' hidden' : '';
       allRows.push(`
-        <tr data-group="${group.key}"${hideRow}>
+        <tr data-group="${group.key}" data-ticker="${p.ticker}"${hideRow}>
           <td>
             <div class="asset-cell">
               <span class="asset-ticker">${p.ticker}</span>
@@ -2268,6 +2268,140 @@ function recalculateTotals() {
 }
 
 // ========================================
+// P-NIGHT (17/10): usabilidade — Performance Mensal recolhida, modais de
+// Rentabilidade, detalhe da posição no clique da linha, pré-abertura do
+// modal de lançamento (Renda Fixa / detalhe)
+// ========================================
+
+let currentDetailPosition = null;
+
+function openPositionDetail(p) {
+  if (!p) return;
+  currentDetailPosition = p;
+  const grid = document.getElementById('positionDetailGrid');
+  const title = document.getElementById('positionDetailTitle');
+  const dlg = document.getElementById('positionDetailModal');
+  if (!grid || !dlg) return;
+    const escD = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  if (title) title.textContent = `Detalhe: ${p.ticker}`;
+  const item = (label, value) => `<div class="pos-detail-item"><div class="label">${label}</div><div class="value">${value}</div></div>`;
+  const gain = (p.pl != null) ? `${fmt.currency(p.pl)} <small>(${fmt.percent(p.return)})</small>` : '—';
+  grid.innerHTML = [
+    item('Ativo', p.ticker || '—'),
+    item('Nome', escD(p.name || '—')),
+    item('Classe', getClassLabel(p.class)),
+    item('Quantidade', fmt.number(p.qty, 4)),
+    item('Preço médio', fmt.currency(p.avgPrice)),
+    item('Preço atual', fmt.currency(p.currentPrice)),
+    item('Valor na carteira', `<strong>${fmt.currency(p.value)}</strong>`),
+    item('Resultado (P&L)', gain),
+    item('Peso na carteira', p.weight != null ? fmt.percent(p.weight) : '—'),
+  ].join('');
+  if (typeof dlg.showModal === 'function') dlg.showModal();
+}
+
+function openEntryModalPrefilled(ticker, assetClass) {
+  currentEditEntry = null;
+  const modal = document.getElementById('entryModal');
+  if (!modal) return;
+  modal.showModal();
+  if (typeof resetModalForm === 'function') resetModalForm();
+  const t = document.getElementById('modalTitle');
+  if (t) t.textContent = 'Novo lançamento';
+  const asset = document.getElementById('entryAsset');
+  const cls = document.getElementById('entryClass');
+  if (asset && ticker) asset.value = ticker;
+  if (cls && assetClass) cls.value = assetClass;
+  const typeEl = document.getElementById('entryType');
+  if (typeEl) typeEl.focus();
+}
+
+function initNightImprovements() {
+  // 1. Performance Mensal (Resumo): começa recolhida — botão Mostrar/Ocultar
+  const monthlyToggle = document.getElementById('monthlyTableToggle');
+  if (monthlyToggle) {
+    monthlyToggle.addEventListener('click', () => {
+      const wrap = document.getElementById('monthlyTableWrapper');
+      if (!wrap) return;
+      const show = wrap.hasAttribute('hidden');
+      if (show) wrap.removeAttribute('hidden'); else wrap.setAttribute('hidden', '');
+      monthlyToggle.setAttribute('aria-expanded', String(show));
+      const txt = monthlyToggle.querySelector('.toggle-text');
+      if (txt) txt.textContent = show ? 'Ocultar' : 'Mostrar';
+    });
+  }
+
+  // 2. Rentabilidade: por Ativo / por Classe abrem em modal com fechar
+  const wireTableModal = (btnId, dlgId) => {
+    const btn = document.getElementById(btnId);
+    const dlg = document.getElementById(dlgId);
+    if (btn && dlg && typeof dlg.showModal === 'function') {
+      btn.addEventListener('click', () => dlg.showModal());
+    }
+  };
+  wireTableModal('openAssetReturnsBtn', 'returnsAssetModal');
+  wireTableModal('openClassReturnsBtn', 'returnsClassModal');
+
+  // 3. Posições: clique na linha abre detalhe (delegação sobrevive a re-render)
+  if (els.positionsBody && !els.positionsBody.__nightDetailWired) {
+    els.positionsBody.__nightDetailWired = true;
+    els.positionsBody.addEventListener('click', (e) => {
+      if (e.target.closest('.edit-position-btn')) return; // botão editar tem handler próprio
+      if (e.target.closest('tr.group-header')) return;
+      const row = e.target.closest('tr[data-ticker]');
+      if (!row) return;
+      const p = (MOCK_DATA.positions || []).find(x => x.ticker === row.dataset.ticker);
+      if (p) openPositionDetail(p);
+    });
+  }
+
+  // 4. Botões do modal de detalhe: Editar / Lançar operação
+  const detailEditBtn = document.getElementById('positionDetailEditBtn');
+  if (detailEditBtn) {
+    detailEditBtn.addEventListener('click', () => {
+      if (!currentDetailPosition) return;
+      const idx = filteredPositions.findIndex(x => x.ticker === currentDetailPosition.ticker);
+      const dlg = document.getElementById('positionDetailModal');
+      if (dlg) dlg.close();
+      if (idx >= 0) openPositionModalForEdit(idx);
+    });
+  }
+  const detailEntryBtn = document.getElementById('positionDetailEntryBtn');
+  if (detailEntryBtn) {
+    detailEntryBtn.addEventListener('click', () => {
+      if (!currentDetailPosition) return;
+      const dlg = document.getElementById('positionDetailModal');
+      if (dlg) dlg.close();
+      openEntryModalPrefilled(currentDetailPosition.ticker, currentDetailPosition.class);
+    });
+  }
+
+  // 5. Renda Fixa: botão "Lançar título" (modal com classe pré-selecionada)
+  const fixedNewBtn = document.getElementById('fixedNewEntryBtn');
+  if (fixedNewBtn) {
+    fixedNewBtn.addEventListener('click', () => openEntryModalPrefilled('', 'fixed'));
+  }
+
+  // 6. Renda Fixa: botões por linha (editar/lançar) — delegação no tbody
+  const fixedBody = document.getElementById('fixedBody');
+  if (fixedBody && !fixedBody.__nightActionsWired) {
+    fixedBody.__nightActionsWired = true;
+    fixedBody.addEventListener('click', (e) => {
+      const btn = e.target.closest('.fixed-action-btn');
+      if (!btn) return;
+      const ticker = btn.dataset.ticker;
+      const action = btn.dataset.action;
+      if (action === 'edit') {
+        const idx = filteredPositions.findIndex(x => x.ticker === ticker);
+        if (idx >= 0) openPositionModalForEdit(idx);
+      } else if (action === 'entry') {
+        openEntryModalPrefilled(ticker, 'fixed');
+      }
+    });
+  }
+}
+
+// ========================================
 // Toast
 // ========================================
 
@@ -2997,6 +3131,7 @@ async function init() {
   initPriceAlerts();
   initPWA();
   initModal();
+  initNightImprovements();
   initPositionModal();
   initPositionsFilters();
   initPositionsPagination();

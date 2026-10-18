@@ -757,7 +757,21 @@
   function initFixedIncome() {
     const items = window.CARTEIRA_META?.fixedDetail || [];
     if (!items.length) {
-      document.getElementById('fixedKpis').innerHTML = '<p class="text-muted">Nenhuma posição de renda fixa no backup</p>';
+      // P-NIGHT: fallback — quando o backup não traz fixedDetail, calcula os
+      // KPIs a partir das posições reais (antes mostrava "Nenhuma posição" com 4 títulos na tabela)
+      const fixedPos = (window.CARTEIRA_DATA?.positions || []).filter(p => p.class === 'fixed');
+      if (fixedPos.length) {
+        const totalApplied = fixedPos.reduce((s, i) => s + (+i.avgPrice || 0) * (+i.qty || 1), 0);
+        const totalCurrent = fixedPos.reduce((s, i) => s + (+i.value || 0), 0);
+        const totalGain = totalCurrent - totalApplied;
+        document.getElementById('fixedKpis').innerHTML = `
+          <div class="kpi-card"><span class="kpi-label">Aplicado</span><span class="kpi-value">${fmt.cur(totalApplied)}</span></div>
+          <div class="kpi-card"><span class="kpi-label">Valor Atual</span><span class="kpi-value">${fmt.cur(totalCurrent)}</span></div>
+          <div class="kpi-card"><span class="kpi-label">Ganho/Perda</span><span class="kpi-value ${totalGain>=0?'text-success':'text-error'}">${fmt.cur(totalGain)} (${fmt.pct(totalApplied?(totalGain/totalApplied*100):0)})</span></div>
+          <div class="kpi-card"><span class="kpi-label">Quantidade</span><span class="kpi-value">${fixedPos.length} títulos</span></div>`;
+      } else {
+        document.getElementById('fixedKpis').innerHTML = '<p class="text-muted">Nenhuma posição de renda fixa no backup</p>';
+      }
       // Não limpa fixedBody — panels.js:renderFixedIncome() é quem popula
       return;
     }

@@ -17,8 +17,9 @@ test('barra de abas não tem rótulos de grupo (não clicáveis removidos)', asy
   await page.goto('http://localhost:8765/');
   await page.waitForLoadState('networkidle');
   await expect(page.locator('.tabs-group-label')).toHaveCount(0);
-  // as 19 abas continuam presentes
-  await expect(page.locator('.tab-btn')).toHaveCount(19);
+  // as 15 abas continuam presentes (P-NIGHT: Metas/Benchmarks/MC/Data Trust
+  // viraram subpainéis de Configurações)
+  await expect(page.locator('.tab-btn')).toHaveCount(15);
 });
 
 test('Ativos: grupos colapsam e expandem com clique', async ({ page }) => {

@@ -24,11 +24,13 @@ class SecureHandler(http.server.SimpleHTTPRequestHandler):
         super().__init__(*args, directory=str(Path(__file__).parent), **kwargs)
     
     def end_headers(self):
-        # CSP - Content Security Policy (restritiva: sem unsafe-inline)
+        # CSP - Content Security Policy
+        # P-NIGHT: style-src ganha 'unsafe-inline' — Chart.js aplica inline styles
+        # nos canvases (medidas/layout); sem isso os gráficos quebram silenciosamente.
         self.send_header('Content-Security-Policy',
             "default-src 'self'; "
             "script-src 'self'; "
-            "style-src 'self' https://fonts.googleapis.com; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             "font-src 'self' https://fonts.gstatic.com; "
             "img-src 'self' data: https:; "
             "connect-src 'self' https://brapi.dev https://*.googleapis.com https://*.firebaseio.com https://securetoken.googleapis.com; "

@@ -64,7 +64,7 @@ test.describe('Live — produção pública (privacidade + lock)', () => {
     await page.waitForTimeout(500);
     const dump = await page.evaluate(() => JSON.stringify(localStorage));
     // marcadores do dataset real nunca presentes (valores locais, se existirem)
-    const markers = ['702175', '628267', '610219', '630889'];
+    const markers = ['702175', '628267', '610219', '630889', '699992'];
     for (const m of markers) expect(dump).not.toContain(m);
   });
 });
@@ -74,7 +74,8 @@ test.describe('Live — saúde funcional da produção', () => {
     await page.goto(BASE + '/index.html');
     await page.waitForLoadState('networkidle');
     await enterApp(page);
-    await page.evaluate(() => { if (window.__resetRenderedTabs) window.__resetRenderedTabs(); window.switchTab('montecarlo'); });
+    // P-NIGHT: Monte Carlo é subpainél de Configurações agora
+    await page.evaluate(() => { if (window.__resetRenderedTabs) window.__resetRenderedTabs(); window.switchTab('settings'); });
     await page.waitForFunction(() => {
       const k = document.getElementById('mcKpis');
       return k && k.innerText && k.innerText.includes('P50') && !/Carregando|Simulando/.test(k.innerText);

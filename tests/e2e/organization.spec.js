@@ -67,9 +67,11 @@ test.describe('Organização — posições, proventos por ativo, metas', () => 
   });
 
   test('metas: card Independência pela Renda (P4)', async ({ page }) => {
-    await page.evaluate(() => window.switchTab('goals'));
-    await expect(page.locator('#panel-goals')).toContainText('Independência pela Renda', { timeout: 10000 });
-    const text = await page.locator('#panel-goals').textContent();
+    // P-NIGHT: Metas vive dentro de Configurações agora (subpainél settingsGoalsPanel)
+    await page.evaluate(() => window.switchTab('settings'));
+    const goalsPanel = page.locator('#settingsGoalsPanel');
+    await expect(goalsPanel).toContainText('Independência pela Renda', { timeout: 10000 });
+    const text = await goalsPanel.textContent();
     expect(text).toContain('Yield 12m');
   });
 });

@@ -30,20 +30,20 @@ test.describe('Hash Routing', () => {
     // navegar para 3 tabs diferentes
     await page.locator('.tab-btn[data-tab="earnings"]').click();
     await page.waitForURL(/#earnings/);
-    await page.locator('.tab-btn[data-tab="benchmarks"]').click();
-    await page.waitForURL(/#benchmarks/);
+    await page.locator('.tab-btn[data-tab="fixed"]').click();
+    await page.waitForURL(/#fixed/);
     await page.locator('.tab-btn[data-tab="tax"]').click();
     await page.waitForURL(/#tax/);
 
     // voltar duas vezes - usar waitForFunction para hash
     await page.goBack();
-    await page.waitForFunction(() => location.hash === '#benchmarks');
+    await page.waitForFunction(() => location.hash === '#fixed');
     await page.goBack();
     await page.waitForFunction(() => location.hash === '#earnings');
 
     // avançar
     await page.goForward();
-    await page.waitForFunction(() => location.hash === '#benchmarks');
+    await page.waitForFunction(() => location.hash === '#fixed');
   });
 
   test('deep linking com query params', async ({ page }) => {

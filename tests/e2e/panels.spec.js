@@ -102,11 +102,18 @@ test.describe('Painéis secundários — render real', () => {
         
         // Listen for console messages
         page.on('console', msg => console.log('BROWSER CONSOLE:', msg.text()));
-        
-        const btn = page.locator(`.tab-btn[data-tab="${tab}"]`);
-                await expect(btn).toHaveCount(1);
-        await btn.click();
-        await page.waitForTimeout(300);
+
+        // P-NIGHT: benchmarks e data-trust agora são subpainéis da aba
+        // Configurações — navegam via settings em vez de aba própria
+        if (tab === 'benchmarks' || tab === 'data-trust') {
+          await page.locator('.tab-btn[data-tab="settings"]').click();
+          await page.waitForTimeout(700);
+        } else {
+          const btn = page.locator(`.tab-btn[data-tab="${tab}"]`);
+          await expect(btn).toHaveCount(1);
+          await btn.click();
+          await page.waitForTimeout(300);
+        }
 
         const rows = await page.locator(`#${body} tr`).count();
         // O painel precisa ter AO MENOS uma linha — dados OU estado vazio explícito
@@ -124,10 +131,11 @@ test('data-trust audita todos os ativos', async ({ page }) => {
   await page.goto('/');
   await page.waitForLoadState('networkidle');
   await page.evaluate(() => window.__resetRenderedTabs?.());
-  await page.locator('.tab-btn[data-tab="data-trust"]').click();
-  await page.waitForTimeout(300);
+  // P-NIGHT: Data Trust vive dentro de Configurações agora
+  await page.locator('.tab-btn[data-tab="settings"]').click();
+  await page.waitForTimeout(700);
   const rows = await page.locator('#dataTrustBody tr').count();
-  expect(rows).toBeGreaterThanOrEqual(20); // 20 ativos reais nos dados mock
+  expect(rows).toBeGreaterThanOrEqual(20); // 20+ ativos reais nos dados
 });
 
 test('rebalance mostra drift por classe', async ({ page }) => {

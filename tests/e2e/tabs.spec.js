@@ -12,16 +12,16 @@ const TABS = [
   { id: 'panel-rebalance', label: 'Rebalancear', tabData: 'rebalance' },
   { id: 'panel-fixed', label: 'Renda Fixa', tabData: 'fixed' },
   { id: 'panel-risk', label: 'Risco', tabData: 'risk' },
-  { id: 'panel-montecarlo', label: 'Monte Carlo', tabData: 'montecarlo' },
-  { id: 'panel-benchmarks', label: 'Benchmarks', tabData: 'benchmarks' },
   { id: 'panel-tax', label: 'Impostos', tabData: 'tax' },
   { id: 'panel-import', label: 'Importar', tabData: 'import' },
   { id: 'panel-backup', label: 'Backup', tabData: 'backup' },
   { id: 'panel-corporate-events', label: 'Eventos Corp.', tabData: 'corporate-events' },
-  { id: 'panel-data-trust', label: 'Data Trust', tabData: 'data-trust' },
   { id: 'panel-backup-portability', label: 'Backup Port.', tabData: 'backup-portability' },
   { id: 'panel-settings', label: 'Configurações', tabData: 'settings' }
 ];
+// P-NIGHT: Monte Carlo, Benchmarks, Data Trust e Metas agora são subpainéis
+// da aba Configurações (settingsGoalsPanel / settingsBenchmarksPanel /
+// settingsMontecarloPanel / dataTrustSubpanel) — não são mais abas próprias.
 
 test.describe('Navegação entre Abas', () => {
   test.beforeEach(async ({ page }) => {

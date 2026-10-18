@@ -60,34 +60,54 @@
     }).join('');
   }
 
-  // ===== RENDA FIXA (posições classe fixed; agrupamento por indexador se disponível) =====
+  // ===== RENDA FIXA (posições classe fixed; P-NIGHT: rentabilidade real,
+  // juros recebidos, taxa/vencimento extraídos do título e ações editar/lançar) =====
   function renderFixedIncome() {
-    console.log('renderFixedIncome called');
     const el = tbody('fixedBody');
-    if (!el) {
-      console.log('renderFixedIncome: fixedBody element not found');
-      return;
-    }
+    if (!el) return;
     const fixed = (DATA().positions || []).filter(p => p.class === 'fixed');
-    console.log('renderFixedIncome: found', fixed.length, 'fixed positions');
-    if (!fixed.length) { 
-      console.log('renderFixedIncome: no fixed positions, showing empty row');
-      el.innerHTML = emptyRow(5, 'Nenhum título de renda fixa na carteira.'); 
+    if (!fixed.length) {
+      el.innerHTML = emptyRow(8, 'Nenhum título de renda fixa na carteira.');
       return;
     }
-
-    console.log('renderFixedIncome: generating rows for', fixed.length, 'positions');
+    const earnings = DATA().earnings || [];
+    // Juros/cupons recebidos por título: casa pelo prefixo do ticker
+    // (CDB-PORQ↔CDB, LIG-LIQ↔LIG, DEBMOV↔DEB — consolidados do mesmo emissor)
+    const receivedFor = ticker => earnings
+      .filter(e => e.ticker === ticker || ticker.startsWith(e.ticker) || (e.ticker || '').startsWith(ticker.split('-')[0]) && ticker.split('-')[0].length >= 3)
+      .reduce((s, e) => s + (Number(e.net ?? e.gross) || 0), 0);
     el.innerHTML = fixed.map(p => {
       const invested = (p.avgPrice || 0) * (p.qty || 0);
-      return `<tr>
+      // Rentabilidade: usa a da posição se existir; senão deriva de valor atual vs aplicado
+      const derived = invested > 0 ? (p.value / invested - 1) * 100 : null;
+      const ret = (p.return != null && p.return !== 0) ? p.return : (derived != null ? derived : 0);
+      // Taxa e indexador a partir do nome do título (ex.: "DEB MOVIDA IPC-A+11,88% JUN/2029")
+      const name = String(p.name || '');
+      const rateM = name.match(/(\d+(?:[.,]\d+)?\s*%)/);
+      const idxM = name.match(/\b(CDI|IPC-?A?|IPCA|SELIC|PREFIXADO|IGP-?M|TR)\b/i);
+      const dueM = name.match(/\b(JAN|FEV|MAR|ABR|MAI|JUN|JUL|AGO|SET|OUT|NOV|DEZ)[\s./-]?\d{2,4}\b/i);
+      const taxa = (rateM ? rateM[1] : '—') + (idxM ? ' ' + idxM[1].toUpperCase().replace('IPCA','IPCA').replace('IPC-A','IPC-A') : '');
+      const recebido = receivedFor(p.ticker);
+      return `<tr data-ticker="${esc(p.ticker)}">
         <td><div class="asset-cell"><span class="asset-ticker">${esc(p.ticker)}</span><span class="asset-name">${esc(p.name || '')}</span></div></td>
-        <td>—</td>
+        <td class="text-12">${esc(taxa.trim())}</td>
+        <td class="text-12">${dueM ? esc(dueM[0]) : '—'}</td>
         <td class="text-right">${fmtBRL(invested)}</td>
         <td class="text-right">${fmtBRL(p.value)}</td>
-        <td class="text-right pct-cell ${p.return >= 0 ? 'positive' : 'negative'}">${fmtPct(p.return)}</td>
+        <td class="text-right pct-cell ${ret >= 0 ? 'positive' : 'negative'}">${fmtPct(ret)}</td>
+        <td class="text-right">${recebido > 0 ? fmtBRL(recebido) : '—'}</td>
+        <td>
+          <span class="fixed-actions">
+            <button class="action-btn fixed-action-btn" data-ticker="${esc(p.ticker)}" data-action="edit" aria-label="Editar ${esc(p.ticker)}" title="Editar posição">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="action-btn fixed-action-btn" data-ticker="${esc(p.ticker)}" data-action="entry" aria-label="Lançar operação em ${esc(p.ticker)}" title="Lançar operação (comprar/vender/juros)">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+          </span>
+        </td>
       </tr>`
     }).join('');
-    console.log('renderFixedIncome: innerHTML set, length:', el.innerHTML.length);
   }
 
   // ===== BENCHMARKS (comparativo: carteira vs CDI/IBOV acumulados das séries reais) =====
@@ -585,12 +605,20 @@
       kpi('Sharpe Ratio', sharpe != null ? sharpe.toFixed(2) : '—', sharpe != null && sharpe >= 1 ? 'text-success' : 'text-warning') +
       kpi('Sortino Ratio', sortino != null ? sortino.toFixed(2) : '—', sortino != null && sortino >= 1 ? 'text-success' : 'text-warning') +
       kpi('Meses de histórico', String(n), '') +
-      `<p class="text-muted grid-1/-1-fs-12-m0">Base: ${n} retornos mensais reais da série do patrimônio (amostra limitada — importe snapshots diários para métricas mais robustas).</p>`;
+      `<p class="text-muted grid-1/-1-fs-12-m0">Base: ${n} retornos mensais reais da série do patrimônio (amostra limitada — importe snapshots diários para métricas mais robustas).</p>` +
+      // P-NIGHT: legenda em linguagem simples — o que cada métrica significa
+      `<div class="card p-4-mb-4 grid-1/-1" style="margin-top:12px">
+        <p class="text-muted fs-12 m-0"><strong>O que isso significa?</strong></p>
+        <p class="text-muted fs-12 m-0" style="margin-top:6px">• <strong>Vol. Anualizada</strong> — quanto a carteira oscila por ano. Acima de 20% é considerada agressiva.</p>
+        <p class="text-muted fs-12 m-0">• <strong>VaR 95%</strong> — na pior hipótese de 95 meses em cada 100, a perda não passa desse valor.</p>
+        <p class="text-muted fs-12 m-0">• <strong>Max Drawdown</strong> — a maior queda acumulada já sofrida, do topo ao fundo.</p>
+        <p class="text-muted fs-12 m-0">• <strong>Sharpe / Sortino</strong> — retorno pago por unidade de risco. Acima de 1 é bom; o Sortino só conta os meses de perda.</p>
+      </div>`;
 
     // Correlação por ativo: requer histórico de preços por ativo — sem inventar dados
     const corrEl = document.getElementById('correlationMatrix');
     if (corrEl) {
-      corrEl.innerHTML = '<p class="text-muted p-4">Correlação por ativo requer histórico de preços por ativo (ainda não importado). Importe cotações por ativo para habilitar a matriz de correlação real.</p>';
+      corrEl.innerHTML = '<p class="text-muted p-4">A matriz de correlação mostra quais ativos sobem e caem juntos (para diversificar de verdade). Para calculá-la é preciso o histórico de preço de cada ativo — traga as cotações pela aba <strong>Importar</strong>.</p>';
     }
 
     // Rolling chart: 13 pontos mensais são insuficientes para janela de 63 dias
@@ -600,7 +628,7 @@
       note.id = 'rollingChartPlaceholder';
       note.className = 'text-muted';
       note.style.cssText = 'padding:var(--space-4)';
-      note.textContent = 'Rolling metrics exigem histórico diário (janela de 63 dias). A série atual é mensal — gere snapshots diários para habilitar.';
+      note.textContent = 'As métricas móveis (janela de 63 pregões) precisam de histórico diário. A série atual é mensal — gere snapshots diários pela aba Importar para habilitar.';
       rollCard.appendChild(note);
     }
   }
@@ -623,7 +651,7 @@
         <td class="text-right">${inv > 0 ? fmtBRL(inv) : '—'}</td>
         <td class="text-right ${gain == null ? '' : gain >= 0 ? 'positive' : 'negative'}">${gain != null ? fmtBRL(gain) : '—'}</td>
         <td class="text-right">${v > 0 ? fmtBRL(v) : '—'}</td>
-        <td class="text-right pct-cell ${diff == null ? '' : diff >= 0 ? 'positive' : 'negative'}">${diff == null ? '—' : fmtPct(diff) + 'pp'}</td>
+        <td class="text-right pct-cell ${change == null ? '' : change >= 0 ? 'positive' : 'negative'}">${change == null ? '—' : fmtPct(change) + 'pp'}</td>
       </tr>`
     }).join('');
     host.innerHTML = `<div class="table-wrapper"><table class="data-table">
@@ -873,6 +901,11 @@
   }
 
   // ===== DIVIDENDOS: dashboard completo (modelo das telas de referência) =====
+  // P-NIGHT: históricos paginados — últimos 5 anos por página, setas ‹ › navegam
+  let divHistPage = 0;
+  let divYearPage = 0;
+  const DIV_YEARS_PER_PAGE = 5;
+
   function renderDividendDashboard() {
     const earnings = DATA().earnings || [];
     const kpis = DATA().kpis || {};
@@ -945,11 +978,16 @@
         </div>`).join('') + (ranked.length > 10 ? `<p class="text-muted fs-11-mt-2">+ ${ranked.length - 10} outros ativos</p>` : '');
     }
 
-    // --- Histórico mensal Ano × Jan-Dez ---
+    // --- Histórico mensal Ano × Jan-Dez (P-NIGHT: 5 anos por página) ---
     if (gridEl) {
       const MESES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
       const fmtCell = v => v > 0 ? fmtNum(v, 0) : '—';
-      const rows = years.slice().reverse().map(y => {
+      const descYears = years.slice().reverse();
+      const totalPages = Math.max(1, Math.ceil(descYears.length / DIV_YEARS_PER_PAGE));
+      if (divHistPage >= totalPages) divHistPage = totalPages - 1;
+      if (divHistPage < 0) divHistPage = 0;
+      const pageYears = descYears.slice(divHistPage * DIV_YEARS_PER_PAGE, (divHistPage + 1) * DIV_YEARS_PER_PAGE);
+      const rows = pageYears.map(y => {
         const arr = byMonth[y] || new Array(12).fill(0);
         const mesesAtivos = arr.filter(v => v > 0).length;
         const media = mesesAtivos > 0 ? byYear[y] / mesesAtivos : 0;
@@ -960,16 +998,35 @@
           <td class="text-right">${fmtNum(byYear[y], 0)}</td>
         </tr>`;
       }).join('');
-      gridEl.innerHTML = `<table class="data-table text-12">
+      const firstY = pageYears[pageYears.length - 1];
+      const lastY = pageYears[0];
+      gridEl.innerHTML = `
+        <div class="year-nav" role="group" aria-label="Navegar entre anos do histórico">
+          <button type="button" data-divhist-nav="older" ${divHistPage >= totalPages - 1 ? 'disabled' : ''} aria-label="Ver anos anteriores">‹</button>
+          <span class="year-nav-label">${firstY}–${lastY} <span class="text-muted fs-11">(${divHistPage + 1}/${totalPages})</span></span>
+          <button type="button" data-divhist-nav="newer" ${divHistPage <= 0 ? 'disabled' : ''} aria-label="Voltar para anos mais recentes">›</button>
+        </div>
+        <table class="data-table text-12">
         <thead><tr><th>Ano</th>${MESES.map(m => `<th class="text-right">${m}</th>`).join('')}<th class="text-right">Média</th><th class="text-right">Total</th></tr></thead>
         <tbody>${rows}</tbody></table>
-        <p class="text-muted fs-11-p2">Valores brutos dos proventos importados${years.length ? ' • ' + years.length + ' ano(s) com histórico' : ''}.</p>`;
+        <p class="text-muted fs-11-p2">Valores brutos dos proventos importados • ${years.length} ano(s) no histórico${totalPages > 1 ? ' — use as setas para navegar' : ''}.</p>`;
+      gridEl.querySelectorAll('[data-divhist-nav]').forEach(b => {
+        b.addEventListener('click', () => {
+          divHistPage += b.getAttribute('data-divhist-nav') === 'older' ? 1 : -1;
+          renderDividendDashboard();
+        });
+      });
     }
 
-    // --- Resumo por ano ---
+    // --- Resumo por ano (P-NIGHT: 5 anos por página) ---
     if (yearEl) {
       const totalAll = Object.values(byYear).reduce((s, v) => s + v, 0) || 1;
-      const anoRows = years.slice().reverse().map(y => {
+      const descYears = years.slice().reverse();
+      const totalPages = Math.max(1, Math.ceil(descYears.length / DIV_YEARS_PER_PAGE));
+      if (divYearPage >= totalPages) divYearPage = totalPages - 1;
+      if (divYearPage < 0) divYearPage = 0;
+      const pageYears = descYears.slice(divYearPage * DIV_YEARS_PER_PAGE, (divYearPage + 1) * DIV_YEARS_PER_PAGE);
+      const anoRows = pageYears.map(y => {
         const pct = byYear[y] / totalAll * 100;
         return `<div class="flex-3-center-p2">
           <span class="minw-44-fw-600">${y}</span>
@@ -979,7 +1036,22 @@
           <span class="minw-110 text-right">${fmtBRL(byYear[y])} <span class="text-muted">(${fmtNum(pct)}%)</span></span>
         </div>`;
       }).join('');
-      yearEl.innerHTML = anoRows + `<p class="text-muted fs-11-mt-2">Total geral: <strong>${fmtBRL(totalAll)}</strong></p>`;
+      const firstY = pageYears[pageYears.length - 1];
+      const lastY = pageYears[0];
+      yearEl.innerHTML = `
+        <div class="year-nav" role="group" aria-label="Navegar entre anos do resumo">
+          <button type="button" data-divyear-nav="older" ${divYearPage >= totalPages - 1 ? 'disabled' : ''} aria-label="Ver anos anteriores">‹</button>
+          <span class="year-nav-label">${firstY}–${lastY} <span class="text-muted fs-11">(${divYearPage + 1}/${totalPages})</span></span>
+          <button type="button" data-divyear-nav="newer" ${divYearPage <= 0 ? 'disabled' : ''} aria-label="Voltar para anos mais recentes">›</button>
+        </div>
+        ${anoRows}
+        <p class="text-muted fs-11-mt-2">Total geral (todo o período): <strong>${fmtBRL(totalAll)}</strong></p>`;
+      yearEl.querySelectorAll('[data-divyear-nav]').forEach(b => {
+        b.addEventListener('click', () => {
+          divYearPage += b.getAttribute('data-divyear-nav') === 'older' ? 1 : -1;
+          renderDividendDashboard();
+        });
+      });
     }
 
     // --- Gráfico de evolução (2 anos mais recentes) ---
@@ -1050,7 +1122,30 @@
         else if (tabName === 'entries') renderAportes();
         else if (tabName === 'returns') renderClassReturns();
         else if (tabName === 'montecarlo') autoRunMonteCarlo();
-        else if (tabName === 'settings') renderSettingsPanel();
+        else if (tabName === 'settings') {
+          renderSettingsPanel();
+          // P-NIGHT: Metas, Benchmarks, Monte Carlo e Qualidade dos Dados
+          // (ex-abas) vivem dentro de Configurações agora — renderizam na
+          // primeira abertura da aba.
+          const subRenderers = [
+            ['goals', () => renderGoals()],
+            ['benchmarks', () => renderBenchmarks()],
+            ['montecarlo', () => autoRunMonteCarlo()],
+            ['data-trust', () => {
+              renderDataTrust();
+              renderDataTrustAlerts();
+              renderAuditSnapshots();
+              renderDataFreshness();
+            }],
+          ];
+          for (const [name, fn] of subRenderers) {
+            if (!renderedTabs.has(name)) {
+              renderedTabs.add(name);
+              try { fn(); }
+              catch (e2) { console.warn(name, 'render (settings) falhou:', e2); }
+            }
+          }
+        }
       } catch (e) {
         console.warn('lazy render failed:', tabName, e);
         renderedTabs.delete(tabName);

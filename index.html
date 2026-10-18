@@ -28,12 +28,8 @@
         <!-- P26: nav de links mortos removida (Mercados/Recomendações/Cursos/IR não
              funcionavam neste app) — navegação real é a barra de abas + paleta ⌘K -->
         <div class="header-actions">
-            <button class="btn btn-ghost" aria-label="Notificações">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-            </button>
-            <button class="btn btn-ghost" aria-label="Configurações">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 1 4.6 9a1.65 1.65 0 0 1 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 1-.33 1.82V9a1.65 1.65 0 0 1 1.51-1H9a1.65 1.65 0 0 1 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 1 1 1.51 1.65 1.65 0 0 1 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 1-.33-1.82V3a1.65 1.65 0 0 1 1.51-1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 1-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 1 .33-1.82 1.65 1.65 0 0 1 1.51-1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-            </button>
+            <!-- P-NIGHT: Notificações e engrenagem removidos (botões mortos duplicavam
+                 o menu do usuário e a aba Configurações; header agora só com o essencial) -->
             <button class="btn btn-ghost theme-toggle" id="themeToggle" aria-label="Alternar tema">
               <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
               <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
@@ -72,7 +68,6 @@
                     <button role="tab" id="tab-fixed" aria-controls="panel-fixed" aria-selected="false" class="tab-btn" data-tab="fixed" tabindex="-1">Renda Fixa</button>
                     <button role="tab" id="tab-rebalance" aria-controls="panel-rebalance" aria-selected="false" class="tab-btn" data-tab="rebalance" tabindex="-1">Rebalancear</button>
                     <button role="tab" id="tab-risk" aria-controls="panel-risk" aria-selected="false" class="tab-btn" data-tab="risk" tabindex="-1">Risco</button>
-                    <button role="tab" id="tab-data-trust" aria-controls="panel-data-trust" aria-selected="false" class="tab-btn" data-tab="data-trust" tabindex="-1">Data Trust</button>
                     <button role="tab" id="tab-tax" aria-controls="panel-tax" aria-selected="false" class="tab-btn" data-tab="tax" tabindex="-1">Impostos</button>
                     <button role="tab" id="tab-corporate-events" aria-controls="panel-corporate-events" aria-selected="false" class="tab-btn" data-tab="corporate-events" tabindex="-1">Eventos Corp.</button>
                     <button role="tab" id="tab-import" aria-controls="panel-import" aria-selected="false" class="tab-btn" data-tab="import" tabindex="-1">Importar</button>
@@ -257,13 +252,17 @@
           </article>
         </div>
 
-        <!-- Monthly Performance Table -->
-        <article class="table-card" aria-labelledby="monthlyTitle">
+        <!-- Monthly Performance Table (P-NIGHT: começa recolhida; 84 meses deixavam a página gigante) -->
+        <article class="table-card table-compact" aria-labelledby="monthlyTitle">
           <header class="table-header">
             <h2 id="monthlyTitle" class="table-title">Performance Mensal</h2>
             <p class="table-subtitle">Valor aplicado vs Ganho de capital por mês</p>
+            <button type="button" class="section-collapse-btn" id="monthlyTableToggle" aria-expanded="false" aria-controls="monthlyTableWrapper">
+              <span class="chev" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+              <span class="toggle-text">Mostrar</span>
+            </button>
           </header>
-          <div class="table-wrapper">
+          <div class="table-wrapper" id="monthlyTableWrapper" hidden>
             <table class="data-table" id="monthlyTable">
               <thead>
                 <tr>
@@ -491,6 +490,10 @@
 
       <!-- PATRIMONY TAB -->
       <section role="tabpanel" aria-labelledby="tab-patrimony" class="tab-panel" id="panel-patrimony" hidden>
+        <div class="panel-header mb-4">
+          <h2 class="section-heading">Patrimônio</h2>
+          <p class="text-muted m-0">A evolução do seu dinheiro ao longo do tempo, comparada com CDI e IBOV. Ative ou desative as linhas de comparação acima do gráfico; abaixo, a tabela mostra mês a mês.</p>
+        </div>
         <article class="chart-card full-width" aria-labelledby="patrimonyDetailTitle">
           <header class="chart-header">
             <h2 id="patrimonyDetailTitle" class="chart-title">Evolução Detalhada do Patrimônio</h2>
@@ -514,8 +517,9 @@
           <div class="chart-legend" id="patrimonyDetailLegend"></div>
         </article>
 
-        <article class="card mt-6" aria-labelledby="patrimonyTableTitle">
-          <h2 id="patrimonyTableTitle" class="mb-3">Resumo Mensal</h2>
+        <article class="card mt-6 table-compact" aria-labelledby="patrimonyTableTitle">
+          <h2 id="patrimonyTableTitle" class="mb-1">Resumo Mensal</h2>
+          <p class="text-muted fs-11 mb-3">Mês a mês desde o primeiro aporte — role a lista para navegar pelo histórico.</p>
           <div id="patrimonySummaryTable" class="table-wrapper">
             <p class="text-muted p-4">Carregando série mensal…</p>
           </div>
@@ -524,6 +528,10 @@
 
       <!-- RETURNS TAB -->
       <section role="tabpanel" aria-labelledby="tab-returns" class="tab-panel" id="panel-returns" hidden>
+        <div class="panel-header mb-4">
+          <h2 class="section-heading">Rentabilidade</h2>
+          <p class="text-muted m-0">Quanto sua carteira rendeu no período — comparada com CDI e IBOV. Use os filtros à esquerda para mudar o período; passe o mouse nos cartões para ver o que cada métrica significa.</p>
+        </div>
         <div class="returns-layout">
           <aside class="returns-sidebar" aria-labelledby="returnsFiltersTitle">
             <h3 id="returnsFiltersTitle" class="sidebar-title">Filtros</h3>
@@ -585,54 +593,100 @@
                 <p class="metric-label">Retorno ajustado ao risco</p>
               </article>
             </div>
+            <!-- P-NIGHT: por Ativo/por Classe agora abrem em modal (antes empurravam a página para baixo) -->
             <article class="table-card" aria-labelledby="assetReturnTitle">
-              <header class="table-header">
-                <h2 id="assetReturnTitle" class="table-title">Rentabilidade por Ativo</h2>
-              </header>
-              <div class="table-wrapper">
-                <table class="data-table" id="assetReturnTable">
-                  <thead>
-                    <tr>
-                      <th scope="col">Ativo</th>
-                      <th scope="col" class="col-classe">Classe</th>
-                      <th scope="col">Peso</th>
-                      <th scope="col">Rentab. (12M)</th>
-                      <th scope="col">Contribuição</th>
-                      <th scope="col">Benchmark</th>
-                      <th scope="col">Alpha</th>
-                    </tr>
-                  </thead>
-                  <tbody id="assetReturnBody"></tbody>
-                </table>
-              </div>
+              <button type="button" class="open-table-card" id="openAssetReturnsBtn" aria-haspopup="dialog">
+                <div>
+                  <h2 id="assetReturnTitle" class="open-table-title">Rentabilidade por Ativo</h2>
+                  <p class="open-table-hint">Comparação de cada ativo vs a carteira — abre em janela</p>
+                </div>
+                <span class="btn btn-secondary btn-sm">Abrir &rsaquo;</span>
+              </button>
             </article>
 
             <!-- Rentabilidade por classe (modelo investidor10: por tipo de ativo) -->
             <article class="table-card mt-4" aria-labelledby="classReturnTitle">
-              <header class="table-header">
-                <h2 id="classReturnTitle" class="table-title">Rentabilidade por Classe</h2>
-              </header>
-              <div class="table-wrapper">
-                <table class="data-table" id="classReturnTable">
-                  <thead>
-                    <tr>
-                      <th scope="col" class="col-classe">Classe</th>
-                      <th scope="col">Ativos</th>
-                      <th scope="col">Custo total</th>
-                      <th scope="col">Valor atual</th>
-                      <th scope="col">Resultado (P&L)</th>
-                      <th scope="col">Rentab. ponderada</th>
-                      <th scope="col">% na carteira</th>
-                    </tr>
-                  </thead>
-                  <tbody id="classReturnBody"></tbody>
-                </table>
-              </div>
-              <p class="text-muted text-11 m-0 p-4 pb-3">Rentabilidade ponderada desde aquisição (P&L / custo). "No ano" requer cotação de 01/01 — importe snapshots diários para habilitar.</p>
+              <button type="button" class="open-table-card" id="openClassReturnsBtn" aria-haspopup="dialog">
+                <div>
+                  <h2 id="classReturnTitle" class="open-table-title">Rentabilidade por Classe</h2>
+                  <p class="open-table-hint">Ações, FIIs, Renda Fixa… — abre em janela</p>
+                </div>
+                <span class="btn btn-secondary btn-sm">Abrir &rsaquo;</span>
+              </button>
             </article>
           </div>
         </div>
       </section>
+
+      <!-- MODAIS da aba Rentabilidade (P-NIGHT) -->
+      <dialog id="returnsAssetModal" class="modal modal-wide" role="dialog" aria-modal="true" aria-labelledby="assetReturnModalTitle">
+        <div class="modal-backdrop" tabindex="-1"></div>
+        <div class="modal-content">
+          <header class="modal-header">
+            <h2 id="assetReturnModalTitle">Rentabilidade por Ativo</h2>
+            <button class="modal-close" aria-label="Fechar modal">&times;</button>
+          </header>
+          <div class="table-wrapper">
+            <table class="data-table" id="assetReturnTable">
+              <thead>
+                <tr>
+                  <th scope="col">Ativo</th>
+                  <th scope="col" class="col-classe">Classe</th>
+                  <th scope="col">Peso</th>
+                  <th scope="col">Rentab. (12M)</th>
+                  <th scope="col">Contribuição</th>
+                  <th scope="col">Benchmark</th>
+                  <th scope="col">Alpha</th>
+                </tr>
+              </thead>
+              <tbody id="assetReturnBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </dialog>
+
+      <dialog id="returnsClassModal" class="modal modal-wide" role="dialog" aria-modal="true" aria-labelledby="classReturnModalTitle">
+        <div class="modal-backdrop" tabindex="-1"></div>
+        <div class="modal-content">
+          <header class="modal-header">
+            <h2 id="classReturnModalTitle">Rentabilidade por Classe</h2>
+            <button class="modal-close" aria-label="Fechar modal">&times;</button>
+          </header>
+          <div class="table-wrapper">
+            <table class="data-table" id="classReturnTable">
+              <thead>
+                <tr>
+                  <th scope="col" class="col-classe">Classe</th>
+                  <th scope="col">Ativos</th>
+                  <th scope="col">Custo total</th>
+                  <th scope="col">Valor atual</th>
+                  <th scope="col">Resultado (P&L)</th>
+                  <th scope="col">Rentab. ponderada</th>
+                  <th scope="col">% na carteira</th>
+                </tr>
+              </thead>
+              <tbody id="classReturnBody"></tbody>
+            </table>
+          </div>
+          <p class="text-muted text-11 m-0 p-4 pb-3">Rentabilidade ponderada desde aquisição (P&L / custo). "No ano" requer cotação de 01/01 — importe snapshots diários para habilitar.</p>
+        </div>
+      </dialog>
+
+      <!-- MODAL: DETALHE DA POSIÇÃO (P-NIGHT: clique na linha da aba Posições) -->
+      <dialog id="positionDetailModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="positionDetailTitle">
+        <div class="modal-backdrop" tabindex="-1"></div>
+        <div class="modal-content">
+          <header class="modal-header">
+            <h2 id="positionDetailTitle">Detalhe do ativo</h2>
+            <button class="modal-close" aria-label="Fechar modal">&times;</button>
+          </header>
+          <div class="pos-detail-grid" id="positionDetailGrid"></div>
+          <div class="pos-detail-actions">
+            <button type="button" class="btn btn-secondary" id="positionDetailEditBtn">Editar</button>
+            <button type="button" class="btn btn-primary" id="positionDetailEntryBtn">Lançar operação</button>
+          </div>
+        </div>
+      </dialog>
 
       <!-- ENTRIES TAB -->
       <section role="tabpanel" aria-labelledby="tab-entries" class="tab-panel" id="panel-entries" hidden>
@@ -737,9 +791,14 @@
       <section role="tabpanel" aria-labelledby="tab-fixed" class="tab-panel" id="panel-fixed" hidden>
         <div class="panel-header mb-4">
           <h2 class="section-heading">Renda Fixa</h2>
-          <p class="text-muted m-0">Posições por indexador e vencimento.</p>
+          <p class="text-muted m-0">CDBs, LIGs, debêntures e CRAs — quanto rendeu cada título e quanto você já recebeu de juros.</p>
+          <button type="button" class="btn btn-primary btn-sm mt-2" id="fixedNewEntryBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Lançar título
+          </button>
         </div>
-        <div class="kpi-grid mb-4" id="fixedKpis"></div>
+        <!-- P-NIGHT: grid-150 (responsivo mobile — kpi-grid estourava 390px com 4 cards) -->
+        <div class="grid-150-mb-4" id="fixedKpis"></div>
         <div class="card p-6-mb-4">
           <h3 class="mb-3">Por Indexador</h3>
           <div id="fixedByIndexer"></div>
@@ -749,13 +808,13 @@
             <thead>
               <tr>
                 <th scope="col">Título</th>
-                <th scope="col">Emissor</th>
                 <th scope="col">Taxa</th>
-                <th scope="col">Aplicação</th>
                 <th scope="col">Vencimento</th>
                 <th scope="col">Aplicado</th>
                 <th scope="col">Atual</th>
                 <th scope="col">Rentab.</th>
+                <th scope="col">Juros recebidos</th>
+                <th scope="col"><span class="visually-hidden">Ações</span></th>
               </tr>
             </thead>
             <tbody id="fixedBody"></tbody>
@@ -1034,98 +1093,6 @@
   </section>
 
 
-  <!-- DATA TRUST TAB -->
-  <section role="tabpanel" aria-labelledby="tab-data-trust" class="tab-panel" id="panel-data-trust" hidden>
-    <div class="panel-header mb-4">
-      <h2 class="section-heading">Data Trust Center</h2>
-      <p class="text-muted m-0">Scoring de confiança por ativo+fonte, auditoria de snapshots, alertas STALE/PARTIAL</p>
-    </div>
-
-    <!-- Portfolio Confidence Overview -->
-    <div class="card mb-6">
-      <h3 class="mb-3">Confiança da Carteira</h3>
-      <div id="portfolioConfidenceSummary" class="grid-200-4">
-        <!-- Filled by JS -->
-      </div>
-    </div>
-
-    <!-- NOVO — FASE 15: Alertas de Auditoria (DataTrustEngine) -->
-    <div class="card mt-6">
-      <h3 class="mb-3">Alertas de Qualidade de Dados</h3>
-      <div id="dataTrustAlertsSummary" class="grid-150-mb-4">
-        <!-- Contadores por severidade -->
-      </div>
-      <div id="dataTrustAlertsList" class="scroll-420">
-        <!-- Lista de alertas -->
-      </div>
-    </div>
-
-    <!-- Assets Confidence Table -->
-    <div class="card mt-6">
-      <h3 class="mb-3">Confiança por Ativo</h3>
-      <div class="table-wrapper">
-        <table class="data-table" id="dataTrustTable">
-          <thead>
-            <tr>
-              <th scope="col">Ticker</th>
-              <th scope="col">Nome</th>
-              <th scope="col">Fonte</th>
-              <th scope="col">Score</th>
-              <th scope="col">Nível</th>
-              <th scope="col">Fatores</th>
-              <th scope="col">Última Atualização</th>
-            </tr>
-          </thead>
-          <tbody id="dataTrustBody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Audit Snapshots -->
-    <div class="card mt-6">
-      <h3 class="mb-3">Auditoria de Snapshots</h3>
-      <div class="flex-3-mb-3">
-        <button class="btn btn-secondary" id="btnRefreshAudit">Atualizar</button>
-        <button class="btn btn-secondary" id="btnVerifyIntegrity">Verificar Integridade</button>
-        <button class="btn btn-primary" id="btnCreateSnapshot">Criar Snapshot Manual</button>
-      </div>
-      <div class="table-wrapper">
-        <table class="data-table" id="auditSnapshotsTable">
-          <thead>
-            <tr>
-              <th scope="col">Timestamp</th>
-              <th scope="col">Tipo</th>
-              <th scope="col">Ativos</th>
-              <th scope="col">Valor Total</th>
-              <th scope="col">Hash</th>
-              <th scope="col">Metadados</th>
-            </tr>
-          </thead>
-          <tbody id="auditSnapshotsBody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Data Freshness -->
-    <div class="card mt-6">
-      <h3 class="mb-3">Freshness dos Dados</h3>
-      <div id="dataFreshnessSummary" class="grid-150-mb-4">
-        <!-- Filled by JS -->
-      </div>
-      <div class="table-wrapper scroll-200">
-        <table class="data-table" id="dataFreshnessTable">
-          <thead>
-            <tr>
-              <th scope="col">Ticker</th>
-              <th scope="col">Status</th>
-              <th scope="col">Dias</th>
-            </tr>
-          </thead>
-          <tbody id="dataFreshnessBody"></tbody>
-        </table>
-      </div>
-    </div>
-  </section>
 
   <!-- METAS TAB (modelo "Tela remtabilidade e metas e patrimonio") -->
   
@@ -1210,9 +1177,44 @@
               <button class="btn btn-primary btn-sm" id="settingsLoginBtn" type="button">Entrar com Google</button>
               <button class="btn btn-secondary btn-sm" id="settingsSignOutBtn" type="button">Sair da conta</button>
             </div>
+            <p class="text-muted fs-11-muted-ink" id="settingsSyncInfo"></p>
+          </article>
+          <article class="card kpi-card settings-card" id="settingsAppearanceCard" role="listitem">
+            <h3 class="kpi-label">🎨 Aparência</h3>
+            <label class="auth-label" for="settingsThemeSelect">Tema</label>
+            <select class="filter-select" id="settingsThemeSelect">
+              <option value="system">Sistema (automático)</option>
+              <option value="light">Claro</option>
+              <option value="dark">Escuro</option>
+            </select>
+            <label class="auth-label settings-gap" for="settingsMotionSelect">Animações</label>
+            <select class="filter-select" id="settingsMotionSelect">
+              <option value="on">Ativadas</option>
+              <option value="off">Reduzidas</option>
+            </select>
+          </article>
+          <article class="card kpi-card settings-card" id="settingsDataCard" role="listitem">
+            <h3 class="kpi-label">🗄️ Dados</h3>
+            <p class="text-muted" id="settingsDataStats">—</p>
+            <div class="mt-4-flex-2-center">
+              <button class="btn btn-secondary btn-sm" id="settingsGoImport" type="button">Importar</button>
+              <button class="btn btn-secondary btn-sm" id="settingsGoBackup" type="button">Backup</button>
+              <button class="btn btn-secondary btn-sm" id="settingsGoBackupPort" type="button">Backup Port.</button>
+            </div>
+            <button class="btn btn-ghost btn-sm btn-danger-text settings-gap" id="settingsWipeBtn" type="button">Limpar dados locais</button>
+            <p class="text-muted fs-11-muted-ink">O wipe não afeta o sync na nuvem — ao entrar novamente, seus dados voltam.</p>
+          </article>
+          <article class="card kpi-card settings-card" id="settingsAboutCard" role="listitem">
+            <h3 class="kpi-label">ℹ️ Sobre</h3>
+            <p class="kpi-value fs-lg-700">Investidor10 Dashboard</p>
+            <p class="text-muted" id="settingsVersion">—</p>
+            <p class="text-muted">HTML/CSS/JS puro · Chart.js self-hosted · sem build · PWA offline-first</p>
+            <p class="text-muted fs-11-muted-ink">Docs: CONTRIBUTING.md · SECURITY.md · docs/architecture.md · FIREBASE_SETUP.md</p>
+          </article>
+        </div>
 
-      <!-- Metas, Benchmarks, Simulação movidos para dentro de Configurações -->
-      <div class="settings-subpanel card mt-6">
+      <!-- Metas, Benchmarks, Simulação, Qualidade dos Dados: subpainéis de Configurações (P-NIGHT) -->
+      <div class="settings-subpanel card mt-6" id="settingsGoalsPanel">
         <div class="panel-header mb-4">
       <h2 class="section-heading">Metas</h2>
       <p class="text-muted m-0">Resumo das metas financeiras da carteira</p>
@@ -1228,7 +1230,7 @@
       </div>
     </div>
       </div>
-      <div class="settings-subpanel card mt-6">
+      <div class="settings-subpanel card mt-6" id="settingsBenchmarksPanel">
         <div class="panel-header mb-4">
       <h2 class="section-heading">Benchmarks (Comparação com índices)</h2>
       <p class="text-muted m-0">CDI, IBOV, IFIX, SMLL, IDIV, IMAB, BTC, DOL, USD/BRL</p>
@@ -1265,7 +1267,7 @@
       </table>
     </div>
       </div>
-      <div class="settings-subpanel card mt-6">
+      <div class="settings-subpanel card mt-6" id="settingsMontecarloPanel">
         <div class="panel-header mb-4">
       <h2 class="section-heading">Simulação de Cenários Futuro</h2>
       <p class="text-muted m-0">Simulação estocástica 10.000+ cenários - Cone de confiança 10-30 anos</p>
@@ -1274,23 +1276,23 @@
     <div class="card p-4-mb-4">
       <div class="form-row flex-4-wrap-end">
         <div class="form-group flex-grow">
-          <label>Horizonte (anos)</label>
+          <label for="mcHorizon">Horizonte (anos)</label>
           <input type="number" id="mcHorizon" value="30" min="1" max="50" class="w-100px">
         </div>
         <div class="form-group flex-grow">
-          <label>Valor Inicial (R$)</label>
+          <label for="mcInitial">Valor Inicial (R$)</label>
           <input type="number" id="mcInitial" value="500000" min="0" step="1000" class="w-140px">
         </div>
         <div class="form-group flex-grow">
-          <label>Aporte Mensal (R$)</label>
+          <label for="mcMonthly">Aporte Mensal (R$)</label>
           <input type="number" id="mcMonthly" value="5000" min="0" step="100" class="w-140px">
         </div>
         <div class="form-group flex-grow">
-          <label>Retorno Esperado (% a.a.)</label>
+          <label for="mcReturn">Retorno Esperado (% a.a.)</label>
           <input type="number" id="mcReturn" value="12" min="0" max="50" step="0.5" class="w-100px">
         </div>
         <div class="form-group flex-grow">
-          <label>Volatilidade (% a.a.)</label>
+          <label for="mcVol">Volatilidade (% a.a.)</label>
           <input type="number" id="mcVol" value="18" min="0" max="100" step="0.5" class="w-100px">
         </div>
         <button class="btn btn-primary h-38" id="btnRunMC">Executar Simulação</button>
@@ -1306,7 +1308,99 @@
       <div id="stressTable"></div>
     </div>
       </div>
-  </section>
+  
+      <div class="settings-subpanel card mt-6" id="dataTrustSubpanel">
+    <div class="panel-header mb-4">
+      <h2 class="section-heading">Qualidade dos Dados</h2>
+      <p class="text-muted m-0">Verifica automaticamente se os dados da carteira estão completos e atualizados.</p>
+    </div>
+
+    <!-- Portfolio Confidence Overview -->
+    <div class="card mb-6">
+      <h3 class="mb-3">Confiança da Carteira</h3>
+      <div id="portfolioConfidenceSummary" class="grid-200-4">
+        <!-- Filled by JS -->
+      </div>
+    </div>
+
+    <!-- NOVO — FASE 15: Alertas de Auditoria (DataTrustEngine) -->
+    <div class="card mt-6">
+      <h3 class="mb-3">Alertas de Qualidade de Dados</h3>
+      <div id="dataTrustAlertsSummary" class="grid-150-mb-4">
+        <!-- Contadores por severidade -->
+      </div>
+      <div id="dataTrustAlertsList" class="scroll-420">
+        <!-- Lista de alertas -->
+      </div>
+    </div>
+
+    <!-- Assets Confidence Table -->
+    <div class="card mt-6">
+      <h3 class="mb-3">Confiança por Ativo (0–100)</h3>
+      <div class="table-wrapper">
+        <table class="data-table" id="dataTrustTable">
+          <thead>
+            <tr>
+              <th scope="col">Ticker</th>
+              <th scope="col">Nome</th>
+              <th scope="col">Fonte</th>
+              <th scope="col">Score</th>
+              <th scope="col">Nível</th>
+              <th scope="col">Fatores</th>
+              <th scope="col">Última Atualização</th>
+            </tr>
+          </thead>
+          <tbody id="dataTrustBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Audit Snapshots -->
+    <div class="card mt-6">
+      <h3 class="mb-3">Histórico de Cópias (Snapshots)</h3>
+      <div class="flex-3-mb-3">
+        <button class="btn btn-secondary" id="btnRefreshAudit">Atualizar</button>
+        <button class="btn btn-secondary" id="btnVerifyIntegrity">Verificar Integridade</button>
+        <button class="btn btn-primary" id="btnCreateSnapshot">Criar Snapshot Manual</button>
+      </div>
+      <div class="table-wrapper">
+        <table class="data-table" id="auditSnapshotsTable">
+          <thead>
+            <tr>
+              <th scope="col">Timestamp</th>
+              <th scope="col">Tipo</th>
+              <th scope="col">Ativos</th>
+              <th scope="col">Valor Total</th>
+              <th scope="col">Hash</th>
+              <th scope="col">Metadados</th>
+            </tr>
+          </thead>
+          <tbody id="auditSnapshotsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Data Freshness -->
+    <div class="card mt-6">
+      <h3 class="mb-3">Atualização dos Dados</h3>
+      <div id="dataFreshnessSummary" class="grid-150-mb-4">
+        <!-- Filled by JS -->
+      </div>
+      <div class="table-wrapper scroll-200">
+        <table class="data-table" id="dataFreshnessTable">
+          <thead>
+            <tr>
+              <th scope="col">Ticker</th>
+              <th scope="col">Status</th>
+              <th scope="col">Dias</th>
+            </tr>
+          </thead>
+          <tbody id="dataFreshnessBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+    </section>
 </main>
 
   <!-- MODAL: AJUDA -->

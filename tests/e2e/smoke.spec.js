@@ -12,23 +12,20 @@ test.describe('Smoke Tests', () => {
     await expect(page).toHaveTitle(/Investidor10|Dashboard|Carteira/i);
   });
 
-  test('18 abas de navegação presentes', async ({ page }) => {
+  test('15 abas de navegação presentes', async ({ page }) => {
     const tabs = page.locator('.tab-btn');
-    await expect(tabs).toHaveCount(19);
+    await expect(tabs).toHaveCount(15);
 
     const expectedTabs = [
-      'Resumo', 'Posições', 'Proventos', 'Patrimônio', 'Rentabilidade',
-      'Lançamentos', 'Rebalancear', 'Renda Fixa', 'Risco', 'Monte Carlo',
-      'Benchmarks', 'Impostos',
-      'Importar', 'Backup Port.',
-      'Eventos Corp.',
-      'Data Trust',
-      'Metas',
+      'Resumo', 'Patrimônio', 'Rentabilidade', 'Posições', 'Proventos',
+      'Lançamentos', 'Renda Fixa', 'Rebalancear', 'Risco', 'Impostos',
+      'Eventos Corp.', 'Importar', 'Backup', 'Backup Port.',
       'Configurações'
     ];
 
     for (const tabName of expectedTabs) {
-      await expect(page.locator(`.tab-btn:has-text("${tabName}")`)).toBeVisible();
+      // match exato — 'Backup' não pode casar com 'Backup Port.' (substring)
+      await expect(page.locator('.tab-btn').filter({ hasText: new RegExp(`^${tabName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`) })).toBeVisible();
     }
 
     // Also verify "Backup" tab exists separately (exact match)

@@ -47,3 +47,8 @@ skills/
 # ---- Backup com dados REAIS (gerado localmente — nunca commitar/deployar) ----
 backup-carteira-*.json
 backup-*.json
+
+# P-NIGHT (18/10): extratos reais NUNCA no repo (público!) — pipeline lê de
+# AppData/Local/hermes/attachments; históricos ficam só no disco local
+*.pdf
+*.xlsx

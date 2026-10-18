@@ -665,7 +665,7 @@ html[data-theme="dark"] {
 /* ========================================
    Modal
    ======================================== */
-.modal { border: none; border-radius: var(--radius-xl); box-shadow: var(--shadow-xl); max-width: 520px; width: 90vw; max-height: 90vh; overflow: hidden; padding: 0; }
+.modal { border: none; border-radius: var(--radius-xl); box-shadow: var(--shadow-xl); max-width: min(640px, 94vw); width: min(640px, 94vw); max-height: 90vh; overflow: hidden; padding: 0; }
 .modal::backdrop { background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); }
 .modal-backdrop { position: fixed; inset: 0; background: transparent; }
 .modal-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) var(--space-5); border-bottom: 1px solid var(--color-border-light); }
@@ -702,7 +702,8 @@ html[data-theme="dark"] {
 /* ========================================
   Command Palette Modal
   ======================================== */
-.modal-palette .modal-content { max-width: 640px; width: 90vw; margin: auto; }
+.modal-palette { max-width: min(720px, 94vw); width: min(720px, 94vw); }
+.modal-palette .modal-content { max-width: none; width: 100%; margin: auto; }
 .palette-header { display: flex; align-items: center; gap: var(--space-3); padding-bottom: var(--space-3); border-bottom: 1px solid var(--color-border); margin-bottom: var(--space-3); }
 .palette-header svg { color: var(--color-text-muted); flex-shrink: 0; }
 .palette-header input { flex: 1; border: none; background: transparent; font-size: var(--font-size-lg); padding: var(--space-2) 0; color: var(--color-text); }
@@ -972,7 +973,7 @@ html[data-theme="dark"] {
 .text-11 { font-size: 11px; }
 .text-12 { font-size: 12px; }
 .text-muted { color: var(--color-text-muted); }
-.text-error { color: var(--color-error); }
+.text-error { color: var(--color-danger-text); } /* P-NIGHT: #EA4335 (3,92:1) falhava contraste axe em texto; usa o vermelho de texto acessível #C5221F (5,80:1) */
 .text-primary { color: var(--color-primary); }
 .uppercase { text-transform: uppercase; }
 .bg-error { background: #EA4335; }
@@ -1089,7 +1090,7 @@ html[data-theme="dark"] {
 .fs-10-p1 { font-size: 10px; padding: 1px 6px; }
 .fs-11-p2 { font-size: 11px; padding: var(--space-2); margin: 0; }
 .grid-280-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-4); }
-.modal-content { width: min(600px, 90vw); max-height: 70vh; overflow: auto; position: relative; z-index: 1; }
+.modal-content { width: 100%; max-height: 70vh; overflow: auto; position: relative; z-index: 1; }
 html[data-motion="reduced"] *, html[data-motion="reduced"] *::before, html[data-motion="reduced"] *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 .settings-card-flash { outline: 2px solid var(--color-border-focus); outline-offset: 2px; }
 .btn-danger-text { color: var(--color-danger-text); }
@@ -1467,3 +1468,60 @@ input[type="file"] { min-height: 44px; padding: var(--space-1) var(--space-2); }
 }
 /* Reduz altura visual sem perder o alvo de toque: date/number internos */
 input[type="date"], input[type="number"] { padding-top: var(--space-1); padding-bottom: var(--space-1); }
+
+/* ========================================
+   P-NIGHT: refinamentos 17/10 (paleta, tabelas compactas, header mobile)
+   ======================================== */
+/* Navegação de anos (‹ ›) nos históricos de dividendos */
+.year-nav { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); margin-bottom: var(--space-2); }
+.year-nav .year-nav-label { font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); color: var(--color-text); }
+.year-nav button { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-bg); color: var(--color-text); cursor: pointer; transition: background var(--transition-fast); }
+.year-nav button:hover:not(:disabled) { background: var(--color-bg-hover, var(--color-bg-secondary)); }
+.year-nav button:disabled { opacity: 0.35; cursor: default; }
+
+/* Tabelas compactas com scroll interno (não virar página gigante) */
+.table-compact .table-wrapper { max-height: 480px; overflow-y: auto; }
+.table-compact .table-wrapper thead th { position: sticky; top: 0; background: var(--color-bg-card, var(--color-bg)); z-index: 2; }
+
+/* Toggle de seção (Performance Mensal começa oculta) */
+.section-collapse-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-bg); color: var(--color-text); font-size: var(--font-size-sm); cursor: pointer; transition: background var(--transition-fast); }
+.section-collapse-btn:hover { background: var(--color-bg-hover, var(--color-bg-secondary)); }
+.section-collapse-btn .chev { transition: transform var(--transition-fast); }
+.section-collapse-btn[aria-expanded="true"] .chev { transform: rotate(180deg); }
+
+/* Card-resumo que abre modal (Rentabilidade por Ativo/Classe) */
+.open-table-card { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-4) var(--space-5); cursor: pointer; }
+.open-table-card .open-table-title { font-size: var(--font-size-md); font-weight: var(--font-weight-semibold); margin: 0; }
+.open-table-card .open-table-hint { font-size: var(--font-size-xs); color: var(--color-text-muted); margin: 2px 0 0; }
+
+/* Linha de posição clicável (detalhe) */
+#positionsBody tr:not(.group-header) { cursor: pointer; }
+#positionsBody tr:not(.group-header):hover td { background: color-mix(in srgb, var(--color-primary) 6%, transparent); }
+
+/* Header mobile: só essenciais; avatar sempre acessível à direita */
+@media (max-width: 720px) {
+  #modeToggle { display: none !important; }
+  .header-actions { gap: 2px; flex-wrap: nowrap; overflow-x: auto; }
+  .header-actions .btn-ghost { flex-shrink: 0; }
+  .header-actions .kbd { display: none; }
+  #commandPaletteToggle { width: 44px; }
+}
+
+/* Renda Fixa: coluna de ações */
+.fixed-actions { display: inline-flex; gap: 6px; }
+.fixed-actions .action-btn { width: 30px; height: 30px; }
+
+/* Modal largo para tabelas (Rentabilidade por Ativo/Classe) */
+.modal-wide { max-width: min(960px, 96vw); width: min(960px, 96vw); }
+.modal-wide .modal-content { max-height: 76vh; }
+
+/* P-NIGHT FIX: o reset universal (* { margin: 0 }) apaga o margin:auto
+   que o browser usa para centralizar <dialog> — todos os modais abriam
+   no canto superior esquerdo. Restaura a centralização nativa. */
+dialog.modal { margin: auto; }
+
+/* Modal de detalhe da posição */
+.pos-detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--space-3); padding: var(--space-4); }
+.pos-detail-grid .pos-detail-item .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-muted); margin-bottom: 2px; }
+.pos-detail-grid .pos-detail-item .value { font-size: var(--font-size-md); font-weight: var(--font-weight-semibold); }
+.pos-detail-actions { display: flex; gap: var(--space-2); padding: 0 var(--space-4) var(--space-4); }
