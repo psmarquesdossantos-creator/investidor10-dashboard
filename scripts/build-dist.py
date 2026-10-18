@@ -94,12 +94,19 @@ def main():
     # em vez de remover o diretório; cria se não existir.
     if DIST.exists():
         for child in DIST.iterdir():
+            if child.name == ".vercel":
+                continue  # link do projeto Vercel — JAMAIS apagar (senão deploy cria projeto rogue)
             if child.is_dir():
                 shutil.rmtree(child, ignore_errors=True)
             else:
                 child.unlink(missing_ok=True)
     else:
         DIST.mkdir()
+
+    # Link do projeto Vercel: o deploy sai de cwd=dist — o link precisa existir lá
+    if (ROOT / ".vercel" / "project.json").exists():
+        (DIST / ".vercel").mkdir(exist_ok=True)
+        shutil.copy2(ROOT / ".vercel" / "project.json", DIST / ".vercel" / "project.json")
 
     # 1. JS: copiar + minificar
     total_before = total_after = 0
