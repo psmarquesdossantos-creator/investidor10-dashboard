@@ -24,6 +24,7 @@ DIST = ROOT / "dist"
 # ---- ALLOWLIST de deploy (tudo o que o site usa; nada mais entra) ----
 ROOT_FILES = [
     "index.html", "styles.css", "sw.js", "manifest.json", "vercel.json",
+    "firebase-config.js",
     # engines + app
     "script.js", "panels.js", "real-mode.js", "router.js", "init-carteira.js",
     "data-trust-engine.js", "advanced-engine.js",

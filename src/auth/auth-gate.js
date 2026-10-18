@@ -48,11 +48,9 @@
   function resolve(m) { console.info('[authz] boot →', m); mode = m; resolveResolved(m); }
 
   function localBypass() {
-    // *.vercel.app: deployment atrás da Vercel Authentication (login do dono) e
-    // alias público serve apenas dados sintéticos (carteira-data.js nunca é deployado
-    // — .gitignore). Dados reais entram SOMENTE via Importar Backup → localStorage
-    // do navegador de quem importa (P26 preservado: zero dados reais no host).
-    if (location.hostname.endsWith('.vercel.app')) return true;
+    // Bypass = apenas ambiente de desenvolvimento/CI do dono (dados locais reais).
+    // TODA produção (vercel.app, github.io, domínio próprio) segue o fluxo do gate:
+    // visitante → login/demo; autorizado → REAL (P22/P28 — visão "site da vida inteira").
     return ['localhost', '127.0.0.1'].includes(location.hostname) || location.protocol === 'file:';
   }
 
@@ -113,6 +111,23 @@
 
   function showDemoBadge() {
     show(document.getElementById('demoBadge'));
+    // P28: CTA de login no badge — visitante explorando o demo pode virar conta
+    // real na hora (se Firebase estiver configurado neste ambiente).
+    const loginBtn = document.getElementById('demoBadgeLogin');
+    if (loginBtn && window.firebase && window.firebase.auth) {
+      show(loginBtn);
+      if (!loginBtn.__gateBound) {
+        loginBtn.__gateBound = true;
+        loginBtn.addEventListener('click', () => {
+          try {
+            const provider = new window.firebase.auth.GoogleAuthProvider();
+            window.firebase.auth().signInWithPopup(provider);
+          } catch (e) {
+            if (window.showToast) window.showToast('Login indisponível agora.', 'error');
+          }
+        });
+      }
+    }
   }
 
   function finishUI() {
@@ -120,6 +135,7 @@
     if (mode === 'INACTIVE' || mode === 'DEMO' || mode === 'REAL') unlockUI();
     else lockUI();
     if (mode === 'DEMO') showDemoBadge();
+    else hide(document.getElementById('demoBadge')); // DEMO→REAL/other: badge some
     document.dispatchEvent(new CustomEvent('authz:ready', { detail: { mode } }));
   }
 
@@ -148,6 +164,8 @@
           if (typeof window.showToast === 'function') window.showToast('Dados de demonstração restaurados', 'info');
         });
       }
+      // P28: com Firebase ativo, login a partir do badge promo DEMO → REAL/DEMO
+      if (window.firebase && window.firebase.auth) bindRealAuthChanges();
     });
   }
 
@@ -206,7 +224,13 @@
           resolve('BLOCKED');
         } else if (enabled && user.emailVerified) {
           console.info('[authz]', user.uid, '→ REAL');
-          return activateReal(user).then(() => resolve('REAL'));
+          const wasDemo = mode === 'DEMO'; // P13: transição demo → real
+          return activateReal(user).then(() => {
+            if (wasDemo && window.showToast) {
+              window.showToast('Sua conta foi autorizada. Os dados usados anteriormente pertenciam ao modo demonstração.', 'info');
+            }
+            resolve('REAL');
+          });
         } else {
           console.info('[authz]', user.uid, '→ DEMO (não autorizado' + (enabled && !user.emailVerified ? ' — e-mail não verificado' : '') + ')');
           return activateDemo().then(() => resolve('DEMO'));

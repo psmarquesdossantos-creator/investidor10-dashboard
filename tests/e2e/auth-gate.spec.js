@@ -107,6 +107,13 @@ test.describe('Auth Gate — modos forçados (sem Firebase, sem rede)', () => {
     expect(badgeText).toContain('fictícios');          // P9 copy exata (frase completa)
 
     await expect(page.locator('#kpiTotal')).toContainText('30.000');
+
+    // P28: CTA de login no badge só existe com Firebase ativo (localhost não tem)
+    const ctaVisible = await page.evaluate(() => {
+      const b = document.getElementById('demoBadgeLogin');
+      return b ? !b.classList.contains('hidden') : false;
+    });
+    expect(ctaVisible).toBe(false);
   });
 
   test('force BLOCKED: tela dedicada, app oculto, sem dados', async ({ page }) => {

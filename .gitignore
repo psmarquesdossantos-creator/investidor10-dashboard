@@ -2,11 +2,15 @@
 carteira-data.js
 data.js
 
-# ---- Firebase (config real + emulator logs — nunca commitar) ----
-firebase-config.js
+# ---- Firebase (emulator logs + credenciais ADMIN — nunca commitar) ----
+# firebase-config.js NÃO é mais ignorado: config web é pública por design
+# (proteção real = Firestore rules + allowlist authorization/{uid}).
+# NUNCA commitar: serviceAccount*.json, *-firebase-adminsdk-*.json, tokens.
 firebase-debug.log
 firebase-debug.*.log
 .firebaserc
+serviceAccount*.json
+*-firebase-adminsdk-*.json
 
 # ---- Dados financeiros REAIS (regra 7 — NUNCA commitar) ----
 parsed_data.json
