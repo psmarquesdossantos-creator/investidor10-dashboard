@@ -840,9 +840,9 @@
     if (document.getElementById('cmdPalette')) return;
     const overlay = document.createElement('div');
     overlay.id = 'cmdPalette';
-    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:1000;display:flex;align-items:flex-start;padding-top:10vh;justify-content:center';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:1000;display:flex;align-items:center;justify-content:center';
     overlay.innerHTML = `
-      <div class="card modal-content">
+      <div class="card modal-content" style="max-width: min(640px, 94vw); width: min(640px, 94vw); max-height: 70vh; overflow-y: auto;">
         <div class="flex-3-center-mb-4">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input type="text" id="cmdInput" placeholder="Digite um comando..." class="search-input">
