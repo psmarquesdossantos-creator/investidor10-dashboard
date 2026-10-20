@@ -102,7 +102,8 @@ test('Filtro de período da aba Lançamentos funciona (deixou de ser decorativo)
   const count30 = await page.locator('#entriesBody tr').count();
   const expected30 = await page.evaluate(() => {
     const corte = Date.now() - 30 * 86400000;
-    return Math.min(20, window.MOCK_DATA.entries.filter(e => new Date(String(e.date) + 'T00:00:00').getTime() >= corte).length);
+    const recent = window.MOCK_DATA.entries.filter(e => new Date(String(e.date) + 'T00:00:00').getTime() >= corte).length;
+    return recent === 0 ? 1 : Math.min(20, recent); // 1 = linha de estado vazio
   });
   expect(count30).toBe(expected30);
 

@@ -30,7 +30,7 @@ test.describe('Navegação entre Abas', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/index.html');
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(1000);
 
     // Ensure summary tab is active for tests
     await page.evaluate(() => {
@@ -46,7 +46,7 @@ test.describe('Navegação entre Abas', () => {
         else panel.classList.remove('active');
       });
     });
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(200);
   });
 
   for (const tab of TABS) {
@@ -135,7 +135,7 @@ test.describe('Navegação entre Abas', () => {
           }, tab.tabData);
 
           // Aguarda a troca processar
-          await page.waitForTimeout(1000);
+          await page.waitForTimeout(300);
 
           // Debug: verifica estado
           const debugInfo = await page.evaluate(() => ({
@@ -147,7 +147,7 @@ test.describe('Navegação entre Abas', () => {
 
           // Aguarda a troca de aba completar
           const panel = page.locator(`#${tab.id}`);
-          await expect(panel).toBeVisible({ timeout: 15000 });
+          await expect(panel).toBeVisible({ timeout: 5000 });
           await expect(panel).not.toHaveAttribute('hidden');
 
           // Verifica aria-selected

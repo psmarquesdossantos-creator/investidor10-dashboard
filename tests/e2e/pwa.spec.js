@@ -39,7 +39,7 @@ test.describe('PWA Offline (Service Worker)', () => {
         const paths = requests.map(r => new URL(r.url).pathname);
         return assets.every(a => paths.includes(a));
       });
-    }, essential, { timeout: 15000 });
+    }, essential, { timeout: 5000 });
 
     const cached = await page.evaluate(async () => {
       const keys = await caches.keys();
@@ -78,7 +78,7 @@ test.describe('PWA Offline (Service Worker)', () => {
 
     // Recarrega para SW controlar a página
     await page.reload({ waitUntil: 'networkidle' });
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(500);
 
     // Verifica SW controla
     const controlled = await page.evaluate(() => !!navigator.serviceWorker.controller);
@@ -89,7 +89,7 @@ test.describe('PWA Offline (Service Worker)', () => {
 
     // Navega internamente (hash change não vai à rede)
     await page.evaluate(() => { window.location.hash = '#positions'; });
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(200);
 
     const state = await page.evaluate(() => ({
       title: document.title,

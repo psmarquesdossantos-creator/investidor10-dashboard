@@ -2,6 +2,11 @@
 carteira-data.js
 data.js
 
+# ---- Local secrets and financial backups ----
+.env
+.env.*
+!.env.example
+
 # ---- Firebase (emulator logs + credenciais ADMIN — nunca commitar) ----
 # firebase-config.js NÃO é mais ignorado: config web é pública por design
 # (proteção real = Firestore rules + allowlist authorization/{uid}).
@@ -15,6 +20,7 @@ serviceAccount*.json
 # ---- Dados financeiros REAIS (regra 7 — NUNCA commitar) ----
 parsed_data.json
 carteira-data-real.json
+carteira-data-backup-*.json
 carteira-data-backup-*.js
 generate_carteira_data*.py
 tests/e2e/real-data.values.local.json
@@ -56,3 +62,27 @@ backup-*.json
 # AppData/Local/hermes/attachments; históricos ficam só no disco local
 *.pdf
 *.xlsx
+*.xls
+*.ods
+*.csv
+*.ofx
+*.qif
+*.qfx
+*.xml
+*.doc
+*.docx
+*.odt
+*.rtf
+
+# User uploads and backups are local-only
+**/uploads/
+**/upload/
+**/backups/
+**/exports/
+*.bak
+*.backup
+*.dump
+*.sqlite*
+*.db
+
+.env*

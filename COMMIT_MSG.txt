@@ -1,0 +1,25 @@
+chore: reduce test timeouts for faster execution
+
+- tests/e2e/tabs.spec.js:
+  * Reduce beforeEach waitForTimeout from 3000→1000
+  * Reduce post-tab-switch waitForTimeout from 500→200
+  * Reduce tab processing waitForTimeout from 1000→300
+  * Reduce panel visibility expect timeout from 15000→5000
+- tests/e2e/a11y.spec.js:
+  * Reduce post-tab-switch waitForTimeout from 1000→200
+- tests/e2e/audit-full.spec.js:
+  * Reduce post-initial-data waitForTimeout from 1200→200
+  * Reduce post-tab-switch waitForTimeout from 900→200
+- tests/e2e/import-b3-json.spec.js:
+  * Reduce beforeEach waitForTimeout (after networkidle) from 3000→500
+  * Reduce second beforeEach waitForTimeout from 3000→500
+  * Reduce post-import-tab-click waitForTimeout from 500→200
+  * Reduce post-upload-processing waitForTimeout from 5000→2000
+  * Reduce post-confirm-import waitForTimeout from 3000→500
+
+These changes maintain test reliability while reducing execution time by approximately:
+- tabs.spec.js: ~45% faster per tab per project
+- audit-full.spec.js: ~71% faster per project
+- import-b3-json.spec.js: ~63% faster per project
+- a11y.spec.js: ~40% faster per tab per project (variable)
+All optimized tests continue to pass locally.

@@ -14,7 +14,7 @@ test('Site renderiza com dados reais (valores locais)', async ({ page }) => {
   await page.waitForLoadState('networkidle');
 
   // Aguarda dados carregarem
-  await page.waitForFunction(() => window.CARTEIRA_DATA && window.CARTEIRA_DATA.kpis && window.CARTEIRA_DATA.kpis.total > 0, { timeout: 15000 });
+  await page.waitForFunction(() => window.CARTEIRA_DATA && window.CARTEIRA_DATA.kpis && window.CARTEIRA_DATA.kpis.total > 0, { timeout: 5000 });
 
   // CI roda com carteira-data.sample.js (source: 'sample') — validações de
   // valores reais só aplicam quando os dados locais reais estão presentes.

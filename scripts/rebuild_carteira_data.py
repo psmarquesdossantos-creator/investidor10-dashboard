@@ -193,7 +193,7 @@ OLD = json.loads(old_raw.split('window.CARTEIRA_DATA = ')[1].rsplit(';', 1)[0].s
 # REGRA "Transferido": pares Debito+Credito do mesmo evento (ex.: "Dividendo -
 # Transferido" com data/produto/qtd/valor idênticos) são as duas pernas da MESMA
 # transferência entre contas → conta UMA vez (a perna Credito). O dado antigo
-# contava as duas pernas (inflava ~R$ 8,5k em dividendos históricos).
+# contava as duas pernas (inflava ~R$ [exemplo sintético omitido]k em dividendos históricos).
 earnings = []
 _seen_earn = set()
 for m in movs:

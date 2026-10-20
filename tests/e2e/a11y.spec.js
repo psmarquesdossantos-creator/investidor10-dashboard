@@ -49,7 +49,7 @@ test.describe('Acessibilidade (axe-core)', () => {
             tabIndicator.style.transform = `translateX(${activeTab.offsetLeft}px)`;
           }
         }, tab.tabData);
-        await page.waitForTimeout(1000);
+        await page.waitForTimeout(200);
       }
 
       // Toasts são anúncios transitórios (aria-live) com animação de fade:

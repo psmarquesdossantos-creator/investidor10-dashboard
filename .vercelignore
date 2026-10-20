@@ -1,21 +1,86 @@
-# CRÍTICO: dados reais NUNCA no deploy (quando .vercelignore existe, o CLI
-# deixa de aplicar o .gitignore — então TUDO sensível precisa estar AQUI)
-carteira-data.js
-data.js
-parsed_data.json
-carteira-data-real.json
-carteira-data-backup-*.js
-generate_carteira_data*.py
-firebase-config.js
-backup-carteira-*.json
-backup-*.json
+# Vercel CLI uses this file as the deployment exclusion list.
+# Financial data, personal files, and local-only configuration must never ship.
+/carteira-data.js
+/carteira-data-real.json
+/carteira-data-backup*
+/data.js
+/parsed_data.json
+/backup-carteira-*.json
+/backup-*.json
+/*-backup-*.json
+/*-backup-*.js
 
-# Lixo de desenvolvimento
-node_modules
-test-results
-playwright-report
-tests
-.github
-.git
+# Statements, exports, spreadsheets, and uploads
+**/uploads/**
+**/upload/**
+**/backups/**
+**/exports/**
+**/*extrato*
+**/*statement*
+*.pdf
+*.xls
+*.xlsx
+*.ods
+*.csv
+*.ofx
+*.qif
+*.qfx
+*.xml
+*.odt
+/uploads/
+/upload/
+/backups/
+
+# Local secrets and private configuration
+.env
+.env.*
+*.local.*
+*.bak
+*.backup
+*.dump
+*.sql
+*.sqlite*
+*.db
+*.zip
+*.7z
+*.rar
+*.tar
+*.gz
+*.vcf
+*.ics
+*.rtf
+*.doc
+*.docx
+*serviceAccount*.json
+**/*credential*
+**/*secret*
+*-firebase-adminsdk-*.json
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+/firebase-config.js
+/firebase.config.sample.js
+
+# Internal project records and generators are not web assets.
+/AGENTS.md
+/.project-identity
+/AUDIT_REPORT.md
+/COMPLETION_LOG.md
+/FIREBASE_SETUP.md
+/docs/ai/
+/docs/superpowers/
+/scripts/
+# Development artifacts and non-production files
+/node_modules/
+/dist/
+/test-results/
+/playwright-report/
+/tests/
+/.github/
+/.git/
+/.vercel/
 *.log
 firebase-debug*

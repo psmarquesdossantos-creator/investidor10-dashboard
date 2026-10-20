@@ -34,19 +34,19 @@ async function main() {
     // seed: allowlist via "admin" (simula Admin SDK/console — P16)
     const db = c.firestore();
     await db.collection('authorization').doc('ownerUid').set({
-      email: 'psmarquesdossantos@gmail.com', enabled: true, role: 'owner', blocked: false
+      email: 'owner@example.invalid', enabled: true, role: 'owner', blocked: false
     });
     await db.collection('authorization').doc('blockedUid').set({
-      email: 'blocked@example.com', enabled: true, role: 'viewer', blocked: true
+      email: 'owner@example.invalid', enabled: true, role: 'viewer', blocked: true
     });
     await db.collection('users').doc('ownerUid').collection('portfolio').doc('positions')
       .set({ data: [{ ticker: 'SECRET4' }], updatedAt: 1 });
   });
 
-  const owner = ctx('ownerUid', 'psmarquesdossantos@gmail.com');
-  const demo = ctx('demoUid', 'curioso@example.com');        // autenticado, NÃO autorizado
-  const blocked = ctx('blockedUid', 'blocked@example.com');  // autenticado, bloqueado
-  const stranger = ctx('strangerUid', 'stranger@example.com');
+  const owner = ctx('ownerUid', 'owner@example.invalid');
+  const demo = ctx('demoUid', 'owner@example.invalid');        // autenticado, NÃO autorizado
+  const blocked = ctx('blockedUid', 'owner@example.invalid');  // autenticado, bloqueado
+  const stranger = ctx('strangerUid', 'owner@example.invalid');
 
   console.log('P14 attack matrix:');
 
@@ -110,11 +110,11 @@ async function main() {
   await test('9 normal user edits authorization allowlist → DENIED', async () => {
     const db = demo.firestore();
     await assertDenied(db.collection('authorization').doc('demoUid').set({
-      email: 'curioso@example.com', enabled: true, role: 'owner', blocked: false
+      email: 'owner@example.invalid', enabled: true, role: 'owner', blocked: false
     }));
     // também não pode escrever no doc do owner
     await assertDenied(db.collection('authorization').doc('ownerUid').set({
-      email: 'psmarquesdossantos@gmail.com', enabled: true, role: 'owner', blocked: false
+      email: 'owner@example.invalid', enabled: true, role: 'owner', blocked: false
     }));
   });
 

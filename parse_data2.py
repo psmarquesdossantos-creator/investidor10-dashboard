@@ -74,7 +74,7 @@ with pdfplumber.open('extrato-renda-variavel.pdf') as pdf:
                     r_values = re.findall(r'R\$\s*([\d.,]+)', lines[i + 1])
                     # Pattern: qty R$ avg_price R$ cost_price R$ current_price R$ market_value ret_pct% R$ ret_value
                     # But the format is: qty R$ avg_price R$ cost_price R$ current_price R$ market_value ret_pct% R$ ret_value
-                    # From the line: "251 R$ 19,64 R$ 4.929,64 R$ 24,62 R$ 6.179,62 25,36 R$ 1.249,98"
+                    # From the line: "251 R$ [exemplo sintético omitido]R$ [exemplo sintético omitido]R$ [exemplo sintético omitido]R$ [exemplo sintético omitido]25,36 R$ [exemplo sintético omitido]"
                     nums = re.findall(r'[\d.,]+', lines[i + 1])
                     # nums: [qty, avg_price, cost_price, current_price, market_value, ret_pct, ret_value]
                     if len(nums) >= 7:

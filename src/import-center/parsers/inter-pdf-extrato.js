@@ -20,7 +20,7 @@
       .replace(/[^\S\n\r]+/g, ' ')         // colapsa espaços, mantém \n/\r
   }
 
-  // moeda pt-BR: "R$ 4.929,64" -> 4929.64
+  // moeda pt-BR: "R$ [exemplo sintético omitido]" -> 4929.64
   function br(v) {
     const m = String(v || '').replace(/R\$/g, '').trim().match(/-?[\d.]*\d,\d{2}/);
     if (!m) return null;
@@ -36,8 +36,8 @@
 
   // ---- Extrato RV: blocos
   // "Quantidade  Preço Médio  Custo Médio   TICKER  Valor Mercado  % Retorno  Retorno"
-  // "    251      R$ 19,64    R$ 4.929,64    Preço Mercado   R$ 6.608,83   34.06  R$ 1.679,19"
-  // "                                             R$ 26,33"   (linha extra com preço mercado unitário)
+  // "    251      R$ [exemplo sintético omitido]   R$ [exemplo sintético omitido]   Preço Mercado   R$ [exemplo sintético omitido]  34.06  R$ [exemplo sintético omitido]"
+  // "                                             R$ [exemplo sintético omitido]"   (linha extra com preço mercado unitário)
   function parseExtratoRV(rawText) {
     const text = norm(rawText); // à prova de encoding quebrado
     const lines = text.split(/\r?\n/);
@@ -76,8 +76,8 @@
   }
 
   // ---- Extrato RF: notas CDB (Nota | Início | Venc | Valor Aplicado | Tipo | Taxa | Rendimento | ... | Líquido | IR)
-  // Cabeçalho de grupo: "CDB PORQUINHO OBJETIVO  Valor Líquido Total: R$ 92.898,75  Valor Aplicado Total: R$ 92.614,90"
-  // Linha: 529032803  18/02/2026  09/02/2028  R$ 11.000,00  CDB  100% do CDI  R$ 4.950,00  R$ 17,89  R$ 6.602,38  R$ 106,18  R$ 6.496,20  20%
+  // Cabeçalho de grupo: "CDB PORQUINHO OBJETIVO  Valor Líquido Total: R$ [exemplo sintético omitido] Valor Aplicado Total: R$ [exemplo sintético omitido]"
+  // Linha: 529032803  18/02/2026  09/02/2028  R$ [exemplo sintético omitido] CDB  100% do CDI  R$ [exemplo sintético omitido] R$ [exemplo sintético omitido] R$ [exemplo sintético omitido] R$ [exemplo sintético omitido] R$ [exemplo sintético omitido] 20%
   function parseExtratoRF(rawText) {
     const text = norm(rawText);
     const lines = text.split(/\r?\n/);

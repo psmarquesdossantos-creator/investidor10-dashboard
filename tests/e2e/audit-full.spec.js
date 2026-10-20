@@ -36,7 +36,7 @@ test('Auditoria funcional completa — todas as abas', async ({ page }) => {
   const loadMs = Date.now() - t0;
 
   await page.waitForFunction(() => window.CARTEIRA_DATA && window.CARTEIRA_DATA.kpis && window.CARTEIRA_DATA.kpis.total > 0, { timeout: 15000 });
-  await page.waitForTimeout(1200);
+  await page.waitForTimeout(200);
 
   const kpis = await page.evaluate(() => ({
     total: window.CARTEIRA_DATA.kpis.total,
@@ -80,7 +80,7 @@ test('Auditoria funcional completa — todas as abas', async ({ page }) => {
   for (const { tab, name } of TABS) {
     try {
       await page.evaluate((t) => { if (typeof window.__resetRenderedTabs === 'function') window.__resetRenderedTabs(); window.switchTab(t); }, tab);
-      await page.waitForTimeout(900);
+      await page.waitForTimeout(200);
 
       const state = await page.evaluate((t) => {
         const panel = document.getElementById('panel-' + t);

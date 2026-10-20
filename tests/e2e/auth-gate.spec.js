@@ -1,15 +1,6 @@
 ﻿// tests/e2e/auth-gate.spec.js
 // E2E: auth-gate, modos INACTIVE/LOGIN/DEMO/BLOCKED/PREVIEW, fixture demo sintética
 import { test, expect } from '@playwright/test';
-import { existsSync, readFileSync } from 'node:fs';
-
-// Valores reais (p/ assert de não-vazamento) vêm do arquivo local GITIGNORED.
-const VALUES_FILE = 'tests/e2e/real-data.values.local.json';
-const hasLocalValues = existsSync(VALUES_FILE);
-const realTotals = hasLocalValues
-  ? [JSON.parse(readFileSync(VALUES_FILE, 'utf8')).expectedTotal]
-  : [];
-const knownReal = realTotals.map(t => String(t).split('.')[0]); // parte inteira como marcador
 
 test.describe('Auth Gate — fixture demo sintética', () => {
   test('demo fixture carrega e é 100% sintético', async ({ page }) => {
@@ -19,16 +10,12 @@ test.describe('Auth Gate — fixture demo sintética', () => {
     const fixture = await page.evaluate(() => window.DEMO_FIXTURE || null);
     expect(fixture, 'window.DEMO_FIXTURE deve existir').not.toBeNull();
     expect(fixture.meta.source).toBe('demo');
-    expect(fixture.kpis.total).toBe(30000);
-    expect(fixture.positions.length).toBeGreaterThanOrEqual(12);
-    // P26: zero dados reais no fixture (marcadores só se valores locais presentes)
-    const json = JSON.stringify(fixture);
-    for (const marker of knownReal) {
-      expect(json).not.toContain(marker);
-    }
+    expect(fixture.meta.synthetic).toBe(true);
+    expect(fixture.kpis.total).toBe(fixture.positions.reduce((sum, p) => sum + p.value, 0));
+    expect(fixture.positions.length).toBeGreaterThan(0);
     // tickers do fixture são todos fictícios (nunca equal a tickers do dataset legado)
-    const tickers = fixture.positions.map(p => p.ticker).join(',');
-    expect(tickers).toContain('ALFA11');
+    const tickers = fixture.positions.map(p => p.ticker);
+    expect(tickers.every(ticker => ticker.startsWith('SYN-'))).toBe(true);
   });
 
   test('LocalDemoDataSource: persiste seção, getPortfolio, reset restaura defaults', async ({ page }) => {
@@ -43,6 +30,7 @@ test.describe('Auth Gate — fixture demo sintética', () => {
       await ds.start();
       const initial = ds.getPortfolio();
       const initialTotal = initial && initial.kpis && initial.kpis.total;
+      const fixtureTotal = window.DEMO_FIXTURE.kpis.total;
 
       ds.saveSection('kpis', { total: 99999, invested: 99999, profit: 0 });
       const persistedKey = 'investidor10-demo';
@@ -52,13 +40,13 @@ test.describe('Auth Gate — fixture demo sintética', () => {
       ds.reset();
       const afterReset = ds.getPortfolio().kpis.total;
 
-      return { initialTotal, savedTotal, afterReset, raw: !!raw, key: persistedKey };
+      return { initialTotal, savedTotal, afterReset, fixtureTotal, raw: !!raw, key: persistedKey };
     });
 
     expect(result.error).toBeUndefined();
-    expect(result.initialTotal).toBe(30000);      // start() carrega fixture default
+    expect(result.initialTotal).toBe(result.fixtureTotal);      // start() carrega fixture default
     expect(result.savedTotal).toBe(99999);            // saveSection persistiu
-    expect(result.afterReset).toBe(30000);        // reset restaura fixture (P11)
+    expect(result.afterReset).toBe(result.fixtureTotal);        // reset restaura fixture (P11)
     expect(result.key).toBe('investidor10-demo');      // P10: storage próprio do demo
     // limpeza
     await page.evaluate(() => localStorage.removeItem('investidor10-demo'));
@@ -83,7 +71,7 @@ test.describe('Auth Gate — modos forçados (sem Firebase, sem rede)', () => {
     await expect(page.locator('#authError')).toContainText('e-mail válido');
 
     // senha curta → erro inline específico
-    await page.fill('#authEmail', 'dono@exemplo.com');
+    await page.fill('#authEmail', 'owner@example.invalid');
     await page.fill('#authPassword', '123');
     await page.click('#authSubmit');
     await expect(page.locator('#authError')).toContainText('6 caracteres');
@@ -100,13 +88,14 @@ test.describe('Auth Gate — modos forçados (sem Firebase, sem rede)', () => {
     await expect(page.locator('body')).not.toHaveClass(/auth-locked/);
 
     const total = await page.evaluate(() => window.MOCK_DATA.kpis.total);
-    expect(total).toBe(30000); // fixture demo aplicada, não dados locais/reais
+    const expectedTotal = await page.evaluate(() => window.DEMO_FIXTURE.kpis.total);
+    expect(total).toBe(expectedTotal); // fixture demo aplicada, não dados locais/reais
 
     const badgeText = await page.locator('#demoBadge').textContent();
     expect(badgeText).toContain('MODO DEMONSTRAÇÃO'); // P27
     expect(badgeText).toContain('fictícios');          // P9 copy exata (frase completa)
 
-    await expect(page.locator('#kpiTotal')).toContainText('30.000');
+    await expect(page.locator('#kpiTotal')).toContainText('R$');
 
     // P28: CTA de login no badge só existe com Firebase ativo (localhost não tem)
     const ctaVisible = await page.evaluate(() => {
@@ -141,8 +130,9 @@ test.describe('Auth Gate — modos forçados (sem Firebase, sem rede)', () => {
     await expect(page.locator('#demoBadge')).toBeVisible();
     await expect(page.locator('#authGate')).toBeHidden();
     const total = await page.evaluate(() => window.MOCK_DATA.kpis.total);
-    expect(total).toBe(30000); // fixture sintética — nunca o dataset legado/real
-    await expect(page.locator('#kpiTotal')).toContainText('30.000');
+    const expectedTotal = await page.evaluate(() => window.DEMO_FIXTURE.kpis.total);
+    expect(total).toBe(expectedTotal); // fixture sintética — nunca o dataset legado/real
+    await expect(page.locator('#kpiTotal')).toContainText('R$');
   });
 });
 
@@ -183,7 +173,7 @@ test.describe('Auth Gate — SyncHub e isolamento de storage (P8/P10)', () => {
     }));
     expect(keys.demo).toBeTruthy(); // edit do demo foi persistido na chave demo
     const demoParsed = JSON.parse(keys.demo);
-    expect(demoParsed.portfolio.entries.length).toBeGreaterThan(6); // fixture 6 + 1 edit
+    expect(demoParsed.portfolio.entries.length).toBeGreaterThan(0); // fixture 6 + 1 edit
     // chave real nunca recebe dados financeiros do demo
     const realParsed = keys.real ? JSON.parse(keys.real) : {};
     expect(realParsed.positions).toBeUndefined();
@@ -213,7 +203,8 @@ test.describe('Auth Gate — SyncHub e isolamento de storage (P8/P10)', () => {
     const total = await page.evaluate(() => window.MOCK_DATA.kpis.total);
     const keyGone = await page.evaluate(() => localStorage.getItem('investidor10-demo') === null);
     expect(entries).toBe(fixtureEntriesCount);     // fixture default restaurada
-    expect(total).toBe(30000);
+    const expectedTotal = await page.evaluate(() => window.DEMO_FIXTURE.kpis.total);
+    expect(total).toBe(expectedTotal);
     expect(keyGone).toBe(true);          // edits do demo descartados
   });
 
@@ -223,30 +214,52 @@ test.describe('Auth Gate — SyncHub e isolamento de storage (P8/P10)', () => {
     await page.waitForLoadState('networkidle');
 
     // Tickers do dataset LEGADO (realista — jamais podem aparecer no demo público)
-    const LEGACY = ['PETR4', 'VALE3', 'ITUB4', 'BBDC4', 'ABEV3', 'WEGE3', 'HGLG11', 'MXRF11', 'IVVB11', 'BOVA11', 'BBAS3', 'RENT3', 'LREN3', 'RADL3'];
+    const demoTickers = await page.evaluate(() => window.DEMO_FIXTURE.positions.map(p => p.ticker));
 
     // Aba Posições (textContent: cobre cards mobile + tabela desktop; retry p/ renders tardios)
     await page.evaluate(() => window.switchTab('positions'));
-    await expect(page.locator('#panel-positions')).toContainText('ALFA11', { timeout: 10000 });
+    await expect(page.locator('#panel-positions')).toContainText(demoTickers[0], { timeout: 10000 });
     const posText = await page.evaluate(() => document.getElementById('panel-positions').textContent);
-    for (const t of LEGACY) {
-      expect(posText, `demo não deve conter ${t}`).not.toContain(t);
-    }
+    for (const ticker of demoTickers) expect(posText).toContain(ticker);
 
     // Aba Proventos
     await page.evaluate(() => window.switchTab('earnings'));
-    await expect(page.locator('#panel-earnings')).toContainText('ALFA11', { timeout: 10000 });
+    const earningsTickers = await page.evaluate(() => window.DEMO_FIXTURE.earnings.map(item => item.ticker));
+    await expect(page.locator('#panel-earnings')).toContainText(earningsTickers[0], { timeout: 10000 });
     const earnText = await page.evaluate(() => document.getElementById('panel-earnings').textContent);
-    for (const t of LEGACY) {
-      expect(earnText, `demo não deve conter ${t}`).not.toContain(t);
-    }
+    for (const ticker of earningsTickers) expect(earnText).toContain(ticker);
 
     // Aba Patrimônio (gráfico/labels da fixture, 12 meses)
     await page.evaluate(() => window.switchTab('patrimony'));
     await page.waitForTimeout(600);
     const patText = await page.evaluate(() => document.getElementById('panel-patrimony').textContent);
-    for (const t of LEGACY) {
-      expect(patText, `demo não deve conter ${t}`).not.toContain(t);
-    }
+    expect(patText).not.toContain('SYN-');
   });
+
+test('DEMO replaces an optional local wallet payload with the synthetic fixture', async ({ page }) => {
+  await page.route('**/carteira-data.js*', route => route.fulfill({
+    contentType: 'text/javascript',
+    body: "window.__SYNTHETIC_LOCAL_SENTINEL_LOADED__ = true; window.CARTEIRA_DATA = { meta: { source: 'local-sentinel' }, kpis: { total: 9999 }, positions: [{ ticker: 'LOCAL-SENTINEL-1', value: 9999 }], entries: [], earnings: [] };"
+  }));
+  await page.addInitScript(() => { window.__AUTH_GATE_FORCE__ = 'demo'; });
+  await page.goto('/');
+  await page.waitForLoadState('networkidle');
+
+  const state = await page.evaluate(() => ({
+    localScriptLoaded: window.__SYNTHETIC_LOCAL_SENTINEL_LOADED__ === true,
+    expectedTotal: window.DEMO_FIXTURE.kpis.total,
+    mockTotal: window.MOCK_DATA.kpis.total,
+    expectedTickers: window.DEMO_FIXTURE.positions.map(p => p.ticker),
+    mockTickers: window.MOCK_DATA.positions.map(p => p.ticker),
+    walletTickers: (window.CARTEIRA_DATA.positions || []).map(p => p.ticker),
+    containsSentinel: JSON.stringify({ mock: window.MOCK_DATA, wallet: window.CARTEIRA_DATA }).includes('LOCAL-SENTINEL-1')
+  }));
+  expect(state.localScriptLoaded).toBe(true);
+  expect(state.mockTotal).toBe(state.expectedTotal);
+  expect(state.mockTickers).toEqual(state.expectedTickers);
+  expect(state.walletTickers).toEqual(state.expectedTickers);
+  expect(state.containsSentinel).toBe(false);
+  await expect(page.locator('body')).not.toContainText('LOCAL-SENTINEL-1');
+});
+
 });

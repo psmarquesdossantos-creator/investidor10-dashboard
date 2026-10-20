@@ -12,7 +12,7 @@ graph TD
     end
 
     subgraph Data["Fontes de dados (fonte única por contexto)"]
-        H1[carteira-data.js<br/>local real R$702k] -->|__CARTEIRA_OVERRIDE| F
+        H1[carteira-data.js<br/>local real [valor financeiro redigido]k] -->|__CARTEIRA_OVERRIDE| F
         H2[DEMO_FIXTURE 30k<br/>gate DEMO] --> F
         H3[localStorage<br/>investidor10-dashboard-data] -->|loadFromStorage| F
         H4[Importar Backup<br/>aba Backup] --> H3

@@ -9,7 +9,8 @@
     "test:mobile": "npx playwright test --project=mobile",
     "test:a11y": "npx playwright test tests/e2e/a11y.spec.js",
     "serve": "python serve.py",
-    "lint": "node --check script.js && node --check real-mode.js && node --check advanced-engine.js"
+    "lint": "node --check script.js && node --check real-mode.js && node --check advanced-engine.js",
+    "test:privacy": "node --test tests/privacy-contract.test.cjs"
   },
   "keywords": [
     "investidor10",

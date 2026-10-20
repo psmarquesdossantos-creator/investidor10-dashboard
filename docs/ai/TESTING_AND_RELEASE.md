@@ -1,4 +1,15 @@
-# TESTING AND RELEASE — Investidor10 Dashboard
+# TESTING AND RELEASE
+## Full QA — 2026-10-18
+
+- `npm run lint`, `node --check panels.js`, testes alterados e `git diff --check`: aprovados.
+- `npm run test:privacy`: 5/5 aprovados; fixtures públicos e demo sintéticos.
+- Playwright em cópia temporária sintética: desktop 121 aprovados/0 falhos/9 ignorados; mobile 128/0/2; tablet 121/0/9. Total: 370 aprovados, 0 falhos, 20 ignorados.
+- Suíte inclui axe, navegação, auth gate, importação B3, persistência e recuperação. Excluídos testes de produção, valores financeiros locais, planilhas externas não certificadas e cenário que declara backup real.
+- Cópia isolada omitiu carteira local, Firebase real e arquivos locais; shim de carteira usado no teste contém somente a amostra sintética.
+- Firestore Rules Emulator não executado: `@firebase/rules-unit-testing` e Firebase CLI ausentes nas dependências locais.
+- `.vercel/project.json` existe; API Vercel retorna 403 para a equipe vinculada, fora do escopo da conta conectada. CLI não reconhece essa equipe; nenhum relink foi tentado.
+- `vercel deploy --dry --format=json` não executado porque o acesso remoto ao projeto não foi confirmado; nenhum upload/deploy ocorreu.
+- Dry-run deve ocorrer apenas após reconectar a conta correta e confirmar equipe e project ID em leitura. — Investidor10 Dashboard
 
 **Comandos reais, viewports, validações obrigatórias.**
 
@@ -161,7 +172,7 @@ python serve.py
 #   Eventos Corp., Data Trust, Backup Port.
 
 # 3. Verificar:
-#   - Dados reais carregam (R$ 610k patrimônio)
+#   - Dados reais carregam ([valor financeiro redigido]k patrimônio)
 #   - Gráficos interativos (hover, zoom)
 #   - Modais abrem/fecham (Esc, click overlay)
 #   - Import B3 JSON → preview → confirm

@@ -6,7 +6,7 @@ test.describe('Import Center - B3 JSON Backup', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/index.html');
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(500);
   });
 
   test('import B3 JSON backup → preview → confirm → snapshot created', async ({ page }) => {
@@ -16,19 +16,19 @@ test.describe('Import Center - B3 JSON Backup', () => {
 
     await page.goto('/index.html');
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(3000);
-
+    await page.waitForTimeout(500);
+    
     // Switch to Import tab (in Configurações group)
     await page.click('.tab-btn[data-tab="import"]');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(200);
 
     // Upload fixture
     const fileInput = page.locator('#importFile');
     await fileInput.setInputFiles('tests/fixtures/backup-investidor10-sample.json');
 
     // Wait for processing
-    await page.waitForTimeout(5000);
-
+    await page.waitForTimeout(2000);
+    
     // Check for errors in detected format
     const errorMsg = await page.locator('#importDetectedFormat').textContent();
     console.log('Detected format element:', errorMsg);
@@ -56,7 +56,7 @@ test.describe('Import Center - B3 JSON Backup', () => {
 
     // Confirm import
     await page.click('#btnConfirmImport');
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(500);
 
     // Check data state after import
     const badgeText = await page.locator('#dataStateBadge .state-label').textContent();

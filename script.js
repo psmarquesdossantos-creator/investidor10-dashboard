@@ -3343,8 +3343,17 @@ async function init() {
   if (window.__AUTH_RESOLVED__) { try { await window.__AUTH_RESOLVED__; } catch (e) { console.warn('[boot] auth resolve falhou:', e && e.message); } }
   const gateMode = (window.AuthGate && window.AuthGate.mode) || 'INACTIVE';
 
+  // Show global loading overlay
+  const globalLoadingEl = document.getElementById('globalLoading');
+  if (globalLoadingEl) globalLoadingEl.style.display = 'flex';
+
   // Initialize DOM references first
   initDOM();
+  // Show loading overlays
+  const kpiLoadingEl = document.getElementById('kpiLoading');
+  const heroLoadingEl = document.getElementById('heroLoading');
+  if (kpiLoadingEl) kpiLoadingEl.style.display = 'flex';
+  if (heroLoadingEl) heroLoadingEl.style.display = 'flex';
   initUserMenu();
 
   // Restore saved column order for positions table
@@ -3369,6 +3378,9 @@ async function init() {
   }
 
   renderKPIs();
+  // Hide loading overlays
+  kpiLoadingEl.style.display = 'none';
+  heroLoadingEl.style.display = 'none';
   renderMonthlyTable();
   initTabs();
   initThemeToggle();
@@ -3426,6 +3438,9 @@ async function init() {
   if (gateMode === 'INACTIVE') {
     setTimeout(() => showToast('Dashboard carregado com dados de demonstração', 'info'), 500);
   }
+
+  // Hide global loading overlay
+  if (globalLoadingEl) globalLoadingEl.style.display = 'none';
 }
 
 // Start when DOM ready — com scripts defer, readyState='interactive' durante a

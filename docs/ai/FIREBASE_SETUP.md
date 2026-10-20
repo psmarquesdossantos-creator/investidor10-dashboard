@@ -23,11 +23,11 @@
 
 ## 4. Allowlist do dono (P3/P15)
 
-1. Authentication → Users → criar sua conta (e-mail `psmarquesdossantos@gmail.com`,
+1. Authentication → Users → criar sua conta (e-mail `owner@example.invalid`,
    verificar e-mail) — OU criar via primeira execução do app com signup e depois:
 2. Firestore → coleção `authorization` → doc com **ID = seu UID** (copiar de Auth → Users):
    ```json
-   { "email": "psmarquesdossantos@gmail.com", "enabled": true, "role": "owner", "blocked": false }
+   { "email": "owner@example.invalid", "enabled": true, "role": "owner", "blocked": false }
    ```
    (email trim+lowercase)
 3. Signup público pode ficar aberto na Fase 2 (visitantes caem em DEMO — P28);

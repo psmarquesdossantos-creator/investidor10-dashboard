@@ -37,7 +37,7 @@ authorization/{ownerUid}                  (allowlist: enabled, role=owner, block
    fingerprint local (mesma função do dry-run). Qualquer DIFF → abortar e NÃO prometer
    o arquivo local como fonte de verdade.
 5. **Allowlist**: no console Firestore, criar `authorization/{ownerUid}` =
-   `{ email: 'psmarquesdossantos@gmail.com', enabled: true, role: 'owner', blocked: false }`
+   `{ email: 'owner@example.invalid', enabled: true, role: 'owner', blocked: false }`
    (email trim+lowercase — P15).
 6. **Certificação cross-device**: login no desktop + celular; validar sync em ambos
    sentidos (P7) e resolução REAL (P4) — checklist em FIREBASE_SETUP.md.

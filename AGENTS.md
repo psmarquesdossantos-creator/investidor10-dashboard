@@ -12,9 +12,9 @@ pwd
 git rev-parse --show-toplevel 2>/dev/null || echo "NOT_A_GIT_REPO"
 cat .project-identity
 # Validar:
-# WORKSPACE == C:\Users\Paulinho\AppData\Local\hermes\cache\scratch\investidor10-dashboard
+# WORKSPACE == G:\Meu Drive\Codex\investidor10-dashboard
 # PROJECT_NAME == investidor10-dashboard
-# BACKUP_PATH == G:\Meu Drive\Codex\investidor10-dashboard
+# REPOSITORY == psmarquesdossantos-creator/investidor10-dashboard
 ```
 
 **Se mismatch → HUMAN_BLOCKER_WRONG_PROJECT → PARE IMEDIATAMENTE**
@@ -60,7 +60,7 @@ cat .project-identity
 ## 4. ARQUIVOS PROTEGIDOS (Não tocar sem autorização explícita)
 
 ```
-carteira-data.js          # Dados reais da carteira (40 ativos, 72 tx, 435 prov)
+carteira-data.js          # Dados financeiros reais (local only; nunca publicar)
 data.js                   # Dados legados (não modificar)
 advanced-engine.js        # Engines core: ReturnEngine, SnapshotManager, RFConfidence, ImportPipeline, DataStates, A11y
 rebalance-engine.js       # Solver de otimização (JS puro)
@@ -68,13 +68,13 @@ risk-engine.js            # VaR, Sharpe, Sortino, Calmar, MaxDD, Beta, Correlati
 benchmark-engine.js       # 9 benchmarks via brapi.dev
 monte-carlo-engine.js     # GBM, 10k paths, cone P10/P50/P90
 tax-engine.js             # IRPF, DARF, GCAP, Carnê-Leão, XML
-real-mode.js              # Integração + 12 panel inits
+real-mode.js              # Integração e inicialização de painéis
 script.js                 # Core UI, charts, state
 styles.css                # Design system completo
-index.html                # SPA 12 tabs
+index.html                # Aplicação SPA
 serve.py                  # HTTP Server com CSP/Security headers
 sw.js / manifest.json     # PWA
-tests/e2e/*.spec.js       # 41 testes (desktop/mobile/tablet)
+tests/e2e/*.spec.js       # Testes E2E (desktop/mobile/tablet)
 playwright.config.js      # Config Playwright
 ```
 
@@ -101,7 +101,12 @@ playwright.config.js      # Config Playwright
 ## 7. REGRAS DE DADOS SENSÍVEIS
 
 - **NUNCA** versionar: tokens, senhas, API keys, cookies, backups reais com dados financeiros, .env, credenciais
-- Test fixtures devem ser **sintéticos**
+- Test fixtures e exemplos públicos devem conter somente dados **sintéticos**
+- `.vercelignore` protege deploys via CLI; deploys via Git dependem da árvore versionada e das configurações do Vercel
+- Manter as exclusões do CLI alinhadas a dados locais, exports, uploads, documentos pessoais e segredos
+- `vercel.json` deve usar allowlist estática explícita; deploy Git não é protegido por `.vercelignore`
+- Executar E2E em cópia isolada sem carteira, config Firebase ou marcadores locais; nunca imprimir valores reais em logs
+- Se houver dúvida sobre um artefato, excluí-lo da distribuição e interromper a publicação até validação
 - Dados reais da carteira: `carteira-data.js` (local only, não commitado em repo público)
 
 ---
@@ -246,7 +251,7 @@ npx playwright test
 MISSION=
 STATUS=
 PROJECT=investidor10-dashboard
-WORKSPACE=C:\Users\Paulinho\AppData\Local\hermes\cache\scratch\investidor10-dashboard
+WORKSPACE=G:\Meu Drive\Codex\investidor10-dashboard
 SKILLS_USED=
 FILES_CHANGED=
 FILES_CREATED=

@@ -98,7 +98,7 @@ test.describe('Hash Routing', () => {
     await page.waitForLoadState('networkidle');
 
     // Aguardar router estar pronto
-    await page.waitForFunction(() => window.router && typeof window.router.navigate === 'function', { timeout: 10000 });
+    await page.waitForFunction(() => window.router && typeof window.router.navigate === 'function', { timeout: 5000 });
 
     // Verificar tipos via evaluate serializando cada tipo
     const navigateType = await page.evaluate(() => typeof window.router.navigate);

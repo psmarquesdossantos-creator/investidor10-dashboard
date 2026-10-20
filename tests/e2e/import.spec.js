@@ -13,30 +13,30 @@ test.describe('Importador de Backup JSON', () => {
     await page.goto('/index.html');
     await page.waitForLoadState('networkidle');
     // Aguarda inicialização completa: DOM ready + switchTab exposto + tab ativa visível
-    await page.waitForFunction(() => typeof window.switchTab === 'function' && document.querySelector('.tab-btn.active'), { timeout: 45000 });
-    await page.waitForTimeout(1000); // buffer extra para mobile
+    await page.waitForFunction(() => typeof window.switchTab === 'function' && document.querySelector('.tab-btn.active'), { timeout: 5000 });
+    await page.waitForTimeout(200); // buffer extra para mobile
   });
 
   test('dropzone aparece ao clicar na aba Importar', async ({ page }) => {
     // Aguarda a aba import estar disponível
     const importTab = page.locator('.tab-btn[data-tab="import"]');
-    await expect(importTab).toBeVisible({ timeout: 20000 });
+    await expect(importTab).toBeVisible({ timeout: 5000 });
 
     // Usa evaluate para chamar switchTab diretamente (mais confiável)
     await page.evaluate(() => window.switchTab('import'));
 
     // Aguarda o painel ficar visível
-    await page.waitForSelector('#panel-import:not([hidden])', { timeout: 20000 });
+    await page.waitForSelector('#panel-import:not([hidden])', { timeout: 5000 });
 
     const dropzone = page.locator('#importDropzone');
-    await expect(dropzone).toBeVisible({ timeout: 10000 });
+    await expect(dropzone).toBeVisible({ timeout: 3000 });
   });
 
   test('importar JSON válido processa sem erro', async ({ page }) => {
     // Clica na aba Importar
     const importTab = page.locator('.tab-btn[data-tab="import"]');
     await importTab.click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(200);
 
     // Usa o input file do novo painel (accept .json,.csv)
     const fileInput = page.locator('#importFile');
@@ -77,7 +77,7 @@ test.describe('Importador de Backup JSON', () => {
     // Clica na aba Importar
     const importTab = page.locator('.tab-btn[data-tab="import"]');
     await importTab.click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(200);
 
     // Cria um JSON com provento duplicado
     const duplicateJson = {
@@ -132,7 +132,7 @@ test.describe('Importador de Backup JSON', () => {
     // Clica na aba Importar
     const importTab = page.locator('.tab-btn[data-tab="import"]');
     await importTab.click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(200);
 
     // Usa o input file do novo painel
     const fileInput = page.locator('#importFile');
@@ -168,13 +168,13 @@ test.describe('Importador de Backup JSON', () => {
     // Clica na aba Importar
     const importTab = page.locator('.tab-btn[data-tab="import"]');
     await importTab.click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(200);
 
     // Usa o input file do novo painel
     const fileInput = page.locator('#importFile');
     await fileInput.setInputFiles(tempFile);
 
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(500);
 
     // Deve mostrar erro de arquivo grande
     const toastError = page.locator('.toast-error, .toast:has-text("grande"), .toast:has-text("5MB")');

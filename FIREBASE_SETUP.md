@@ -28,9 +28,9 @@ local/demo — nada quebra.
 6. **Regras**: aba Rules do Firestore → cole o conteúdo de `firestore.rules` (repo) → Publish.
    As regras restringem leitura/escrita ao usuário dono do documento (`request.auth.uid`).
 7. **Autorizar SEU login (allowlist P16)**: entre no site com sua conta Google
-   (`psmarquesdossantos@gmail.com`) UMA vez → abra o Console → Authentication → Users →
+   (`owner@example.invalid`) UMA vez → abra o Console → Authentication → Users →
    copie o **User UID** → Firestore → coleção `authorization` → criar documento com
-   **ID = UID** e campos: `{ "email": "psmarquesdossantos@gmail.com", "enabled": true,
+   **ID = UID** e campos: `{ "email": "owner@example.invalid", "enabled": true,
    "role": "owner", "blocked": false }`. Sem este passo você entra em modo DEMO
    (dados fictícios) — a autorização é sempre server-side (P5/P16).
 8. **(Opcional) Deploy**: o `firebase-config.js` não vai ao git — no Vercel, adicione o arquivo

@@ -45,7 +45,7 @@
 
 ### Changed — Privacidade (P26) e higiene
 
-- **MOCK_DATA interno (R$ 687k real-derivado) substituído pela fixture sintética 30k** — o padrão sem login agora é SEMPRE fictício (≤100k) e os valores reais saíram do código público
+- **Mock público anterior removido por depender de dados locais e substituído por fixture independente e sintética** — o padrão sem login agora é SEMPRE fictício (≤100k) e os valores reais saíram do código público
 - Links mortos do topo removidos (Carteira/Mercados/Recomendações/Cursos/IR)
 - SW v27 · README: seção Documentação + preview real + backup xcopy correto
 - `build-dist.py`: allowlist agora inclui `assets/` (ícones PWA que davam 404)
